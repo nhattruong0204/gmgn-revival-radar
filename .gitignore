@@ -20,3 +20,5 @@ data/*
 *.key
 *.log
 .DS_Store
+.wheelhouse/*
+!.wheelhouse/.gitkeep

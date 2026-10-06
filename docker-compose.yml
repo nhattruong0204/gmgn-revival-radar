@@ -1,0 +1,15 @@
+services:
+  radar:
+    build: .
+    init: true
+    env_file: .env
+    user: "${RADAR_UID:-10001}:${RADAR_GID:-10001}"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

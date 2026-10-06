@@ -4,7 +4,7 @@
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends sqlite3 curl git && python -m venv .venv && .venv/bin/pip install -e '.[dev]'",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y --no-install-recommends sqlite3 curl git && python -m venv .venv && .venv/bin/pip install --require-hashes -r requirements-dev.lock && .venv/bin/pip install --no-deps -e .",
   "customizations": {
     "vscode": {
       "extensions": ["ms-python.python", "charliermarsh.ruff"],
