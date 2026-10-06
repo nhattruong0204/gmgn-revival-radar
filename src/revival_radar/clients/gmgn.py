@@ -2,6 +2,7 @@ import asyncio
 import logging
 import time
 import uuid
+from contextlib import suppress
 from email.utils import parsedate_to_datetime
 from typing import Any, Literal, Protocol
 
@@ -42,10 +43,8 @@ def retry_delay(response: httpx.Response, body: dict, now: float) -> float:
     if seconds is not None:
         delays.append(seconds)
     elif retry:
-        try:
+        with suppress(ValueError, TypeError, OverflowError):
             delays.append(parsedate_to_datetime(retry).timestamp() - now + 1)
-        except (ValueError, TypeError, OverflowError):
-            pass
     return max(delays)
 
 
@@ -120,7 +119,14 @@ class GMGNClient:
                         await asyncio.sleep(delay)
                         continue
                 if response.is_success and payload.get("code") in (0, "0") and "data" in payload:
-                    return payload["data"]
+                    data = payload["data"]
+                    # Live /market/rank can wrap its upstream result in a second
+                    # code/data envelope. Validate it rather than accepting an error as data.
+                    if isinstance(data, dict) and "code" in data and "data" in data:
+                        if data["code"] not in (0, "0"):
+                            raise DataSourceError(f"GMGN upstream error route={path}")
+                        data = data["data"]
+                    return data
                 raise DataSourceError(
                     f"GMGN request failed HTTP={response.status_code} route={path}"
                 )
@@ -168,6 +174,11 @@ class GMGNClient:
         info = await self.request("GET", "/v1/token/info", params=params)
         if not isinstance(info, dict) or not isinstance(info.get("price"), dict):
             raise DataSourceError("Unexpected token info response shape")
+        address = info.get("address")
+        if isinstance(address, str) and token.chain != "sol":
+            address = address.lower()
+        if address is not None and address != token.contract_address:
+            raise DataSourceError("Token info address mismatch")
         security = {}
         warnings = []
         try:

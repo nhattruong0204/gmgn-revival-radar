@@ -59,7 +59,7 @@ class Settings(BaseSettings):
     dry_run: bool = True
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     discovery_interval: Literal["1m", "5m", "1h", "6h", "24h"] = "1h"
-    discovery_limit: int = Field(default=50, ge=1, le=100)
+    discovery_limit: int = Field(default=20, ge=1, le=100)
     watchlist_hours: Positive = 24
     watchlist_limit: int = Field(default=100, ge=1, le=1000)
     history_observations: int = Field(default=6, ge=3, le=24)

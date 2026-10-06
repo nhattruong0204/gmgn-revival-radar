@@ -1,0 +1,2978 @@
+[
+  {
+    "label": "reviving",
+    "token": {
+      "timestamp": 1800000000,
+      "chain": "sol",
+      "contract_address": "So11111111111111111111111111111111111111112",
+      "symbol": "REVIVE",
+      "name": "Synthetic Revival Fixture",
+      "discovery_source": [
+        "hot_search",
+        "trending"
+      ],
+      "hot_search_rank": 8,
+      "trending_rank": 14,
+      "price": 0.00082,
+      "market_cap": 820000,
+      "ath_market_cap": 6200000,
+      "liquidity": 126000,
+      "volume_5m": 61000,
+      "volume_1h": 184000,
+      "volume_24h": 700000,
+      "tx_5m": 318,
+      "tx_1h": 1200,
+      "holders": 1842,
+      "price_change_5m": 10,
+      "price_change_1h": 25,
+      "token_age_seconds": 950400,
+      "security": {
+        "top10_ratio": 0.18,
+        "dev_ratio": 0.03,
+        "insider_ratio": 0.08,
+        "sniper_ratio": 0.05,
+        "bundler_ratio": 0.06,
+        "smart_money_count": 12,
+        "mint_renounced": true,
+        "freeze_renounced": true,
+        "dangerous": false
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1799998800,
+        "chain": "sol",
+        "contract_address": "So11111111111111111111111111111111111111112",
+        "symbol": "REVIVE",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": null,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 820000,
+        "ath_market_cap": 6200000,
+        "liquidity": 130000,
+        "volume_5m": 4000,
+        "volume_1h": 30000,
+        "volume_24h": 700000,
+        "tx_5m": 20,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 25,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      },
+      {
+        "timestamp": 1799999100,
+        "chain": "sol",
+        "contract_address": "So11111111111111111111111111111111111111112",
+        "symbol": "REVIVE",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": 84,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 820000,
+        "ath_market_cap": 6200000,
+        "liquidity": 130000,
+        "volume_5m": 7000,
+        "volume_1h": 50000,
+        "volume_24h": 700000,
+        "tx_5m": 40,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 25,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      },
+      {
+        "timestamp": 1799999400,
+        "chain": "sol",
+        "contract_address": "So11111111111111111111111111111111111111112",
+        "symbol": "REVIVE",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": 47,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 820000,
+        "ath_market_cap": 6200000,
+        "liquidity": 130000,
+        "volume_5m": 13000,
+        "volume_1h": 70000,
+        "volume_24h": 700000,
+        "tx_5m": 80,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 25,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      },
+      {
+        "timestamp": 1799999700,
+        "chain": "sol",
+        "contract_address": "So11111111111111111111111111111111111111112",
+        "symbol": "REVIVE",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": 27,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 820000,
+        "ath_market_cap": 6200000,
+        "liquidity": 130000,
+        "volume_5m": 29000,
+        "volume_1h": 90000,
+        "volume_24h": 700000,
+        "tx_5m": 166,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 25,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      }
+    ],
+    "candles": [
+      {
+        "timestamp": 1799640000,
+        "open": 0.0007,
+        "close": 0.0007,
+        "high": 0.000704,
+        "low": 0.000696,
+        "volume_usd": 1000
+      },
+      {
+        "timestamp": 1799643600,
+        "open": 0.0007042999999999999,
+        "close": 0.0007042999999999999,
+        "high": 0.0007082999999999999,
+        "low": 0.0007003,
+        "volume_usd": 1100
+      },
+      {
+        "timestamp": 1799647200,
+        "open": 0.0007075282032302755,
+        "close": 0.0007075282032302755,
+        "high": 0.0007115282032302755,
+        "low": 0.0007035282032302755,
+        "volume_usd": 1200
+      },
+      {
+        "timestamp": 1799650800,
+        "open": 0.0007088999999999999,
+        "close": 0.0007088999999999999,
+        "high": 0.0007128999999999999,
+        "low": 0.0007049,
+        "volume_usd": 1300
+      },
+      {
+        "timestamp": 1799654400,
+        "open": 0.0007081282032302755,
+        "close": 0.0007081282032302755,
+        "high": 0.0007121282032302755,
+        "low": 0.0007041282032302755,
+        "volume_usd": 1400
+      },
+      {
+        "timestamp": 1799658000,
+        "open": 0.0007055,
+        "close": 0.0007055,
+        "high": 0.0007095,
+        "low": 0.0007015,
+        "volume_usd": 1500
+      },
+      {
+        "timestamp": 1799661600,
+        "open": 0.0007018,
+        "close": 0.0007018,
+        "high": 0.0007058,
+        "low": 0.0006978,
+        "volume_usd": 1600
+      },
+      {
+        "timestamp": 1799665200,
+        "open": 0.0006981,
+        "close": 0.0006981,
+        "high": 0.0007021,
+        "low": 0.0006941,
+        "volume_usd": 1700
+      },
+      {
+        "timestamp": 1799668800,
+        "open": 0.0006954717967697244,
+        "close": 0.0006954717967697244,
+        "high": 0.0006994717967697244,
+        "low": 0.0006914717967697245,
+        "volume_usd": 1800
+      },
+      {
+        "timestamp": 1799672400,
+        "open": 0.0006947,
+        "close": 0.0006947,
+        "high": 0.0006987,
+        "low": 0.0006907,
+        "volume_usd": 1900
+      },
+      {
+        "timestamp": 1799676000,
+        "open": 0.0006960717967697245,
+        "close": 0.0006960717967697245,
+        "high": 0.0007000717967697244,
+        "low": 0.0006920717967697245,
+        "volume_usd": 2000
+      },
+      {
+        "timestamp": 1799679600,
+        "open": 0.0006993,
+        "close": 0.0006993,
+        "high": 0.0007033,
+        "low": 0.0006953,
+        "volume_usd": 2100
+      },
+      {
+        "timestamp": 1799683200,
+        "open": 0.0007036,
+        "close": 0.0007036,
+        "high": 0.0007076,
+        "low": 0.0006996,
+        "volume_usd": 2200
+      },
+      {
+        "timestamp": 1799686800,
+        "open": 0.0007079,
+        "close": 0.0007079,
+        "high": 0.0007119,
+        "low": 0.0007039,
+        "volume_usd": 2300
+      },
+      {
+        "timestamp": 1799690400,
+        "open": 0.0007111282032302755,
+        "close": 0.0007111282032302755,
+        "high": 0.0007151282032302755,
+        "low": 0.0007071282032302755,
+        "volume_usd": 2400
+      },
+      {
+        "timestamp": 1799694000,
+        "open": 0.0007124999999999999,
+        "close": 0.0007124999999999999,
+        "high": 0.0007164999999999999,
+        "low": 0.0007084999999999999,
+        "volume_usd": 2500
+      },
+      {
+        "timestamp": 1799697600,
+        "open": 0.0007117282032302755,
+        "close": 0.0007117282032302755,
+        "high": 0.0007157282032302755,
+        "low": 0.0007077282032302755,
+        "volume_usd": 2600
+      },
+      {
+        "timestamp": 1799701200,
+        "open": 0.0007090999999999999,
+        "close": 0.0007090999999999999,
+        "high": 0.0007130999999999999,
+        "low": 0.0007051,
+        "volume_usd": 2700
+      },
+      {
+        "timestamp": 1799704800,
+        "open": 0.0007054,
+        "close": 0.0007054,
+        "high": 0.0007094,
+        "low": 0.0007014,
+        "volume_usd": 2800
+      },
+      {
+        "timestamp": 1799708400,
+        "open": 0.0007017,
+        "close": 0.0007017,
+        "high": 0.0007057,
+        "low": 0.0006977,
+        "volume_usd": 2900
+      },
+      {
+        "timestamp": 1799712000,
+        "open": 0.0006990717967697245,
+        "close": 0.0006990717967697245,
+        "high": 0.0007030717967697245,
+        "low": 0.0006950717967697245,
+        "volume_usd": 3000
+      },
+      {
+        "timestamp": 1799715600,
+        "open": 0.0006983,
+        "close": 0.0006983,
+        "high": 0.0007023,
+        "low": 0.0006943,
+        "volume_usd": 3100
+      },
+      {
+        "timestamp": 1799719200,
+        "open": 0.0006996717967697245,
+        "close": 0.0006996717967697245,
+        "high": 0.0007036717967697245,
+        "low": 0.0006956717967697246,
+        "volume_usd": 3200
+      },
+      {
+        "timestamp": 1799722800,
+        "open": 0.0007029,
+        "close": 0.0007029,
+        "high": 0.0007069,
+        "low": 0.0006989,
+        "volume_usd": 3300
+      },
+      {
+        "timestamp": 1799726400,
+        "open": 0.0007072,
+        "close": 0.0007072,
+        "high": 0.0007111999999999999,
+        "low": 0.0007032,
+        "volume_usd": 3400
+      },
+      {
+        "timestamp": 1799730000,
+        "open": 0.0007115,
+        "close": 0.0007115,
+        "high": 0.0007155,
+        "low": 0.0007075,
+        "volume_usd": 3500
+      },
+      {
+        "timestamp": 1799733600,
+        "open": 0.0007147282032302755,
+        "close": 0.0007147282032302755,
+        "high": 0.0007187282032302755,
+        "low": 0.0007107282032302755,
+        "volume_usd": 3600
+      },
+      {
+        "timestamp": 1799737200,
+        "open": 0.0007161,
+        "close": 0.0007161,
+        "high": 0.0007201,
+        "low": 0.0007121,
+        "volume_usd": 3700
+      },
+      {
+        "timestamp": 1799740800,
+        "open": 0.0007153282032302755,
+        "close": 0.0007153282032302755,
+        "high": 0.0007193282032302755,
+        "low": 0.0007113282032302755,
+        "volume_usd": 3800
+      },
+      {
+        "timestamp": 1799744400,
+        "open": 0.0007127,
+        "close": 0.0007127,
+        "high": 0.0007167,
+        "low": 0.0007087,
+        "volume_usd": 3900
+      },
+      {
+        "timestamp": 1799748000,
+        "open": 0.000709,
+        "close": 0.000709,
+        "high": 0.000713,
+        "low": 0.000705,
+        "volume_usd": 4000
+      },
+      {
+        "timestamp": 1799751600,
+        "open": 0.0007053,
+        "close": 0.0007053,
+        "high": 0.0007093,
+        "low": 0.0007013,
+        "volume_usd": 4100
+      },
+      {
+        "timestamp": 1799755200,
+        "open": 0.0007026717967697245,
+        "close": 0.0007026717967697245,
+        "high": 0.0007066717967697245,
+        "low": 0.0006986717967697245,
+        "volume_usd": 4200
+      },
+      {
+        "timestamp": 1799758800,
+        "open": 0.0007019,
+        "close": 0.0007019,
+        "high": 0.0007059,
+        "low": 0.0006979,
+        "volume_usd": 4300
+      },
+      {
+        "timestamp": 1799762400,
+        "open": 0.0007032717967697245,
+        "close": 0.0007032717967697245,
+        "high": 0.0007072717967697245,
+        "low": 0.0006992717967697245,
+        "volume_usd": 4400
+      },
+      {
+        "timestamp": 1799766000,
+        "open": 0.0007065,
+        "close": 0.0007065,
+        "high": 0.0007105,
+        "low": 0.0007025,
+        "volume_usd": 4500
+      },
+      {
+        "timestamp": 1799769600,
+        "open": 0.0007108,
+        "close": 0.0007108,
+        "high": 0.0007148,
+        "low": 0.0007068,
+        "volume_usd": 4600
+      },
+      {
+        "timestamp": 1799773200,
+        "open": 0.0007151,
+        "close": 0.0007151,
+        "high": 0.0007191,
+        "low": 0.0007111,
+        "volume_usd": 4700
+      },
+      {
+        "timestamp": 1799776800,
+        "open": 0.0007183282032302754,
+        "close": 0.0007183282032302754,
+        "high": 0.0007223282032302754,
+        "low": 0.0007143282032302755,
+        "volume_usd": 4800
+      },
+      {
+        "timestamp": 1799780400,
+        "open": 0.0007197,
+        "close": 0.0007197,
+        "high": 0.0007237,
+        "low": 0.0007157,
+        "volume_usd": 4900
+      },
+      {
+        "timestamp": 1799784000,
+        "open": 0.0007189282032302755,
+        "close": 0.0007189282032302755,
+        "high": 0.0007229282032302755,
+        "low": 0.0007149282032302755,
+        "volume_usd": 5000
+      },
+      {
+        "timestamp": 1799787600,
+        "open": 0.0007163,
+        "close": 0.0007163,
+        "high": 0.0007203,
+        "low": 0.0007123,
+        "volume_usd": 5100
+      },
+      {
+        "timestamp": 1799791200,
+        "open": 0.0007126,
+        "close": 0.0007126,
+        "high": 0.0007166,
+        "low": 0.0007086,
+        "volume_usd": 5200
+      },
+      {
+        "timestamp": 1799794800,
+        "open": 0.0007089,
+        "close": 0.0007089,
+        "high": 0.0007129,
+        "low": 0.0007049000000000001,
+        "volume_usd": 5300
+      },
+      {
+        "timestamp": 1799798400,
+        "open": 0.0007062717967697245,
+        "close": 0.0007062717967697245,
+        "high": 0.0007102717967697245,
+        "low": 0.0007022717967697245,
+        "volume_usd": 5400
+      },
+      {
+        "timestamp": 1799802000,
+        "open": 0.0007055,
+        "close": 0.0007055,
+        "high": 0.0007095,
+        "low": 0.0007015,
+        "volume_usd": 5500
+      },
+      {
+        "timestamp": 1799805600,
+        "open": 0.0007068717967697245,
+        "close": 0.0007068717967697245,
+        "high": 0.0007108717967697245,
+        "low": 0.0007028717967697245,
+        "volume_usd": 5600
+      },
+      {
+        "timestamp": 1799809200,
+        "open": 0.0007101,
+        "close": 0.0007101,
+        "high": 0.0007141,
+        "low": 0.0007061,
+        "volume_usd": 5700
+      },
+      {
+        "timestamp": 1799812800,
+        "open": 0.0007144,
+        "close": 0.0007144,
+        "high": 0.0007184,
+        "low": 0.0007104,
+        "volume_usd": 5800
+      },
+      {
+        "timestamp": 1799816400,
+        "open": 0.0007187,
+        "close": 0.0007187,
+        "high": 0.0007227,
+        "low": 0.0007147,
+        "volume_usd": 5900
+      },
+      {
+        "timestamp": 1799820000,
+        "open": 0.0007219282032302755,
+        "close": 0.0007219282032302755,
+        "high": 0.0007259282032302755,
+        "low": 0.0007179282032302755,
+        "volume_usd": 6000
+      },
+      {
+        "timestamp": 1799823600,
+        "open": 0.0007233,
+        "close": 0.0007233,
+        "high": 0.0007273,
+        "low": 0.0007193,
+        "volume_usd": 6100
+      },
+      {
+        "timestamp": 1799827200,
+        "open": 0.0007225282032302755,
+        "close": 0.0007225282032302755,
+        "high": 0.0007265282032302755,
+        "low": 0.0007185282032302756,
+        "volume_usd": 6200
+      },
+      {
+        "timestamp": 1799830800,
+        "open": 0.0007199,
+        "close": 0.0007199,
+        "high": 0.0007239,
+        "low": 0.0007159,
+        "volume_usd": 6300
+      },
+      {
+        "timestamp": 1799834400,
+        "open": 0.0007162,
+        "close": 0.0007162,
+        "high": 0.0007201999999999999,
+        "low": 0.0007122,
+        "volume_usd": 6400
+      },
+      {
+        "timestamp": 1799838000,
+        "open": 0.0007125,
+        "close": 0.0007125,
+        "high": 0.0007165,
+        "low": 0.0007085,
+        "volume_usd": 6500
+      },
+      {
+        "timestamp": 1799841600,
+        "open": 0.0007098717967697245,
+        "close": 0.0007098717967697245,
+        "high": 0.0007138717967697245,
+        "low": 0.0007058717967697245,
+        "volume_usd": 6600
+      },
+      {
+        "timestamp": 1799845200,
+        "open": 0.0007091,
+        "close": 0.0007091,
+        "high": 0.0007131,
+        "low": 0.0007051000000000001,
+        "volume_usd": 6700
+      },
+      {
+        "timestamp": 1799848800,
+        "open": 0.0007104717967697245,
+        "close": 0.0007104717967697245,
+        "high": 0.0007144717967697245,
+        "low": 0.0007064717967697245,
+        "volume_usd": 6800
+      },
+      {
+        "timestamp": 1799852400,
+        "open": 0.0007137000000000001,
+        "close": 0.0007137000000000001,
+        "high": 0.0007177,
+        "low": 0.0007097000000000001,
+        "volume_usd": 6900
+      },
+      {
+        "timestamp": 1799856000,
+        "open": 0.000718,
+        "close": 0.000718,
+        "high": 0.000722,
+        "low": 0.000714,
+        "volume_usd": 7000
+      },
+      {
+        "timestamp": 1799859600,
+        "open": 0.0007222999999999999,
+        "close": 0.0007222999999999999,
+        "high": 0.0007262999999999999,
+        "low": 0.0007183,
+        "volume_usd": 7100
+      },
+      {
+        "timestamp": 1799863200,
+        "open": 0.0007255282032302755,
+        "close": 0.0007255282032302755,
+        "high": 0.0007295282032302755,
+        "low": 0.0007215282032302755,
+        "volume_usd": 7200
+      },
+      {
+        "timestamp": 1799866800,
+        "open": 0.0007268999999999999,
+        "close": 0.0007268999999999999,
+        "high": 0.0007308999999999999,
+        "low": 0.0007229,
+        "volume_usd": 7300
+      },
+      {
+        "timestamp": 1799870400,
+        "open": 0.0007261282032302755,
+        "close": 0.0007261282032302755,
+        "high": 0.0007301282032302755,
+        "low": 0.0007221282032302755,
+        "volume_usd": 7400
+      },
+      {
+        "timestamp": 1799874000,
+        "open": 0.0007235,
+        "close": 0.0007235,
+        "high": 0.0007275,
+        "low": 0.0007195,
+        "volume_usd": 7500
+      },
+      {
+        "timestamp": 1799877600,
+        "open": 0.0007198,
+        "close": 0.0007198,
+        "high": 0.0007238,
+        "low": 0.0007158,
+        "volume_usd": 7600
+      },
+      {
+        "timestamp": 1799881200,
+        "open": 0.0007161,
+        "close": 0.0007161,
+        "high": 0.0007201,
+        "low": 0.0007121,
+        "volume_usd": 7700
+      },
+      {
+        "timestamp": 1799884800,
+        "open": 0.0007134717967697244,
+        "close": 0.0007134717967697244,
+        "high": 0.0007174717967697244,
+        "low": 0.0007094717967697245,
+        "volume_usd": 7800
+      },
+      {
+        "timestamp": 1799888400,
+        "open": 0.0007127,
+        "close": 0.0007127,
+        "high": 0.0007167,
+        "low": 0.0007087,
+        "volume_usd": 7900
+      },
+      {
+        "timestamp": 1799892000,
+        "open": 0.0007140717967697245,
+        "close": 0.0007140717967697245,
+        "high": 0.0007180717967697244,
+        "low": 0.0007100717967697245,
+        "volume_usd": 8000
+      },
+      {
+        "timestamp": 1799895600,
+        "open": 0.0007173,
+        "close": 0.0007173,
+        "high": 0.0007213,
+        "low": 0.0007133,
+        "volume_usd": 8100
+      },
+      {
+        "timestamp": 1799899200,
+        "open": 0.0007216,
+        "close": 0.0007216,
+        "high": 0.0007256,
+        "low": 0.0007176,
+        "volume_usd": 8200
+      },
+      {
+        "timestamp": 1799902800,
+        "open": 0.0007259,
+        "close": 0.0007259,
+        "high": 0.0007299,
+        "low": 0.0007219,
+        "volume_usd": 8300
+      },
+      {
+        "timestamp": 1799906400,
+        "open": 0.0007291282032302755,
+        "close": 0.0007291282032302755,
+        "high": 0.0007331282032302755,
+        "low": 0.0007251282032302755,
+        "volume_usd": 8400
+      },
+      {
+        "timestamp": 1799910000,
+        "open": 0.0007304999999999999,
+        "close": 0.0007304999999999999,
+        "high": 0.0007344999999999999,
+        "low": 0.0007264999999999999,
+        "volume_usd": 8500
+      },
+      {
+        "timestamp": 1799913600,
+        "open": 0.0007297282032302755,
+        "close": 0.0007297282032302755,
+        "high": 0.0007337282032302755,
+        "low": 0.0007257282032302755,
+        "volume_usd": 8600
+      },
+      {
+        "timestamp": 1799917200,
+        "open": 0.0007271,
+        "close": 0.0007271,
+        "high": 0.0007310999999999999,
+        "low": 0.0007231,
+        "volume_usd": 8700
+      },
+      {
+        "timestamp": 1799920800,
+        "open": 0.0007234,
+        "close": 0.0007234,
+        "high": 0.0007274,
+        "low": 0.0007194,
+        "volume_usd": 8800
+      },
+      {
+        "timestamp": 1799924400,
+        "open": 0.0007197,
+        "close": 0.0007197,
+        "high": 0.0007237,
+        "low": 0.0007157,
+        "volume_usd": 8900
+      },
+      {
+        "timestamp": 1799928000,
+        "open": 0.0007170717967697245,
+        "close": 0.0007170717967697245,
+        "high": 0.0007210717967697245,
+        "low": 0.0007130717967697245,
+        "volume_usd": 9000
+      },
+      {
+        "timestamp": 1799931600,
+        "open": 0.0007163,
+        "close": 0.0007163,
+        "high": 0.0007203,
+        "low": 0.0007123,
+        "volume_usd": 9100
+      },
+      {
+        "timestamp": 1799935200,
+        "open": 0.0007176717967697244,
+        "close": 0.0007176717967697244,
+        "high": 0.0007216717967697244,
+        "low": 0.0007136717967697244,
+        "volume_usd": 9200
+      },
+      {
+        "timestamp": 1799938800,
+        "open": 0.0007209,
+        "close": 0.0007209,
+        "high": 0.0007249,
+        "low": 0.0007169,
+        "volume_usd": 9300
+      },
+      {
+        "timestamp": 1799942400,
+        "open": 0.0007252,
+        "close": 0.0007252,
+        "high": 0.0007291999999999999,
+        "low": 0.0007212,
+        "volume_usd": 9400
+      },
+      {
+        "timestamp": 1799946000,
+        "open": 0.0007295,
+        "close": 0.0007295,
+        "high": 0.0007335,
+        "low": 0.0007255,
+        "volume_usd": 9500
+      },
+      {
+        "timestamp": 1799949600,
+        "open": 0.0007327282032302755,
+        "close": 0.0007327282032302755,
+        "high": 0.0007367282032302755,
+        "low": 0.0007287282032302755,
+        "volume_usd": 9600
+      },
+      {
+        "timestamp": 1799953200,
+        "open": 0.0007341,
+        "close": 0.0007341,
+        "high": 0.0007381,
+        "low": 0.0007301,
+        "volume_usd": 9700
+      },
+      {
+        "timestamp": 1799956800,
+        "open": 0.0007333282032302755,
+        "close": 0.0007333282032302755,
+        "high": 0.0007373282032302755,
+        "low": 0.0007293282032302755,
+        "volume_usd": 9800
+      },
+      {
+        "timestamp": 1799960400,
+        "open": 0.0007307,
+        "close": 0.0007307,
+        "high": 0.0007347,
+        "low": 0.0007267,
+        "volume_usd": 9900
+      },
+      {
+        "timestamp": 1799964000,
+        "open": 0.000727,
+        "close": 0.000727,
+        "high": 0.000731,
+        "low": 0.000723,
+        "volume_usd": 10000
+      },
+      {
+        "timestamp": 1799967600,
+        "open": 0.0007233,
+        "close": 0.0007233,
+        "high": 0.0007273,
+        "low": 0.0007193,
+        "volume_usd": 10100
+      },
+      {
+        "timestamp": 1799971200,
+        "open": 0.0007206717967697245,
+        "close": 0.0007206717967697245,
+        "high": 0.0007246717967697245,
+        "low": 0.0007166717967697245,
+        "volume_usd": 10200
+      },
+      {
+        "timestamp": 1799974800,
+        "open": 0.0007199,
+        "close": 0.0007199,
+        "high": 0.0007239,
+        "low": 0.0007159,
+        "volume_usd": 10300
+      },
+      {
+        "timestamp": 1799978400,
+        "open": 0.0007212717967697245,
+        "close": 0.0007212717967697245,
+        "high": 0.0007252717967697245,
+        "low": 0.0007172717967697245,
+        "volume_usd": 10400
+      },
+      {
+        "timestamp": 1799982000,
+        "open": 0.0007245,
+        "close": 0.0007245,
+        "high": 0.0007285,
+        "low": 0.0007205,
+        "volume_usd": 10500
+      },
+      {
+        "timestamp": 1799985600,
+        "open": 0.0007288,
+        "close": 0.0007288,
+        "high": 0.0007328,
+        "low": 0.0007248,
+        "volume_usd": 10600
+      },
+      {
+        "timestamp": 1799989200,
+        "open": 0.0007331,
+        "close": 0.0007331,
+        "high": 0.0007371,
+        "low": 0.0007291,
+        "volume_usd": 10700
+      },
+      {
+        "timestamp": 1799992800,
+        "open": 0.00081,
+        "close": 0.00081,
+        "high": 0.0008139999999999999,
+        "low": 0.000806,
+        "volume_usd": 10800
+      },
+      {
+        "timestamp": 1799996400,
+        "open": 0.00082,
+        "close": 0.00082,
+        "high": 0.000824,
+        "low": 0.000816,
+        "volume_usd": 10900
+      }
+    ]
+  },
+  {
+    "label": "dead",
+    "token": {
+      "timestamp": 1800000000,
+      "chain": "sol",
+      "contract_address": "De11111111111111111111111111111111111111112",
+      "symbol": "DEAD",
+      "name": "Synthetic Revival Fixture",
+      "discovery_source": [
+        "hot_search",
+        "trending"
+      ],
+      "hot_search_rank": 8,
+      "trending_rank": 14,
+      "price": 0.00082,
+      "market_cap": 500000,
+      "ath_market_cap": 10000000,
+      "liquidity": 8000,
+      "volume_5m": 50,
+      "volume_1h": 3000,
+      "volume_24h": 700000,
+      "tx_5m": 2,
+      "tx_1h": 15,
+      "holders": 60,
+      "price_change_5m": 10,
+      "price_change_1h": 25,
+      "token_age_seconds": 950400,
+      "security": {
+        "top10_ratio": 0.18,
+        "dev_ratio": 0.03,
+        "insider_ratio": 0.08,
+        "sniper_ratio": 0.05,
+        "bundler_ratio": 0.06,
+        "smart_money_count": 12,
+        "mint_renounced": true,
+        "freeze_renounced": true,
+        "dangerous": false
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1799998800,
+        "chain": "sol",
+        "contract_address": "De11111111111111111111111111111111111111112",
+        "symbol": "DEAD",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": null,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 500000,
+        "ath_market_cap": 10000000,
+        "liquidity": 130000,
+        "volume_5m": 4000,
+        "volume_1h": 30000,
+        "volume_24h": 700000,
+        "tx_5m": 20,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 25,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      },
+      {
+        "timestamp": 1799999100,
+        "chain": "sol",
+        "contract_address": "De11111111111111111111111111111111111111112",
+        "symbol": "DEAD",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": 84,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 500000,
+        "ath_market_cap": 10000000,
+        "liquidity": 130000,
+        "volume_5m": 7000,
+        "volume_1h": 50000,
+        "volume_24h": 700000,
+        "tx_5m": 40,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 25,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      },
+      {
+        "timestamp": 1799999400,
+        "chain": "sol",
+        "contract_address": "De11111111111111111111111111111111111111112",
+        "symbol": "DEAD",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": 47,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 500000,
+        "ath_market_cap": 10000000,
+        "liquidity": 130000,
+        "volume_5m": 13000,
+        "volume_1h": 70000,
+        "volume_24h": 700000,
+        "tx_5m": 80,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 25,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      },
+      {
+        "timestamp": 1799999700,
+        "chain": "sol",
+        "contract_address": "De11111111111111111111111111111111111111112",
+        "symbol": "DEAD",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": 27,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 500000,
+        "ath_market_cap": 10000000,
+        "liquidity": 130000,
+        "volume_5m": 29000,
+        "volume_1h": 90000,
+        "volume_24h": 700000,
+        "tx_5m": 166,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 25,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      }
+    ],
+    "candles": [
+      {
+        "timestamp": 1799640000,
+        "open": 0.0007,
+        "close": 0.0007,
+        "high": 0.000704,
+        "low": 0.000696,
+        "volume_usd": 1000
+      },
+      {
+        "timestamp": 1799643600,
+        "open": 0.0007042999999999999,
+        "close": 0.0007042999999999999,
+        "high": 0.0007082999999999999,
+        "low": 0.0007003,
+        "volume_usd": 1100
+      },
+      {
+        "timestamp": 1799647200,
+        "open": 0.0007075282032302755,
+        "close": 0.0007075282032302755,
+        "high": 0.0007115282032302755,
+        "low": 0.0007035282032302755,
+        "volume_usd": 1200
+      },
+      {
+        "timestamp": 1799650800,
+        "open": 0.0007088999999999999,
+        "close": 0.0007088999999999999,
+        "high": 0.0007128999999999999,
+        "low": 0.0007049,
+        "volume_usd": 1300
+      },
+      {
+        "timestamp": 1799654400,
+        "open": 0.0007081282032302755,
+        "close": 0.0007081282032302755,
+        "high": 0.0007121282032302755,
+        "low": 0.0007041282032302755,
+        "volume_usd": 1400
+      },
+      {
+        "timestamp": 1799658000,
+        "open": 0.0007055,
+        "close": 0.0007055,
+        "high": 0.0007095,
+        "low": 0.0007015,
+        "volume_usd": 1500
+      },
+      {
+        "timestamp": 1799661600,
+        "open": 0.0007018,
+        "close": 0.0007018,
+        "high": 0.0007058,
+        "low": 0.0006978,
+        "volume_usd": 1600
+      },
+      {
+        "timestamp": 1799665200,
+        "open": 0.0006981,
+        "close": 0.0006981,
+        "high": 0.0007021,
+        "low": 0.0006941,
+        "volume_usd": 1700
+      },
+      {
+        "timestamp": 1799668800,
+        "open": 0.0006954717967697244,
+        "close": 0.0006954717967697244,
+        "high": 0.0006994717967697244,
+        "low": 0.0006914717967697245,
+        "volume_usd": 1800
+      },
+      {
+        "timestamp": 1799672400,
+        "open": 0.0006947,
+        "close": 0.0006947,
+        "high": 0.0006987,
+        "low": 0.0006907,
+        "volume_usd": 1900
+      },
+      {
+        "timestamp": 1799676000,
+        "open": 0.0006960717967697245,
+        "close": 0.0006960717967697245,
+        "high": 0.0007000717967697244,
+        "low": 0.0006920717967697245,
+        "volume_usd": 2000
+      },
+      {
+        "timestamp": 1799679600,
+        "open": 0.0006993,
+        "close": 0.0006993,
+        "high": 0.0007033,
+        "low": 0.0006953,
+        "volume_usd": 2100
+      },
+      {
+        "timestamp": 1799683200,
+        "open": 0.0007036,
+        "close": 0.0007036,
+        "high": 0.0007076,
+        "low": 0.0006996,
+        "volume_usd": 2200
+      },
+      {
+        "timestamp": 1799686800,
+        "open": 0.0007079,
+        "close": 0.0007079,
+        "high": 0.0007119,
+        "low": 0.0007039,
+        "volume_usd": 2300
+      },
+      {
+        "timestamp": 1799690400,
+        "open": 0.0007111282032302755,
+        "close": 0.0007111282032302755,
+        "high": 0.0007151282032302755,
+        "low": 0.0007071282032302755,
+        "volume_usd": 2400
+      },
+      {
+        "timestamp": 1799694000,
+        "open": 0.0007124999999999999,
+        "close": 0.0007124999999999999,
+        "high": 0.0007164999999999999,
+        "low": 0.0007084999999999999,
+        "volume_usd": 2500
+      },
+      {
+        "timestamp": 1799697600,
+        "open": 0.0007117282032302755,
+        "close": 0.0007117282032302755,
+        "high": 0.0007157282032302755,
+        "low": 0.0007077282032302755,
+        "volume_usd": 2600
+      },
+      {
+        "timestamp": 1799701200,
+        "open": 0.0007090999999999999,
+        "close": 0.0007090999999999999,
+        "high": 0.0007130999999999999,
+        "low": 0.0007051,
+        "volume_usd": 2700
+      },
+      {
+        "timestamp": 1799704800,
+        "open": 0.0007054,
+        "close": 0.0007054,
+        "high": 0.0007094,
+        "low": 0.0007014,
+        "volume_usd": 2800
+      },
+      {
+        "timestamp": 1799708400,
+        "open": 0.0007017,
+        "close": 0.0007017,
+        "high": 0.0007057,
+        "low": 0.0006977,
+        "volume_usd": 2900
+      },
+      {
+        "timestamp": 1799712000,
+        "open": 0.0006990717967697245,
+        "close": 0.0006990717967697245,
+        "high": 0.0007030717967697245,
+        "low": 0.0006950717967697245,
+        "volume_usd": 3000
+      },
+      {
+        "timestamp": 1799715600,
+        "open": 0.0006983,
+        "close": 0.0006983,
+        "high": 0.0007023,
+        "low": 0.0006943,
+        "volume_usd": 3100
+      },
+      {
+        "timestamp": 1799719200,
+        "open": 0.0006996717967697245,
+        "close": 0.0006996717967697245,
+        "high": 0.0007036717967697245,
+        "low": 0.0006956717967697246,
+        "volume_usd": 3200
+      },
+      {
+        "timestamp": 1799722800,
+        "open": 0.0007029,
+        "close": 0.0007029,
+        "high": 0.0007069,
+        "low": 0.0006989,
+        "volume_usd": 3300
+      },
+      {
+        "timestamp": 1799726400,
+        "open": 0.0007072,
+        "close": 0.0007072,
+        "high": 0.0007111999999999999,
+        "low": 0.0007032,
+        "volume_usd": 3400
+      },
+      {
+        "timestamp": 1799730000,
+        "open": 0.0007115,
+        "close": 0.0007115,
+        "high": 0.0007155,
+        "low": 0.0007075,
+        "volume_usd": 3500
+      },
+      {
+        "timestamp": 1799733600,
+        "open": 0.0007147282032302755,
+        "close": 0.0007147282032302755,
+        "high": 0.0007187282032302755,
+        "low": 0.0007107282032302755,
+        "volume_usd": 3600
+      },
+      {
+        "timestamp": 1799737200,
+        "open": 0.0007161,
+        "close": 0.0007161,
+        "high": 0.0007201,
+        "low": 0.0007121,
+        "volume_usd": 3700
+      },
+      {
+        "timestamp": 1799740800,
+        "open": 0.0007153282032302755,
+        "close": 0.0007153282032302755,
+        "high": 0.0007193282032302755,
+        "low": 0.0007113282032302755,
+        "volume_usd": 3800
+      },
+      {
+        "timestamp": 1799744400,
+        "open": 0.0007127,
+        "close": 0.0007127,
+        "high": 0.0007167,
+        "low": 0.0007087,
+        "volume_usd": 3900
+      },
+      {
+        "timestamp": 1799748000,
+        "open": 0.000709,
+        "close": 0.000709,
+        "high": 0.000713,
+        "low": 0.000705,
+        "volume_usd": 4000
+      },
+      {
+        "timestamp": 1799751600,
+        "open": 0.0007053,
+        "close": 0.0007053,
+        "high": 0.0007093,
+        "low": 0.0007013,
+        "volume_usd": 4100
+      },
+      {
+        "timestamp": 1799755200,
+        "open": 0.0007026717967697245,
+        "close": 0.0007026717967697245,
+        "high": 0.0007066717967697245,
+        "low": 0.0006986717967697245,
+        "volume_usd": 4200
+      },
+      {
+        "timestamp": 1799758800,
+        "open": 0.0007019,
+        "close": 0.0007019,
+        "high": 0.0007059,
+        "low": 0.0006979,
+        "volume_usd": 4300
+      },
+      {
+        "timestamp": 1799762400,
+        "open": 0.0007032717967697245,
+        "close": 0.0007032717967697245,
+        "high": 0.0007072717967697245,
+        "low": 0.0006992717967697245,
+        "volume_usd": 4400
+      },
+      {
+        "timestamp": 1799766000,
+        "open": 0.0007065,
+        "close": 0.0007065,
+        "high": 0.0007105,
+        "low": 0.0007025,
+        "volume_usd": 4500
+      },
+      {
+        "timestamp": 1799769600,
+        "open": 0.0007108,
+        "close": 0.0007108,
+        "high": 0.0007148,
+        "low": 0.0007068,
+        "volume_usd": 4600
+      },
+      {
+        "timestamp": 1799773200,
+        "open": 0.0007151,
+        "close": 0.0007151,
+        "high": 0.0007191,
+        "low": 0.0007111,
+        "volume_usd": 4700
+      },
+      {
+        "timestamp": 1799776800,
+        "open": 0.0007183282032302754,
+        "close": 0.0007183282032302754,
+        "high": 0.0007223282032302754,
+        "low": 0.0007143282032302755,
+        "volume_usd": 4800
+      },
+      {
+        "timestamp": 1799780400,
+        "open": 0.0007197,
+        "close": 0.0007197,
+        "high": 0.0007237,
+        "low": 0.0007157,
+        "volume_usd": 4900
+      },
+      {
+        "timestamp": 1799784000,
+        "open": 0.0007189282032302755,
+        "close": 0.0007189282032302755,
+        "high": 0.0007229282032302755,
+        "low": 0.0007149282032302755,
+        "volume_usd": 5000
+      },
+      {
+        "timestamp": 1799787600,
+        "open": 0.0007163,
+        "close": 0.0007163,
+        "high": 0.0007203,
+        "low": 0.0007123,
+        "volume_usd": 5100
+      },
+      {
+        "timestamp": 1799791200,
+        "open": 0.0007126,
+        "close": 0.0007126,
+        "high": 0.0007166,
+        "low": 0.0007086,
+        "volume_usd": 5200
+      },
+      {
+        "timestamp": 1799794800,
+        "open": 0.0007089,
+        "close": 0.0007089,
+        "high": 0.0007129,
+        "low": 0.0007049000000000001,
+        "volume_usd": 5300
+      },
+      {
+        "timestamp": 1799798400,
+        "open": 0.0007062717967697245,
+        "close": 0.0007062717967697245,
+        "high": 0.0007102717967697245,
+        "low": 0.0007022717967697245,
+        "volume_usd": 5400
+      },
+      {
+        "timestamp": 1799802000,
+        "open": 0.0007055,
+        "close": 0.0007055,
+        "high": 0.0007095,
+        "low": 0.0007015,
+        "volume_usd": 5500
+      },
+      {
+        "timestamp": 1799805600,
+        "open": 0.0007068717967697245,
+        "close": 0.0007068717967697245,
+        "high": 0.0007108717967697245,
+        "low": 0.0007028717967697245,
+        "volume_usd": 5600
+      },
+      {
+        "timestamp": 1799809200,
+        "open": 0.0007101,
+        "close": 0.0007101,
+        "high": 0.0007141,
+        "low": 0.0007061,
+        "volume_usd": 5700
+      },
+      {
+        "timestamp": 1799812800,
+        "open": 0.0007144,
+        "close": 0.0007144,
+        "high": 0.0007184,
+        "low": 0.0007104,
+        "volume_usd": 5800
+      },
+      {
+        "timestamp": 1799816400,
+        "open": 0.0007187,
+        "close": 0.0007187,
+        "high": 0.0007227,
+        "low": 0.0007147,
+        "volume_usd": 5900
+      },
+      {
+        "timestamp": 1799820000,
+        "open": 0.0007219282032302755,
+        "close": 0.0007219282032302755,
+        "high": 0.0007259282032302755,
+        "low": 0.0007179282032302755,
+        "volume_usd": 6000
+      },
+      {
+        "timestamp": 1799823600,
+        "open": 0.0007233,
+        "close": 0.0007233,
+        "high": 0.0007273,
+        "low": 0.0007193,
+        "volume_usd": 6100
+      },
+      {
+        "timestamp": 1799827200,
+        "open": 0.0007225282032302755,
+        "close": 0.0007225282032302755,
+        "high": 0.0007265282032302755,
+        "low": 0.0007185282032302756,
+        "volume_usd": 6200
+      },
+      {
+        "timestamp": 1799830800,
+        "open": 0.0007199,
+        "close": 0.0007199,
+        "high": 0.0007239,
+        "low": 0.0007159,
+        "volume_usd": 6300
+      },
+      {
+        "timestamp": 1799834400,
+        "open": 0.0007162,
+        "close": 0.0007162,
+        "high": 0.0007201999999999999,
+        "low": 0.0007122,
+        "volume_usd": 6400
+      },
+      {
+        "timestamp": 1799838000,
+        "open": 0.0007125,
+        "close": 0.0007125,
+        "high": 0.0007165,
+        "low": 0.0007085,
+        "volume_usd": 6500
+      },
+      {
+        "timestamp": 1799841600,
+        "open": 0.0007098717967697245,
+        "close": 0.0007098717967697245,
+        "high": 0.0007138717967697245,
+        "low": 0.0007058717967697245,
+        "volume_usd": 6600
+      },
+      {
+        "timestamp": 1799845200,
+        "open": 0.0007091,
+        "close": 0.0007091,
+        "high": 0.0007131,
+        "low": 0.0007051000000000001,
+        "volume_usd": 6700
+      },
+      {
+        "timestamp": 1799848800,
+        "open": 0.0007104717967697245,
+        "close": 0.0007104717967697245,
+        "high": 0.0007144717967697245,
+        "low": 0.0007064717967697245,
+        "volume_usd": 6800
+      },
+      {
+        "timestamp": 1799852400,
+        "open": 0.0007137000000000001,
+        "close": 0.0007137000000000001,
+        "high": 0.0007177,
+        "low": 0.0007097000000000001,
+        "volume_usd": 6900
+      },
+      {
+        "timestamp": 1799856000,
+        "open": 0.000718,
+        "close": 0.000718,
+        "high": 0.000722,
+        "low": 0.000714,
+        "volume_usd": 7000
+      },
+      {
+        "timestamp": 1799859600,
+        "open": 0.0007222999999999999,
+        "close": 0.0007222999999999999,
+        "high": 0.0007262999999999999,
+        "low": 0.0007183,
+        "volume_usd": 7100
+      },
+      {
+        "timestamp": 1799863200,
+        "open": 0.0007255282032302755,
+        "close": 0.0007255282032302755,
+        "high": 0.0007295282032302755,
+        "low": 0.0007215282032302755,
+        "volume_usd": 7200
+      },
+      {
+        "timestamp": 1799866800,
+        "open": 0.0007268999999999999,
+        "close": 0.0007268999999999999,
+        "high": 0.0007308999999999999,
+        "low": 0.0007229,
+        "volume_usd": 7300
+      },
+      {
+        "timestamp": 1799870400,
+        "open": 0.0007261282032302755,
+        "close": 0.0007261282032302755,
+        "high": 0.0007301282032302755,
+        "low": 0.0007221282032302755,
+        "volume_usd": 7400
+      },
+      {
+        "timestamp": 1799874000,
+        "open": 0.0007235,
+        "close": 0.0007235,
+        "high": 0.0007275,
+        "low": 0.0007195,
+        "volume_usd": 7500
+      },
+      {
+        "timestamp": 1799877600,
+        "open": 0.0007198,
+        "close": 0.0007198,
+        "high": 0.0007238,
+        "low": 0.0007158,
+        "volume_usd": 7600
+      },
+      {
+        "timestamp": 1799881200,
+        "open": 0.0007161,
+        "close": 0.0007161,
+        "high": 0.0007201,
+        "low": 0.0007121,
+        "volume_usd": 7700
+      },
+      {
+        "timestamp": 1799884800,
+        "open": 0.0007134717967697244,
+        "close": 0.0007134717967697244,
+        "high": 0.0007174717967697244,
+        "low": 0.0007094717967697245,
+        "volume_usd": 7800
+      },
+      {
+        "timestamp": 1799888400,
+        "open": 0.0007127,
+        "close": 0.0007127,
+        "high": 0.0007167,
+        "low": 0.0007087,
+        "volume_usd": 7900
+      },
+      {
+        "timestamp": 1799892000,
+        "open": 0.0007140717967697245,
+        "close": 0.0007140717967697245,
+        "high": 0.0007180717967697244,
+        "low": 0.0007100717967697245,
+        "volume_usd": 8000
+      },
+      {
+        "timestamp": 1799895600,
+        "open": 0.0007173,
+        "close": 0.0007173,
+        "high": 0.0007213,
+        "low": 0.0007133,
+        "volume_usd": 8100
+      },
+      {
+        "timestamp": 1799899200,
+        "open": 0.0007216,
+        "close": 0.0007216,
+        "high": 0.0007256,
+        "low": 0.0007176,
+        "volume_usd": 8200
+      },
+      {
+        "timestamp": 1799902800,
+        "open": 0.0007259,
+        "close": 0.0007259,
+        "high": 0.0007299,
+        "low": 0.0007219,
+        "volume_usd": 8300
+      },
+      {
+        "timestamp": 1799906400,
+        "open": 0.0007291282032302755,
+        "close": 0.0007291282032302755,
+        "high": 0.0007331282032302755,
+        "low": 0.0007251282032302755,
+        "volume_usd": 8400
+      },
+      {
+        "timestamp": 1799910000,
+        "open": 0.0007304999999999999,
+        "close": 0.0007304999999999999,
+        "high": 0.0007344999999999999,
+        "low": 0.0007264999999999999,
+        "volume_usd": 8500
+      },
+      {
+        "timestamp": 1799913600,
+        "open": 0.0007297282032302755,
+        "close": 0.0007297282032302755,
+        "high": 0.0007337282032302755,
+        "low": 0.0007257282032302755,
+        "volume_usd": 8600
+      },
+      {
+        "timestamp": 1799917200,
+        "open": 0.0007271,
+        "close": 0.0007271,
+        "high": 0.0007310999999999999,
+        "low": 0.0007231,
+        "volume_usd": 8700
+      },
+      {
+        "timestamp": 1799920800,
+        "open": 0.0007234,
+        "close": 0.0007234,
+        "high": 0.0007274,
+        "low": 0.0007194,
+        "volume_usd": 8800
+      },
+      {
+        "timestamp": 1799924400,
+        "open": 0.0007197,
+        "close": 0.0007197,
+        "high": 0.0007237,
+        "low": 0.0007157,
+        "volume_usd": 8900
+      },
+      {
+        "timestamp": 1799928000,
+        "open": 0.0007170717967697245,
+        "close": 0.0007170717967697245,
+        "high": 0.0007210717967697245,
+        "low": 0.0007130717967697245,
+        "volume_usd": 9000
+      },
+      {
+        "timestamp": 1799931600,
+        "open": 0.0007163,
+        "close": 0.0007163,
+        "high": 0.0007203,
+        "low": 0.0007123,
+        "volume_usd": 9100
+      },
+      {
+        "timestamp": 1799935200,
+        "open": 0.0007176717967697244,
+        "close": 0.0007176717967697244,
+        "high": 0.0007216717967697244,
+        "low": 0.0007136717967697244,
+        "volume_usd": 9200
+      },
+      {
+        "timestamp": 1799938800,
+        "open": 0.0007209,
+        "close": 0.0007209,
+        "high": 0.0007249,
+        "low": 0.0007169,
+        "volume_usd": 9300
+      },
+      {
+        "timestamp": 1799942400,
+        "open": 0.0007252,
+        "close": 0.0007252,
+        "high": 0.0007291999999999999,
+        "low": 0.0007212,
+        "volume_usd": 9400
+      },
+      {
+        "timestamp": 1799946000,
+        "open": 0.0007295,
+        "close": 0.0007295,
+        "high": 0.0007335,
+        "low": 0.0007255,
+        "volume_usd": 9500
+      },
+      {
+        "timestamp": 1799949600,
+        "open": 0.0007327282032302755,
+        "close": 0.0007327282032302755,
+        "high": 0.0007367282032302755,
+        "low": 0.0007287282032302755,
+        "volume_usd": 9600
+      },
+      {
+        "timestamp": 1799953200,
+        "open": 0.0007341,
+        "close": 0.0007341,
+        "high": 0.0007381,
+        "low": 0.0007301,
+        "volume_usd": 9700
+      },
+      {
+        "timestamp": 1799956800,
+        "open": 0.0007333282032302755,
+        "close": 0.0007333282032302755,
+        "high": 0.0007373282032302755,
+        "low": 0.0007293282032302755,
+        "volume_usd": 9800
+      },
+      {
+        "timestamp": 1799960400,
+        "open": 0.0007307,
+        "close": 0.0007307,
+        "high": 0.0007347,
+        "low": 0.0007267,
+        "volume_usd": 9900
+      },
+      {
+        "timestamp": 1799964000,
+        "open": 0.000727,
+        "close": 0.000727,
+        "high": 0.000731,
+        "low": 0.000723,
+        "volume_usd": 10000
+      },
+      {
+        "timestamp": 1799967600,
+        "open": 0.0007233,
+        "close": 0.0007233,
+        "high": 0.0007273,
+        "low": 0.0007193,
+        "volume_usd": 10100
+      },
+      {
+        "timestamp": 1799971200,
+        "open": 0.0007206717967697245,
+        "close": 0.0007206717967697245,
+        "high": 0.0007246717967697245,
+        "low": 0.0007166717967697245,
+        "volume_usd": 10200
+      },
+      {
+        "timestamp": 1799974800,
+        "open": 0.0007199,
+        "close": 0.0007199,
+        "high": 0.0007239,
+        "low": 0.0007159,
+        "volume_usd": 10300
+      },
+      {
+        "timestamp": 1799978400,
+        "open": 0.0007212717967697245,
+        "close": 0.0007212717967697245,
+        "high": 0.0007252717967697245,
+        "low": 0.0007172717967697245,
+        "volume_usd": 10400
+      },
+      {
+        "timestamp": 1799982000,
+        "open": 0.0007245,
+        "close": 0.0007245,
+        "high": 0.0007285,
+        "low": 0.0007205,
+        "volume_usd": 10500
+      },
+      {
+        "timestamp": 1799985600,
+        "open": 0.0007288,
+        "close": 0.0007288,
+        "high": 0.0007328,
+        "low": 0.0007248,
+        "volume_usd": 10600
+      },
+      {
+        "timestamp": 1799989200,
+        "open": 0.0007331,
+        "close": 0.0007331,
+        "high": 0.0007371,
+        "low": 0.0007291,
+        "volume_usd": 10700
+      },
+      {
+        "timestamp": 1799992800,
+        "open": 0.00081,
+        "close": 0.00081,
+        "high": 0.0008139999999999999,
+        "low": 0.000806,
+        "volume_usd": 10800
+      },
+      {
+        "timestamp": 1799996400,
+        "open": 0.00082,
+        "close": 0.00082,
+        "high": 0.000824,
+        "low": 0.000816,
+        "volume_usd": 10900
+      }
+    ]
+  },
+  {
+    "label": "pumped",
+    "token": {
+      "timestamp": 1800000000,
+      "chain": "sol",
+      "contract_address": "Pu11111111111111111111111111111111111111112",
+      "symbol": "PUMPED",
+      "name": "Synthetic Revival Fixture",
+      "discovery_source": [
+        "hot_search",
+        "trending"
+      ],
+      "hot_search_rank": 8,
+      "trending_rank": 14,
+      "price": 0.00082,
+      "market_cap": 820000,
+      "ath_market_cap": 6200000,
+      "liquidity": 126000,
+      "volume_5m": 61000,
+      "volume_1h": 184000,
+      "volume_24h": 700000,
+      "tx_5m": 318,
+      "tx_1h": 1200,
+      "holders": 1842,
+      "price_change_5m": 10,
+      "price_change_1h": 250,
+      "token_age_seconds": 950400,
+      "security": {
+        "top10_ratio": 0.18,
+        "dev_ratio": 0.03,
+        "insider_ratio": 0.08,
+        "sniper_ratio": 0.05,
+        "bundler_ratio": 0.06,
+        "smart_money_count": 12,
+        "mint_renounced": true,
+        "freeze_renounced": true,
+        "dangerous": false
+      }
+    },
+    "history": [
+      {
+        "timestamp": 1799998800,
+        "chain": "sol",
+        "contract_address": "Pu11111111111111111111111111111111111111112",
+        "symbol": "PUMPED",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": null,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 820000,
+        "ath_market_cap": 6200000,
+        "liquidity": 130000,
+        "volume_5m": 4000,
+        "volume_1h": 30000,
+        "volume_24h": 700000,
+        "tx_5m": 20,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 250,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      },
+      {
+        "timestamp": 1799999100,
+        "chain": "sol",
+        "contract_address": "Pu11111111111111111111111111111111111111112",
+        "symbol": "PUMPED",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": 84,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 820000,
+        "ath_market_cap": 6200000,
+        "liquidity": 130000,
+        "volume_5m": 7000,
+        "volume_1h": 50000,
+        "volume_24h": 700000,
+        "tx_5m": 40,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 250,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      },
+      {
+        "timestamp": 1799999400,
+        "chain": "sol",
+        "contract_address": "Pu11111111111111111111111111111111111111112",
+        "symbol": "PUMPED",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": 47,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 820000,
+        "ath_market_cap": 6200000,
+        "liquidity": 130000,
+        "volume_5m": 13000,
+        "volume_1h": 70000,
+        "volume_24h": 700000,
+        "tx_5m": 80,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 250,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      },
+      {
+        "timestamp": 1799999700,
+        "chain": "sol",
+        "contract_address": "Pu11111111111111111111111111111111111111112",
+        "symbol": "PUMPED",
+        "name": "Synthetic Revival Fixture",
+        "discovery_source": [
+          "hot_search",
+          "trending"
+        ],
+        "hot_search_rank": 27,
+        "trending_rank": 14,
+        "price": 0.00082,
+        "market_cap": 820000,
+        "ath_market_cap": 6200000,
+        "liquidity": 130000,
+        "volume_5m": 29000,
+        "volume_1h": 90000,
+        "volume_24h": 700000,
+        "tx_5m": 166,
+        "tx_1h": 600,
+        "holders": 1800,
+        "price_change_5m": 10,
+        "price_change_1h": 250,
+        "token_age_seconds": 950400,
+        "security": {
+          "top10_ratio": 0.18,
+          "dev_ratio": 0.03,
+          "insider_ratio": 0.08,
+          "sniper_ratio": 0.05,
+          "bundler_ratio": 0.06,
+          "smart_money_count": 12,
+          "mint_renounced": true,
+          "freeze_renounced": true,
+          "dangerous": false
+        }
+      }
+    ],
+    "candles": [
+      {
+        "timestamp": 1799640000,
+        "open": 0.0007,
+        "close": 0.0007,
+        "high": 0.000704,
+        "low": 0.000696,
+        "volume_usd": 1000
+      },
+      {
+        "timestamp": 1799643600,
+        "open": 0.0007042999999999999,
+        "close": 0.0007042999999999999,
+        "high": 0.0007082999999999999,
+        "low": 0.0007003,
+        "volume_usd": 1100
+      },
+      {
+        "timestamp": 1799647200,
+        "open": 0.0007075282032302755,
+        "close": 0.0007075282032302755,
+        "high": 0.0007115282032302755,
+        "low": 0.0007035282032302755,
+        "volume_usd": 1200
+      },
+      {
+        "timestamp": 1799650800,
+        "open": 0.0007088999999999999,
+        "close": 0.0007088999999999999,
+        "high": 0.0007128999999999999,
+        "low": 0.0007049,
+        "volume_usd": 1300
+      },
+      {
+        "timestamp": 1799654400,
+        "open": 0.0007081282032302755,
+        "close": 0.0007081282032302755,
+        "high": 0.0007121282032302755,
+        "low": 0.0007041282032302755,
+        "volume_usd": 1400
+      },
+      {
+        "timestamp": 1799658000,
+        "open": 0.0007055,
+        "close": 0.0007055,
+        "high": 0.0007095,
+        "low": 0.0007015,
+        "volume_usd": 1500
+      },
+      {
+        "timestamp": 1799661600,
+        "open": 0.0007018,
+        "close": 0.0007018,
+        "high": 0.0007058,
+        "low": 0.0006978,
+        "volume_usd": 1600
+      },
+      {
+        "timestamp": 1799665200,
+        "open": 0.0006981,
+        "close": 0.0006981,
+        "high": 0.0007021,
+        "low": 0.0006941,
+        "volume_usd": 1700
+      },
+      {
+        "timestamp": 1799668800,
+        "open": 0.0006954717967697244,
+        "close": 0.0006954717967697244,
+        "high": 0.0006994717967697244,
+        "low": 0.0006914717967697245,
+        "volume_usd": 1800
+      },
+      {
+        "timestamp": 1799672400,
+        "open": 0.0006947,
+        "close": 0.0006947,
+        "high": 0.0006987,
+        "low": 0.0006907,
+        "volume_usd": 1900
+      },
+      {
+        "timestamp": 1799676000,
+        "open": 0.0006960717967697245,
+        "close": 0.0006960717967697245,
+        "high": 0.0007000717967697244,
+        "low": 0.0006920717967697245,
+        "volume_usd": 2000
+      },
+      {
+        "timestamp": 1799679600,
+        "open": 0.0006993,
+        "close": 0.0006993,
+        "high": 0.0007033,
+        "low": 0.0006953,
+        "volume_usd": 2100
+      },
+      {
+        "timestamp": 1799683200,
+        "open": 0.0007036,
+        "close": 0.0007036,
+        "high": 0.0007076,
+        "low": 0.0006996,
+        "volume_usd": 2200
+      },
+      {
+        "timestamp": 1799686800,
+        "open": 0.0007079,
+        "close": 0.0007079,
+        "high": 0.0007119,
+        "low": 0.0007039,
+        "volume_usd": 2300
+      },
+      {
+        "timestamp": 1799690400,
+        "open": 0.0007111282032302755,
+        "close": 0.0007111282032302755,
+        "high": 0.0007151282032302755,
+        "low": 0.0007071282032302755,
+        "volume_usd": 2400
+      },
+      {
+        "timestamp": 1799694000,
+        "open": 0.0007124999999999999,
+        "close": 0.0007124999999999999,
+        "high": 0.0007164999999999999,
+        "low": 0.0007084999999999999,
+        "volume_usd": 2500
+      },
+      {
+        "timestamp": 1799697600,
+        "open": 0.0007117282032302755,
+        "close": 0.0007117282032302755,
+        "high": 0.0007157282032302755,
+        "low": 0.0007077282032302755,
+        "volume_usd": 2600
+      },
+      {
+        "timestamp": 1799701200,
+        "open": 0.0007090999999999999,
+        "close": 0.0007090999999999999,
+        "high": 0.0007130999999999999,
+        "low": 0.0007051,
+        "volume_usd": 2700
+      },
+      {
+        "timestamp": 1799704800,
+        "open": 0.0007054,
+        "close": 0.0007054,
+        "high": 0.0007094,
+        "low": 0.0007014,
+        "volume_usd": 2800
+      },
+      {
+        "timestamp": 1799708400,
+        "open": 0.0007017,
+        "close": 0.0007017,
+        "high": 0.0007057,
+        "low": 0.0006977,
+        "volume_usd": 2900
+      },
+      {
+        "timestamp": 1799712000,
+        "open": 0.0006990717967697245,
+        "close": 0.0006990717967697245,
+        "high": 0.0007030717967697245,
+        "low": 0.0006950717967697245,
+        "volume_usd": 3000
+      },
+      {
+        "timestamp": 1799715600,
+        "open": 0.0006983,
+        "close": 0.0006983,
+        "high": 0.0007023,
+        "low": 0.0006943,
+        "volume_usd": 3100
+      },
+      {
+        "timestamp": 1799719200,
+        "open": 0.0006996717967697245,
+        "close": 0.0006996717967697245,
+        "high": 0.0007036717967697245,
+        "low": 0.0006956717967697246,
+        "volume_usd": 3200
+      },
+      {
+        "timestamp": 1799722800,
+        "open": 0.0007029,
+        "close": 0.0007029,
+        "high": 0.0007069,
+        "low": 0.0006989,
+        "volume_usd": 3300
+      },
+      {
+        "timestamp": 1799726400,
+        "open": 0.0007072,
+        "close": 0.0007072,
+        "high": 0.0007111999999999999,
+        "low": 0.0007032,
+        "volume_usd": 3400
+      },
+      {
+        "timestamp": 1799730000,
+        "open": 0.0007115,
+        "close": 0.0007115,
+        "high": 0.0007155,
+        "low": 0.0007075,
+        "volume_usd": 3500
+      },
+      {
+        "timestamp": 1799733600,
+        "open": 0.0007147282032302755,
+        "close": 0.0007147282032302755,
+        "high": 0.0007187282032302755,
+        "low": 0.0007107282032302755,
+        "volume_usd": 3600
+      },
+      {
+        "timestamp": 1799737200,
+        "open": 0.0007161,
+        "close": 0.0007161,
+        "high": 0.0007201,
+        "low": 0.0007121,
+        "volume_usd": 3700
+      },
+      {
+        "timestamp": 1799740800,
+        "open": 0.0007153282032302755,
+        "close": 0.0007153282032302755,
+        "high": 0.0007193282032302755,
+        "low": 0.0007113282032302755,
+        "volume_usd": 3800
+      },
+      {
+        "timestamp": 1799744400,
+        "open": 0.0007127,
+        "close": 0.0007127,
+        "high": 0.0007167,
+        "low": 0.0007087,
+        "volume_usd": 3900
+      },
+      {
+        "timestamp": 1799748000,
+        "open": 0.000709,
+        "close": 0.000709,
+        "high": 0.000713,
+        "low": 0.000705,
+        "volume_usd": 4000
+      },
+      {
+        "timestamp": 1799751600,
+        "open": 0.0007053,
+        "close": 0.0007053,
+        "high": 0.0007093,
+        "low": 0.0007013,
+        "volume_usd": 4100
+      },
+      {
+        "timestamp": 1799755200,
+        "open": 0.0007026717967697245,
+        "close": 0.0007026717967697245,
+        "high": 0.0007066717967697245,
+        "low": 0.0006986717967697245,
+        "volume_usd": 4200
+      },
+      {
+        "timestamp": 1799758800,
+        "open": 0.0007019,
+        "close": 0.0007019,
+        "high": 0.0007059,
+        "low": 0.0006979,
+        "volume_usd": 4300
+      },
+      {
+        "timestamp": 1799762400,
+        "open": 0.0007032717967697245,
+        "close": 0.0007032717967697245,
+        "high": 0.0007072717967697245,
+        "low": 0.0006992717967697245,
+        "volume_usd": 4400
+      },
+      {
+        "timestamp": 1799766000,
+        "open": 0.0007065,
+        "close": 0.0007065,
+        "high": 0.0007105,
+        "low": 0.0007025,
+        "volume_usd": 4500
+      },
+      {
+        "timestamp": 1799769600,
+        "open": 0.0007108,
+        "close": 0.0007108,
+        "high": 0.0007148,
+        "low": 0.0007068,
+        "volume_usd": 4600
+      },
+      {
+        "timestamp": 1799773200,
+        "open": 0.0007151,
+        "close": 0.0007151,
+        "high": 0.0007191,
+        "low": 0.0007111,
+        "volume_usd": 4700
+      },
+      {
+        "timestamp": 1799776800,
+        "open": 0.0007183282032302754,
+        "close": 0.0007183282032302754,
+        "high": 0.0007223282032302754,
+        "low": 0.0007143282032302755,
+        "volume_usd": 4800
+      },
+      {
+        "timestamp": 1799780400,
+        "open": 0.0007197,
+        "close": 0.0007197,
+        "high": 0.0007237,
+        "low": 0.0007157,
+        "volume_usd": 4900
+      },
+      {
+        "timestamp": 1799784000,
+        "open": 0.0007189282032302755,
+        "close": 0.0007189282032302755,
+        "high": 0.0007229282032302755,
+        "low": 0.0007149282032302755,
+        "volume_usd": 5000
+      },
+      {
+        "timestamp": 1799787600,
+        "open": 0.0007163,
+        "close": 0.0007163,
+        "high": 0.0007203,
+        "low": 0.0007123,
+        "volume_usd": 5100
+      },
+      {
+        "timestamp": 1799791200,
+        "open": 0.0007126,
+        "close": 0.0007126,
+        "high": 0.0007166,
+        "low": 0.0007086,
+        "volume_usd": 5200
+      },
+      {
+        "timestamp": 1799794800,
+        "open": 0.0007089,
+        "close": 0.0007089,
+        "high": 0.0007129,
+        "low": 0.0007049000000000001,
+        "volume_usd": 5300
+      },
+      {
+        "timestamp": 1799798400,
+        "open": 0.0007062717967697245,
+        "close": 0.0007062717967697245,
+        "high": 0.0007102717967697245,
+        "low": 0.0007022717967697245,
+        "volume_usd": 5400
+      },
+      {
+        "timestamp": 1799802000,
+        "open": 0.0007055,
+        "close": 0.0007055,
+        "high": 0.0007095,
+        "low": 0.0007015,
+        "volume_usd": 5500
+      },
+      {
+        "timestamp": 1799805600,
+        "open": 0.0007068717967697245,
+        "close": 0.0007068717967697245,
+        "high": 0.0007108717967697245,
+        "low": 0.0007028717967697245,
+        "volume_usd": 5600
+      },
+      {
+        "timestamp": 1799809200,
+        "open": 0.0007101,
+        "close": 0.0007101,
+        "high": 0.0007141,
+        "low": 0.0007061,
+        "volume_usd": 5700
+      },
+      {
+        "timestamp": 1799812800,
+        "open": 0.0007144,
+        "close": 0.0007144,
+        "high": 0.0007184,
+        "low": 0.0007104,
+        "volume_usd": 5800
+      },
+      {
+        "timestamp": 1799816400,
+        "open": 0.0007187,
+        "close": 0.0007187,
+        "high": 0.0007227,
+        "low": 0.0007147,
+        "volume_usd": 5900
+      },
+      {
+        "timestamp": 1799820000,
+        "open": 0.0007219282032302755,
+        "close": 0.0007219282032302755,
+        "high": 0.0007259282032302755,
+        "low": 0.0007179282032302755,
+        "volume_usd": 6000
+      },
+      {
+        "timestamp": 1799823600,
+        "open": 0.0007233,
+        "close": 0.0007233,
+        "high": 0.0007273,
+        "low": 0.0007193,
+        "volume_usd": 6100
+      },
+      {
+        "timestamp": 1799827200,
+        "open": 0.0007225282032302755,
+        "close": 0.0007225282032302755,
+        "high": 0.0007265282032302755,
+        "low": 0.0007185282032302756,
+        "volume_usd": 6200
+      },
+      {
+        "timestamp": 1799830800,
+        "open": 0.0007199,
+        "close": 0.0007199,
+        "high": 0.0007239,
+        "low": 0.0007159,
+        "volume_usd": 6300
+      },
+      {
+        "timestamp": 1799834400,
+        "open": 0.0007162,
+        "close": 0.0007162,
+        "high": 0.0007201999999999999,
+        "low": 0.0007122,
+        "volume_usd": 6400
+      },
+      {
+        "timestamp": 1799838000,
+        "open": 0.0007125,
+        "close": 0.0007125,
+        "high": 0.0007165,
+        "low": 0.0007085,
+        "volume_usd": 6500
+      },
+      {
+        "timestamp": 1799841600,
+        "open": 0.0007098717967697245,
+        "close": 0.0007098717967697245,
+        "high": 0.0007138717967697245,
+        "low": 0.0007058717967697245,
+        "volume_usd": 6600
+      },
+      {
+        "timestamp": 1799845200,
+        "open": 0.0007091,
+        "close": 0.0007091,
+        "high": 0.0007131,
+        "low": 0.0007051000000000001,
+        "volume_usd": 6700
+      },
+      {
+        "timestamp": 1799848800,
+        "open": 0.0007104717967697245,
+        "close": 0.0007104717967697245,
+        "high": 0.0007144717967697245,
+        "low": 0.0007064717967697245,
+        "volume_usd": 6800
+      },
+      {
+        "timestamp": 1799852400,
+        "open": 0.0007137000000000001,
+        "close": 0.0007137000000000001,
+        "high": 0.0007177,
+        "low": 0.0007097000000000001,
+        "volume_usd": 6900
+      },
+      {
+        "timestamp": 1799856000,
+        "open": 0.000718,
+        "close": 0.000718,
+        "high": 0.000722,
+        "low": 0.000714,
+        "volume_usd": 7000
+      },
+      {
+        "timestamp": 1799859600,
+        "open": 0.0007222999999999999,
+        "close": 0.0007222999999999999,
+        "high": 0.0007262999999999999,
+        "low": 0.0007183,
+        "volume_usd": 7100
+      },
+      {
+        "timestamp": 1799863200,
+        "open": 0.0007255282032302755,
+        "close": 0.0007255282032302755,
+        "high": 0.0007295282032302755,
+        "low": 0.0007215282032302755,
+        "volume_usd": 7200
+      },
+      {
+        "timestamp": 1799866800,
+        "open": 0.0007268999999999999,
+        "close": 0.0007268999999999999,
+        "high": 0.0007308999999999999,
+        "low": 0.0007229,
+        "volume_usd": 7300
+      },
+      {
+        "timestamp": 1799870400,
+        "open": 0.0007261282032302755,
+        "close": 0.0007261282032302755,
+        "high": 0.0007301282032302755,
+        "low": 0.0007221282032302755,
+        "volume_usd": 7400
+      },
+      {
+        "timestamp": 1799874000,
+        "open": 0.0007235,
+        "close": 0.0007235,
+        "high": 0.0007275,
+        "low": 0.0007195,
+        "volume_usd": 7500
+      },
+      {
+        "timestamp": 1799877600,
+        "open": 0.0007198,
+        "close": 0.0007198,
+        "high": 0.0007238,
+        "low": 0.0007158,
+        "volume_usd": 7600
+      },
+      {
+        "timestamp": 1799881200,
+        "open": 0.0007161,
+        "close": 0.0007161,
+        "high": 0.0007201,
+        "low": 0.0007121,
+        "volume_usd": 7700
+      },
+      {
+        "timestamp": 1799884800,
+        "open": 0.0007134717967697244,
+        "close": 0.0007134717967697244,
+        "high": 0.0007174717967697244,
+        "low": 0.0007094717967697245,
+        "volume_usd": 7800
+      },
+      {
+        "timestamp": 1799888400,
+        "open": 0.0007127,
+        "close": 0.0007127,
+        "high": 0.0007167,
+        "low": 0.0007087,
+        "volume_usd": 7900
+      },
+      {
+        "timestamp": 1799892000,
+        "open": 0.0007140717967697245,
+        "close": 0.0007140717967697245,
+        "high": 0.0007180717967697244,
+        "low": 0.0007100717967697245,
+        "volume_usd": 8000
+      },
+      {
+        "timestamp": 1799895600,
+        "open": 0.0007173,
+        "close": 0.0007173,
+        "high": 0.0007213,
+        "low": 0.0007133,
+        "volume_usd": 8100
+      },
+      {
+        "timestamp": 1799899200,
+        "open": 0.0007216,
+        "close": 0.0007216,
+        "high": 0.0007256,
+        "low": 0.0007176,
+        "volume_usd": 8200
+      },
+      {
+        "timestamp": 1799902800,
+        "open": 0.0007259,
+        "close": 0.0007259,
+        "high": 0.0007299,
+        "low": 0.0007219,
+        "volume_usd": 8300
+      },
+      {
+        "timestamp": 1799906400,
+        "open": 0.0007291282032302755,
+        "close": 0.0007291282032302755,
+        "high": 0.0007331282032302755,
+        "low": 0.0007251282032302755,
+        "volume_usd": 8400
+      },
+      {
+        "timestamp": 1799910000,
+        "open": 0.0007304999999999999,
+        "close": 0.0007304999999999999,
+        "high": 0.0007344999999999999,
+        "low": 0.0007264999999999999,
+        "volume_usd": 8500
+      },
+      {
+        "timestamp": 1799913600,
+        "open": 0.0007297282032302755,
+        "close": 0.0007297282032302755,
+        "high": 0.0007337282032302755,
+        "low": 0.0007257282032302755,
+        "volume_usd": 8600
+      },
+      {
+        "timestamp": 1799917200,
+        "open": 0.0007271,
+        "close": 0.0007271,
+        "high": 0.0007310999999999999,
+        "low": 0.0007231,
+        "volume_usd": 8700
+      },
+      {
+        "timestamp": 1799920800,
+        "open": 0.0007234,
+        "close": 0.0007234,
+        "high": 0.0007274,
+        "low": 0.0007194,
+        "volume_usd": 8800
+      },
+      {
+        "timestamp": 1799924400,
+        "open": 0.0007197,
+        "close": 0.0007197,
+        "high": 0.0007237,
+        "low": 0.0007157,
+        "volume_usd": 8900
+      },
+      {
+        "timestamp": 1799928000,
+        "open": 0.0007170717967697245,
+        "close": 0.0007170717967697245,
+        "high": 0.0007210717967697245,
+        "low": 0.0007130717967697245,
+        "volume_usd": 9000
+      },
+      {
+        "timestamp": 1799931600,
+        "open": 0.0007163,
+        "close": 0.0007163,
+        "high": 0.0007203,
+        "low": 0.0007123,
+        "volume_usd": 9100
+      },
+      {
+        "timestamp": 1799935200,
+        "open": 0.0007176717967697244,
+        "close": 0.0007176717967697244,
+        "high": 0.0007216717967697244,
+        "low": 0.0007136717967697244,
+        "volume_usd": 9200
+      },
+      {
+        "timestamp": 1799938800,
+        "open": 0.0007209,
+        "close": 0.0007209,
+        "high": 0.0007249,
+        "low": 0.0007169,
+        "volume_usd": 9300
+      },
+      {
+        "timestamp": 1799942400,
+        "open": 0.0007252,
+        "close": 0.0007252,
+        "high": 0.0007291999999999999,
+        "low": 0.0007212,
+        "volume_usd": 9400
+      },
+      {
+        "timestamp": 1799946000,
+        "open": 0.0007295,
+        "close": 0.0007295,
+        "high": 0.0007335,
+        "low": 0.0007255,
+        "volume_usd": 9500
+      },
+      {
+        "timestamp": 1799949600,
+        "open": 0.0007327282032302755,
+        "close": 0.0007327282032302755,
+        "high": 0.0007367282032302755,
+        "low": 0.0007287282032302755,
+        "volume_usd": 9600
+      },
+      {
+        "timestamp": 1799953200,
+        "open": 0.0007341,
+        "close": 0.0007341,
+        "high": 0.0007381,
+        "low": 0.0007301,
+        "volume_usd": 9700
+      },
+      {
+        "timestamp": 1799956800,
+        "open": 0.0007333282032302755,
+        "close": 0.0007333282032302755,
+        "high": 0.0007373282032302755,
+        "low": 0.0007293282032302755,
+        "volume_usd": 9800
+      },
+      {
+        "timestamp": 1799960400,
+        "open": 0.0007307,
+        "close": 0.0007307,
+        "high": 0.0007347,
+        "low": 0.0007267,
+        "volume_usd": 9900
+      },
+      {
+        "timestamp": 1799964000,
+        "open": 0.000727,
+        "close": 0.000727,
+        "high": 0.000731,
+        "low": 0.000723,
+        "volume_usd": 10000
+      },
+      {
+        "timestamp": 1799967600,
+        "open": 0.0007233,
+        "close": 0.0007233,
+        "high": 0.0007273,
+        "low": 0.0007193,
+        "volume_usd": 10100
+      },
+      {
+        "timestamp": 1799971200,
+        "open": 0.0007206717967697245,
+        "close": 0.0007206717967697245,
+        "high": 0.0007246717967697245,
+        "low": 0.0007166717967697245,
+        "volume_usd": 10200
+      },
+      {
+        "timestamp": 1799974800,
+        "open": 0.0007199,
+        "close": 0.0007199,
+        "high": 0.0007239,
+        "low": 0.0007159,
+        "volume_usd": 10300
+      },
+      {
+        "timestamp": 1799978400,
+        "open": 0.0007212717967697245,
+        "close": 0.0007212717967697245,
+        "high": 0.0007252717967697245,
+        "low": 0.0007172717967697245,
+        "volume_usd": 10400
+      },
+      {
+        "timestamp": 1799982000,
+        "open": 0.0007245,
+        "close": 0.0007245,
+        "high": 0.0007285,
+        "low": 0.0007205,
+        "volume_usd": 10500
+      },
+      {
+        "timestamp": 1799985600,
+        "open": 0.0007288,
+        "close": 0.0007288,
+        "high": 0.0007328,
+        "low": 0.0007248,
+        "volume_usd": 10600
+      },
+      {
+        "timestamp": 1799989200,
+        "open": 0.0007331,
+        "close": 0.0007331,
+        "high": 0.0007371,
+        "low": 0.0007291,
+        "volume_usd": 10700
+      },
+      {
+        "timestamp": 1799992800,
+        "open": 0.00081,
+        "close": 0.00081,
+        "high": 0.0008139999999999999,
+        "low": 0.000806,
+        "volume_usd": 10800
+      },
+      {
+        "timestamp": 1799996400,
+        "open": 0.00082,
+        "close": 0.00082,
+        "high": 0.000824,
+        "low": 0.000816,
+        "volume_usd": 10900
+      }
+    ]
+  }
+]

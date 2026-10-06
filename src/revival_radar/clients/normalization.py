@@ -165,6 +165,9 @@ def parse_candles(data: Any, now: float) -> list[Candle]:
         if not isinstance(row, dict):
             continue
         timestamp = number(row.get("time"))
+        # The docs say seconds; the live API also returns Unix milliseconds.
+        if timestamp is not None and timestamp >= 1_000_000_000_000:
+            timestamp /= 1000
         if timestamp is None or timestamp + 3600 > now:
             continue  # Only complete hourly candles; unfinished bars can reverse.
         try:
