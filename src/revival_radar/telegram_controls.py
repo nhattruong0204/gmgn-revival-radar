@@ -26,6 +26,10 @@ log = logging.getLogger(__name__)
 
 # Each setting has a short, stable callback identifier and a readable label.
 GROUPS = {
+    "activity": [
+        ("volume_acceleration_threshold", "Volume multiplier"),
+        ("tx_acceleration_threshold", "Transaction multiplier"),
+    ],
     "filters": [
         ("token_min_age_hours", "Minimum age (hours)"),
         ("min_market_cap", "Minimum market cap ($)"),
@@ -41,8 +45,6 @@ GROUPS = {
     "structure": [
         ("base_min_hours", "Minimum base (hours)"),
         ("base_sufficient_hours", "Sufficient base (hours)"),
-        ("volume_acceleration_threshold", "Volume acceleration ratio"),
-        ("tx_acceleration_threshold", "Transaction acceleration ratio"),
         ("base_max_range_ratio", "Maximum base range ratio"),
         ("holder_retention_ratio", "Holder retention ratio"),
         ("top10_max_ratio", "Maximum top-10 holder ratio"),
@@ -146,6 +148,7 @@ class Proposal:
     changes: dict[str, Any]
     expires: float
     reset: bool = False
+    action: str | None = None
 
 
 class TelegramControls:
@@ -154,8 +157,13 @@ class TelegramControls:
         runtime: RuntimeSettings,
         http: httpx.AsyncClient,
         health_provider: Callable[[], Any] | None = None,
+        detail_provider: Callable[[str, int], Any] | None = None,
+        scan_request: Callable[[], str] | None = None,
+        schedule_provider: Callable[[], dict] | None = None,
     ):
         self.runtime, self.http, self.health_provider = runtime, http, health_provider
+        self.detail_provider, self.scan_request = detail_provider, scan_request
+        self.schedule_provider = schedule_provider
         config = runtime.effective()
         configured_owner = config.telegram_owner_id
         chat_id = config.telegram_chat_id.strip()
@@ -364,6 +372,14 @@ class TelegramControls:
             callback_id = callback.get("id")
             if isinstance(callback_id, str):
                 await self._request("answerCallbackQuery", {"callback_query_id": callback_id})
+            detail_data = callback.get("data")
+            if (
+                isinstance(detail_data, str)
+                and len(detail_data) <= 64
+                and detail_data.startswith(("a:", "e:"))
+            ):
+                await self._detail(detail_data)
+                return
             if not self._fresh(message):
                 await self._send("This menu is from an earlier session. Open /menu again.")
                 return
@@ -394,7 +410,7 @@ class TelegramControls:
         command = value.split(maxsplit=1)[0].split("@")[0] if value.strip() else ""
         if command in {"/start", "/menu", "/settings"}:
             self._input = None
-            await self._menu("settings" if command == "/settings" else "home")
+            await self._menu("settings_hub" if command == "/settings" else "home")
         elif command in {"/status", "/health"}:
             await self._health() if command == "/health" else await self._status()
         elif command == "/cancel":
@@ -426,7 +442,9 @@ class TelegramControls:
             elif action == "status":
                 await self._status()
             elif action == "health":
-                await self._health()
+                await self._health(value or "overview")
+            elif action == "act" and value in {"scan", "test"}:
+                await self._action_preview(value)
             elif action == "p" and value in PRESETS:
                 await self._preview(PRESETS[value], title=f"{value.title()} preset")
             elif action == "t" and value in TOGGLES:
@@ -506,17 +524,16 @@ class TelegramControls:
                 f"Score <b>{config.alert_score_threshold}+</b>\n"
                 "Scan target  "
                 f"<b>{setting_value('scan_interval_seconds', config.scan_interval_seconds)}</b>\n\n"
-                "Choose an action below."
+                f"{self._schedule_text()}\n\nChoose an action below."
             )
             rows = [
                 [self._button("📊 Status", "status"), self._button("🩺 Health", "health")],
                 [self._button("🎯 Strategy presets", "m:presets")],
-                [self._button("⚙️ Advanced configuration", "m:advanced")],
-                [self._button("🌐 Chains", "m:chains"), self._button("🛡 Exclusions", "m:assets")],
                 [
-                    self._button("🔔 Alerts", "m:alerts"),
-                    self._button("🔎 Discovery", "m:discovery"),
+                    self._button("🔍 Near misses", "health:near"),
+                    self._button("🔄 Scan now", "act:scan"),
                 ],
+                [self._button("⚙️ Settings", "m:settings_hub")],
                 [
                     self._button(
                         "▶️ Resume alerts" if config.alerts_paused else "⏸ Pause alerts",
@@ -524,6 +541,27 @@ class TelegramControls:
                     )
                 ],
             ]
+            rows.append([self._button("🧪 Test alert", "act:test")])
+        elif name == "settings_hub":
+            title, body = "⚙️ Settings", "Choose a category. All changes require confirmation."
+            rows = [
+                [self._button(label, f"m:{target}")]
+                for label, target in (
+                    ("🌐 Chains", "chains"),
+                    ("🎯 Thresholds", "filters"),
+                    ("📊 Structure", "structure"),
+                    ("⚡ Activity", "activity"),
+                    ("🔔 Alerts", "alerts"),
+                    ("🔎 Discovery & timing", "discovery"),
+                )
+            ]
+            rows.extend(
+                [
+                    [self._button("⚙️ Advanced configuration", "m:advanced")],
+                    [self._button("🛡 Asset exclusions", "m:assets")],
+                    [self._button("↩️ Reset custom settings", "reset")],
+                ]
+            )
         elif name == "presets":
             title = "🎯 Strategy presets"
             body = (
@@ -563,8 +601,9 @@ class TelegramControls:
         elif name in GROUPS:
             titles = {
                 "filters": "💰 Token filters",
-                "structure": "📈 Base & activity",
+                "structure": "📊 Price structure",
                 "alerts": "🔔 Alerts & reports",
+                "activity": "⚡ Returning activity",
                 "discovery": "🔎 Discovery & timing",
             }
             title = titles[name]
@@ -723,6 +762,32 @@ class TelegramControls:
         if proposal.expires < time.monotonic():
             await self._send("This preview expired. Open /menu and review it again.")
             return
+        if proposal.action:
+            if proposal.action == "scan":
+                answer = (
+                    self.scan_request()
+                    if self.scan_request
+                    else "Manual scans are unavailable in this process."
+                )
+                await self._send(html.escape(answer), [[self._button("🏠 Main menu", "m:home")]])
+            else:
+                from revival_radar.clients.telegram import format_alert
+                from revival_radar.demo import DemoSource
+                from revival_radar.models.signal import RevivalResult
+                from revival_radar.models.token import TokenSnapshot
+
+                demo = DemoSource().data[0]
+                token = TokenSnapshot(**demo["token"])
+                signal = RevivalResult(
+                    score=65,
+                    status="EARLY_WATCH",
+                    eligible=False,
+                )
+                await self._send(
+                    "🧪 <b>TEST · Synthetic example, not a live signal</b>\n\n"
+                    + format_alert(token, signal)
+                )
+            return
         if proposal.reset:
             self.runtime.reset(expected_revision=proposal.revision)
         else:
@@ -799,7 +864,8 @@ class TelegramControls:
             f"Scan target  {setting_value('scan_interval_seconds', config.scan_interval_seconds)}\n"
             "API spacing  "
             f"{setting_value('request_spacing_seconds', config.request_spacing_seconds)}\n"
-            f"Daily summary  {summary}\n\n"
+            f"Daily summary  {summary}\n"
+            f"{self._schedule_text()}\n\n"
             f"Controls  {html.escape(self.status)}\n"
             "Health shows actual scan times, filtering and delivery results.",
             [
@@ -809,7 +875,7 @@ class TelegramControls:
             edit=True,
         )
 
-    async def _health(self) -> None:
+    async def _health(self, view: str = "overview") -> None:
         if self.health_provider is None:
             await self._send("Scanner diagnostics are not available yet.")
             return
@@ -818,13 +884,14 @@ class TelegramControls:
             if inspect.isawaitable(result):
                 result = await result
             if isinstance(result, Mapping):
-                from revival_radar.diagnostics import format_health
+                from revival_radar.telegram_views import health_page
 
-                text = format_health(
+                text = health_page(
                     dict(result)
                     | {
                         "timezone": self.runtime.effective().report_timezone,
-                    }
+                    },
+                    view,
                 )
             else:
                 text = html.escape(str(result))
@@ -832,11 +899,108 @@ class TelegramControls:
             # Internal diagnostics can contain upstream failures: never echo their exceptions.
             await self._send("Scanner diagnostics could not be loaded. Try again later.")
             return
+        rows = [
+            [
+                self._button("⚡ Performance", "health:performance"),
+                self._button("🔻 Funnel", "health:funnel"),
+            ],
+            [
+                self._button("🧪 Data quality", "health:quality"),
+                self._button("🎯 Near misses", "health:near"),
+            ],
+            [self._button("⚙️ Scan configuration", "health:config")],
+            [self._button("📋 Full diagnostics", "health:full")],
+            [self._button("🔄 Overview", "health"), self._button("🏠 Main menu", "m:home")],
+        ]
+        if view == "near" and isinstance(result, Mapping):
+            for item in result.get("best_candidates", [])[:3]:
+                if item.get("id"):
+                    rows.insert(
+                        0,
+                        [
+                            {
+                                "text": f"🔎 Inspect {str(item['symbol'])[:16]} snapshot",
+                                "callback_data": f"e:{item['id']}:full",
+                            }
+                        ],
+                    )
+        await self._send(text, rows, edit=True)
+
+    def _schedule_text(self) -> str:
+        schedule = self.schedule_provider() if self.schedule_provider else {}
+        if not schedule:
+            return "Scan timing unavailable here; see Health."
+        if schedule.get("running"):
+            return "🔄 Scan in progress"
+        last = schedule.get("last_finished")
+        ago = f"{max(0, int(time.time() - last))}s ago" if last else "not completed yet"
+        due = schedule.get("next_due")
+        nxt = f"~{max(0, int(due - time.time()))}s" if due else "pending"
+        return f"Last scan {ago} · Next scan {nxt}"
+
+    async def _action_preview(self, action: str) -> None:
+        self._input = None
+        self._proposal = Proposal(
+            secrets.token_hex(6), self.runtime.revision, {}, time.monotonic() + 600, action=action
+        )
+        text = (
+            "🔄 <b>Request a scan now?</b>\n"
+            "The existing rate limits still apply. Scans never overlap."
+            if action == "scan"
+            else "🧪 <b>Send a test alert here?</b>\n"
+            "Uses synthetic data and makes no GMGN requests."
+        )
         await self._send(
             text,
             [
-                [self._button("🔄 Refresh health", "health")],
-                [self._button("🏠 Main menu", "m:home")],
+                [
+                    self._button("✅ Confirm", f"yes:{self._proposal.nonce}"),
+                    self._button("✖ Cancel", "cancel"),
+                ]
             ],
-            edit=True,
         )
+
+    async def _detail(self, data: str) -> None:
+        parts = data.split(":")
+        if (
+            len(parts) != 3
+            or parts[0] not in {"a", "e"}
+            or len(parts[1]) > 18
+            or not parts[1].isascii()
+            or not parts[1].isdigit()
+            or parts[2] not in {"why", "full"}
+        ):
+            return
+        if not self.detail_provider:
+            await self._send("Details are unavailable in this process.")
+            return
+        try:
+            detail = self.detail_provider(parts[0], int(parts[1]))
+            if inspect.isawaitable(detail):
+                detail = await detail
+        except Exception:
+            await self._send("Saved details could not be loaded. Try again later.")
+            return
+        if not detail:
+            await self._send(
+                "This saved observation is unavailable or predates detailed recording."
+            )
+            return
+        from revival_radar.clients.telegram import format_full_alert, format_why
+        from revival_radar.models.signal import RevivalResult
+        from revival_radar.models.token import TokenSnapshot
+        from revival_radar.telegram_views import config_footer
+
+        try:
+            token = TokenSnapshot(**detail["token"])
+            signal = RevivalResult(**detail["signal"])
+        except (KeyError, TypeError, ValueError):
+            await self._send("This saved observation is incomplete and cannot be displayed.")
+            return
+        context = detail.get("configuration", {})
+        text = (
+            format_why(token, signal, context)
+            if parts[2] == "why"
+            else format_full_alert(token, signal) + "\n" + config_footer(context)
+        )
+        await self._send(text, [[self._button("🏠 Main menu", "m:home")]])

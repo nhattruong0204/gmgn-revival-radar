@@ -1,6 +1,6 @@
 from html.parser import HTMLParser
 
-from revival_radar.clients.telegram import format_alert
+from revival_radar.clients.telegram import format_full_alert as format_alert
 from revival_radar.models.signal import Acceleration, RevivalResult, Structure
 
 from .conftest import changed

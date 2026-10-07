@@ -7,7 +7,7 @@ import pytest
 
 from revival_radar.clients.gmgn import DataSourceError, GMGNClient
 from revival_radar.clients.normalization import boolean, enriched_token, number, parse_candles
-from revival_radar.clients.telegram import TelegramClient, format_alert
+from revival_radar.clients.telegram import TelegramClient, format_alert, format_why
 from revival_radar.models.signal import RevivalResult
 from revival_radar.models.token import Security
 
@@ -215,7 +215,8 @@ async def test_live_nested_trending_envelope(config, responses, inner_code):
 async def test_telegram_html_and_dry_run(config, token):
     result = RevivalResult(score=80, status="REVIVING", eligible=True, reasons=["x < y & z"])
     message = format_alert(changed(token, symbol="<b>& coin"), result)
-    assert "&lt;b&gt;&amp;" in message and "x &lt; y &amp; z" in message
+    assert "&lt;b&gt;&amp;" in message
+    assert "x &lt; y &amp; z" in format_why(token, result, {})
     assert len(message) < 4096
 
     def forbidden(request):

@@ -87,7 +87,7 @@ def _warning(value: str) -> str:
     return _COMPONENT_LABELS.get(value.replace(" ", "_"), value)
 
 
-def format_alert(token: TokenSnapshot, result: RevivalResult) -> str:
+def format_full_alert(token: TokenSnapshot, result: RevivalResult) -> str:
     a, s = result.acceleration, result.structure
     drawdown = (
         f"{token.drawdown_from_ath:.1%}" if token.drawdown_from_ath is not None else "unavailable"
@@ -216,6 +216,120 @@ def format_alert(token: TokenSnapshot, result: RevivalResult) -> str:
     return "\n".join(lines)
 
 
+def format_alert(token: TokenSnapshot, result: RevivalResult, context: dict | None = None) -> str:
+    """Compact first view; historical evidence is available through detail buttons."""
+    from revival_radar.telegram_views import config_footer
+
+    a, s = result.acceleration, result.structure
+    discovery = (
+        f"Trending #{token.trending_rank}"
+        if token.trending_rank is not None
+        else f"Hot Search #{token.hot_search_rank}"
+        if token.hot_search_rank is not None
+        else "On current rankings"
+        if token.discovery_source
+        else "Saved watchlist observation"
+    )
+    drawdown = (
+        f"−{token.drawdown_from_ath:.1%}" if token.drawdown_from_ath is not None else "unknown"
+    )
+    risks = [
+        _COMPONENT_LABELS.get(k, k.replace("_", " ")) for k, v in result.components.items() if v < 0
+    ]
+    if token.security.dangerous is True:
+        risks.insert(0, "Known dangerous-token flag")
+    if token.security.dangerous is None:
+        risks.insert(0, "Security assessment unavailable")
+    holders = _text(f"{token.holders:,}" if token.holders is not None else "unknown", 20)
+    tx = _text(token.tx_5m if token.tx_5m is not None else "unknown", 20)
+    lines = [
+        "♻️ <b>REVIVAL RADAR</b>",
+        f"<b>${_text(token.symbol, 60)} · {CHAINS[token.chain].display_name}</b>",
+        f"<b>{result.score}/100 · {_text(result.status.replace('_', ' ').capitalize(), 50)}</b>",
+        "",
+        f"💰 Cap {money(token.market_cap)} · ATH {drawdown}",
+        f"💧 Liquidity {money(token.liquidity)} · Holders {holders}",
+        "",
+        "⚡ <b>Trigger</b>",
+        f"Vol 5m {money(token.volume_5m)} · {ratio_text(a.volume_ratio_5m)} vs baseline",
+        f"TX 5m {tx} · {ratio_text(a.tx_acceleration_5m)}",
+        _text(discovery),
+        "",
+        (
+            f"📊 Base {_text(f'{s.base_duration_hours:g}', 12)}h · "
+            + ("confirmed" if s.base_detected else "unconfirmed")
+            if s.available
+            else "📊 Structure unavailable · insufficient candle history"
+        ),
+        f"Higher low {'✓' if s.higher_low_detected else '—'} · "
+        f"Higher high {'✓' if s.higher_high_detected else '—'}",
+        f"Breakout {'✓' if s.breakout_detected else '—'} · "
+        f"Retest {'✓' if s.retest_detected else '—'}",
+    ]
+    # Show category scores only when supplied by a future scorer; this UI never creates them.
+    category_scores = _subscores(result)
+    if category_scores:
+        lines.append(category_scores)
+    if risks:
+        unique = list(dict.fromkeys(risks))
+        lines += ["", "⚠️ " + " · ".join(_text(risk, 60) for risk in unique[:8])]
+        if len(unique) > 8:
+            lines.append(f"+{len(unique) - 8} risk deductions · see full details")
+    lines += [
+        "",
+        f"<code>{html.escape(token.contract_address)}</code>",
+        config_footer(context or {}),
+        "<i>Heuristic signal · no trades executed.</i>",
+    ]
+    return "\n".join(lines)
+
+
+def alert_buttons(token: TokenSnapshot, alert_id: int) -> list:
+    links = [
+        {"text": "📈 GMGN" if name == "GMGN" else "🔎 Explorer", "url": url}
+        for name, url in CHAINS[token.chain].links(token.contract_address).items()
+    ]
+    return [
+        links,
+        [{"text": "🧠 Why this alert", "callback_data": f"a:{alert_id}:why"}],
+        [{"text": "📊 Full details", "callback_data": f"a:{alert_id}:full"}],
+    ]
+
+
+def _subscores(result: RevivalResult) -> str:
+    names = ("setup_score", "trigger_score", "confirmation_score")
+    values = [getattr(result, name, None) for name in names]
+    if any(value is None for value in values):
+        return ""
+    return (
+        f"Setup {_text(values[0], 12)}/30 · Trigger {_text(values[1], 12)}/40 · "
+        f"Confirm {_text(values[2], 12)}/30"
+    )
+
+
+def format_why(token: TokenSnapshot, result: RevivalResult, context: dict) -> str:
+    from revival_radar.telegram_views import config_footer
+
+    factors = [
+        f"{_COMPONENT_LABELS.get(key, key.replace('_', ' '))} {value:+d}"
+        for key, value in result.components.items()
+    ] or [_reason(reason) for reason in result.reasons]
+    return "\n".join(
+        [
+            f"🧠 <b>Why ${_text(token.symbol, 50)} · {result.score}/100</b>",
+            f"Stage: {_text(result.status.replace('_', ' ').capitalize(), 60)}",
+            *([_subscores(result)] if _subscores(result) else []),
+            "",
+            *("• " + _text(reason, 100) for reason in factors[:22]),
+            *([f"+{len(factors) - 22} other factors"] if len(factors) > 22 else []),
+            "",
+            "Weighted contributions; risk deductions reduce the score. "
+            "The score is capped after failed core checks.",
+            config_footer(context),
+        ]
+    )
+
+
 @dataclass(frozen=True)
 class Delivery:
     status: str
@@ -226,7 +340,7 @@ class TelegramClient:
     def __init__(self, config: Settings, http: httpx.AsyncClient):
         self.config, self.http = config, http
 
-    async def send_text(self, message: str) -> Delivery:
+    async def send_text(self, message: str, rows: list | None = None) -> Delivery:
         if self.config.dry_run:
             log.info("dry_run telegram suppressed")
             return Delivery("dry_run")
@@ -242,6 +356,7 @@ class TelegramClient:
                     "text": message,
                     "parse_mode": "HTML",
                     "link_preview_options": {"is_disabled": True},
+                    **({"reply_markup": {"inline_keyboard": rows}} if rows else {}),
                 },
                 timeout=self.config.http_timeout_seconds,
             )

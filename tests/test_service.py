@@ -100,7 +100,7 @@ async def test_service_applies_changes_next_scan_and_cancels_controls(
     class FakeControls:
         enabled = True
 
-        def __init__(self, runtime, http, health_provider):
+        def __init__(self, runtime, http, health_provider, **kwargs):
             self.runtime = runtime
 
         async def run(self):
@@ -119,7 +119,7 @@ async def test_service_applies_changes_next_scan_and_cancels_controls(
         pass
 
     class FakeScanner:
-        def __init__(self, config, source, repo, telegram, delivery_muted):
+        def __init__(self, config, source, repo, telegram, delivery_muted, **kwargs):
             self.config = config
 
         async def scan_once(self):
@@ -138,3 +138,62 @@ async def test_service_applies_changes_next_scan_and_cancels_controls(
             await asyncio.wait_for(service.run_service(runtime, repo, http), timeout=2)
     assert observed == [(75, 0), (65, 1)]
     assert stopped.is_set()
+
+
+async def test_manual_scan_wakes_idle_loop_and_refuses_overlap(config, repo, tmp_path, monkeypatch):
+    config.scan_interval_seconds = 300
+    config.database_path = tmp_path / "manual-service.db"
+    runtime = RuntimeSettings(config)
+    running, released = asyncio.Event(), asyncio.Event()
+    answers, scans = [], []
+
+    class Finished(Exception):
+        pass
+
+    class FakeControls:
+        enabled = True
+
+        def __init__(
+            self, runtime, http, health_provider, scan_request, schedule_provider, **kwargs
+        ):
+            self.request = scan_request
+            self.schedule = schedule_provider
+
+        async def run(self):
+            await running.wait()
+            assert self.schedule()["running"]
+            answers.append(self.request())
+            released.set()
+            # Wait for the scanner to enter its existing idle phase.
+            while self.schedule()["running"]:
+                await asyncio.sleep(0)
+            assert self.schedule()["next_due"] is not None
+            answers.append(self.request())
+            answers.append(self.request())
+            await asyncio.Event().wait()
+
+        def stop(self):
+            pass
+
+    class FakeScanner:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def scan_once(self):
+            scans.append(True)
+            if len(scans) == 1:
+                running.set()
+                await released.wait()
+            else:
+                raise Finished()
+
+    monkeypatch.setattr(service, "TelegramControls", FakeControls)
+    monkeypatch.setattr(service, "Scanner", FakeScanner)
+    async with httpx.AsyncClient() as http:
+        with pytest.raises(Finished):
+            await asyncio.wait_for(service.run_service(runtime, repo, http), timeout=2)
+    assert len(scans) == 2
+    assert "already running" in answers[0]
+    assert "Scan requested" in answers[1]
+    assert "already queued" in answers[2]
+    assert runtime.revision == 0

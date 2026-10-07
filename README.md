@@ -76,16 +76,29 @@ GMGN also documents finer candle resolutions, but those are outside this small V
 
 ## Telegram setup
 
-Version 0.2 supports owner-only inline buttons. Send **/menu** in your private chat
-with the bot to change presets, filters, chains, exclusions, and alert settings.
-Choose **Advanced configuration** for individual buttons covering all preset settings
-and the scan interval, organized into three short pages. Tap a value, send its replacement
-(for example `15k`, `60%` or `150s`), and confirm to save it without editing code or
-restarting the bot. Icon buttons and readable units keep menus compact; alerts lead
-with key signals and keep secondary detail expandable.
-Changes require a preview/confirmation and persist across restarts. **/health** reports
-rejections, missing data, actual scan durations, and delivery outcomes. See
-[Telegram controls and the VPS upgrade guide](docs/telegram-controls.md).
+The owner-only **/menu** opens Status, Strategy, Health, Settings, Near Misses,
+Scan Now, Pause/Resume Alerts, and Test Alert. **Settings** groups Chains, Thresholds,
+Structure, Activity, Alerts, and Reset, with Advanced configuration, discovery timing,
+and exclusions also available. Current enabled chains appear above the buttons;
+opening a menu never changes them.
+
+Choose **Settings → Advanced configuration** for all preset settings and the scan
+interval across three short pages. Tap a value, send its replacement (for example
+`15k`, `60%` or `150s`), and confirm to save it without editing code or restarting.
+Navigation updates the current menu, while confirmations remain separate messages.
+
+Alerts lead with a compact token/chain, score/stage, market, trigger and structure
+summary. **GMGN**, **Explorer**, **Why this alert**, and **Full details** buttons keep
+secondary information out of the first view. Historical detail uses the saved alert
+snapshot and preset/revision, never newer metrics. Setup/trigger/confirmation sub-scores
+appear only if the scorer supplies them; the current scoring algorithm is unchanged.
+
+**/health** opens a compact overview; timing, discovery/delivery, coverage, configuration,
+near misses, and full diagnostics have separate pages. Scan Now requests the next scan
+without overlapping a running scan. Test Alert sends an explicitly synthetic example
+to the owner chat without any GMGN requests, including when live alerts are suppressed.
+Both actions require confirmation. See [Telegram controls and the VPS upgrade guide](docs/telegram-controls.md)
+for details, profile setup and the original [square bot icon](assets/revival-radar.png).
 
 1. Create a bot through Telegram **@BotFather**; put its token in `TELEGRAM_BOT_TOKEN`.
 2. Add it to your channel as an administrator with permission to post.
@@ -101,21 +114,29 @@ Alerts use escaped HTML and disable link previews. A failed send never terminate
 Example (abbreviated):
 
 ```text
-♻️ REVIVAL RADAR — 84/100
-$XYZ | Solana
-MC: $820K | ATH MC: $6.20M
-ATH drawdown: 86.8% | Liquidity: $126K
-Age: 11d | Holders: 1,842
-🔥 Hot Search: #27 → #8 | Trending: 14
-📈 Volume 5m: $47K (+124% vs prior) | 1h: $184K
-🔄 TX 5m: 318 (+92%)
-📊 Base: yes (91h) | Higher low: True | Higher high: True
-Breakout: False | Retest: False
-Status: REVIVING
-⚠️ Insider holdings unavailable
-CA: <contract>
-GMGN / Explorer links
-Heuristic signal, not financial certainty. No trades executed.
+♻️ REVIVAL RADAR
+$XYZ · Solana
+84/100 · Strong revival
+
+💰 Cap $820K · ATH −86.8%
+💧 Liquidity $126K · Holders 1,842
+
+⚡ Trigger
+Vol 5m $47K · +124% vs baseline
+TX 5m 318 · +92%
+Trending #14
+
+📊 Base 91h · confirmed
+Higher low ✓ · Higher high ✓
+Breakout — · Retest —
+
+<copyable contract address>
+Preset: Balanced · r3
+Heuristic signal · no trades executed.
+
+[📈 GMGN] [🔎 Explorer]
+[🧠 Why this alert]
+[📊 Full details]
 ```
 
 ## Configuration

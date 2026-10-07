@@ -13,11 +13,12 @@ import httpx
 from revival_radar.clients.gmgn import GMGNClient
 from revival_radar.clients.telegram import TelegramClient
 from revival_radar.config import Settings
-from revival_radar.diagnostics import format_health
+from revival_radar.config_context import configuration_context
 from revival_radar.runtime_settings import RuntimeSettings
 from revival_radar.scanner import Scanner
 from revival_radar.storage.repository import Repository
 from revival_radar.telegram_controls import TelegramControls
+from revival_radar.telegram_views import health_page
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ async def daily_summary(
         return None
     report = repo.health(now - 86400, now=now)
     report["timezone"] = config.report_timezone
-    delivery = await telegram.send_text(format_health(report))
+    delivery = await telegram.send_text(health_page(report))
     repo.set_state(
         "daily_summary_delivery", json.dumps({"day": day_key, "status": delivery.status})
     )
@@ -54,8 +55,24 @@ def _background_finished(task: asyncio.Task) -> None:
 
 
 async def run_service(runtime: RuntimeSettings, repo: Repository, http: httpx.AsyncClient) -> None:
+    scan_requested = asyncio.Event()
+    schedule = {"running": False, "last_finished": None, "next_due": None}
+
+    def request_scan() -> str:
+        if schedule["running"]:
+            return "A scan is already running. Wait until it finishes."
+        if scan_requested.is_set():
+            return "A scan is already queued."
+        scan_requested.set()
+        return "Scan requested. Existing API rate limits still apply."
+
     controls = TelegramControls(
-        runtime, http, health_provider=lambda: repo.health(time.time() - 86400)
+        runtime,
+        http,
+        health_provider=lambda: repo.health(time.time() - 86400) | {"schedule": dict(schedule)},
+        detail_provider=repo.presentation_detail,
+        scan_request=request_scan,
+        schedule_provider=lambda: dict(schedule),
     )
     tasks: list[asyncio.Task] = []
     source = GMGNClient(runtime.effective(), http)
@@ -86,16 +103,33 @@ async def run_service(runtime: RuntimeSettings, repo: Repository, http: httpx.As
             # One immutable configuration per scan; preserve the shared API cooldown gate.
             source.config = config
             telegram = TelegramClient(config, http)
-            scanner = Scanner(config, source, repo, telegram, delivery_muted=muted)
+            scanner = Scanner(
+                config,
+                source,
+                repo,
+                telegram,
+                delivery_muted=muted,
+                configuration=configuration_context(config, runtime.revision),
+            )
             started = time.monotonic()
             log.info(
                 "scan configuration revision=%d threshold=%d",
                 runtime.revision,
                 config.alert_score_threshold,
             )
-            await scanner.scan_once()
+            scan_requested.clear()
+            schedule["running"] = True
+            schedule["next_due"] = None
+            try:
+                await scanner.scan_once()
+            finally:
+                schedule["running"] = False
+                schedule["last_finished"] = time.time()
             repo.prune_diagnostics(time.time() - 7 * 86400)
-            await asyncio.sleep(max(0, config.scan_interval_seconds - (time.monotonic() - started)))
+            delay = max(0, config.scan_interval_seconds - (time.monotonic() - started))
+            schedule["next_due"] = time.time() + delay
+            with suppress(TimeoutError):
+                await asyncio.wait_for(scan_requested.wait(), timeout=delay)
     finally:
         controls.stop()
         for task in tasks:

@@ -224,6 +224,7 @@ async def test_advanced_button_edit_survives_restart_without_changing_other_valu
         await controls.handle_update(update)
 
     await controls.handle_update(message("/menu"))
+    await tap("m:settings_hub")
     await tap("m:advanced")
     offered = set()
     for page in ("advanced", "advanced_1", "advanced_2"):
@@ -453,11 +454,11 @@ async def test_health_mapping_uses_current_report_timezone(bot, monkeypatch):
     health = {"some": "metrics", "timezone": "UTC"}
     controls.health_provider = lambda: health
 
-    def formatter(report):
+    def formatter(report, view="overview"):
         assert report["timezone"] == "Asia/Bangkok"
         return "<b>Health</b>"
 
-    monkeypatch.setattr("revival_radar.diagnostics.format_health", formatter)
+    monkeypatch.setattr("revival_radar.telegram_views.health_page", formatter)
     await controls.handle_update(message("/health"))
     assert health["timezone"] == "UTC"
     assert last_message(requests)["text"] == "<b>Health</b>"

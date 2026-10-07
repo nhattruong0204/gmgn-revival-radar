@@ -32,6 +32,19 @@ private chat; other users and group messages cannot view or change settings.
 
 ## Menu actions
 
+The main menu provides **📊 Status**, **🎯 Strategy presets**, **🩺 Health**,
+**⚙️ Settings**, **🔍 Near misses**, **🔄 Scan now**, **⏸ Pause / ▶️ Resume alerts**,
+and **🧪 Test alert**. **/settings** opens the settings categories directly:
+Chains, Thresholds, Structure, Activity, Alerts, and Reset. Advanced configuration,
+discovery timing, and asset exclusions remain available in this hub.
+
+**Scan now** requires confirmation and wakes the scanner's existing idle loop. A
+running scan finishes first; repeated queued requests do not create duplicate scans.
+The API pacing and cooldown remain in force. **Test alert** requires confirmation,
+sends only to the authorized private owner chat, and labels its data as synthetic.
+It makes no GMGN requests and does not reserve a live alert or change strategy settings.
+The test is available during dry run or pause so owners can inspect the layout.
+
 - **⚙️ Advanced configuration:** all 20 preset settings plus the scan interval, each with
   its current value, across three short pages: Market & eligibility, Activity & chart
   structure, and Delivery & discovery. Use **Next / Previous** to move between pages.
@@ -41,7 +54,8 @@ private chat; other users and group messages cannot view or change settings.
   presets. Selecting a preset later replaces the values that preset controls.
 - **Strategy presets:** preview Strict, Balanced, or Broad, then confirm.
 - **Token filters:** age, market cap, liquidity, holders, drawdown, volume, price change.
-- **Base / ratios:** base duration/range, acceleration, holder retention, concentration.
+- **Structure:** base duration/range, holder retention, concentration.
+- **Activity:** volume and transaction acceleration multipliers.
 - **Alerts:** score threshold, cooldown, score increase, dry-run, pause, daily summary.
 - **Discovery:** source limits, watchlist limits/lifetime, API pacing, scan/history intervals.
 - **Chains:** enable or disable individual supported chains, retaining at least one.
@@ -127,12 +141,31 @@ or reply may need to be sent again.
 
 ## Health reports and classification limits
 
-Alerts lead with token, score and a readable status, followed by Market, Activity and
-Structure. Score and ranking detail uses an expandable section; known risks and missing
-security assessments remain visible. The contract stays copyable and links open GMGN
-or the verified chain explorer. Health reports similarly lead with delivery/scan totals
-and blockers, with technical source counts in expandable details. Telegram controls
-fonts, spacing and theme; these native layouts work without a web app or custom CSS.
+Alerts lead with token/chain, score/stage, market cap, ATH drawdown, liquidity,
+holders, activity triggers and price structure. Known risk deductions and unavailable
+security assessments stay visible; the contract remains copyable. **GMGN** and
+**Explorer** open verified links, while **Why this alert** and **Full details** show
+secondary scoring/ranking evidence. Chain explorers are offered only where configured.
+No new score categories or scanner strategy changes are introduced by this UI update.
+
+Alert and candidate buttons read persisted observation snapshots, including the
+preset/revision used at that time. Later configuration edits cannot rewrite the
+reason for an older alert. Existing records without presentation snapshots show an
+explicit legacy/unavailable message. Historical buttons stay readable after restart,
+while owner/private-chat authorization still applies. Near-miss details expire with
+the existing seven-day diagnostics retention; alert details remain with alert history.
+Presentation snapshots use the existing SQLite state table; schema version 2,
+alert cooldown behavior and existing snapshots remain compatible.
+
+The health overview leads with scanner status, completed/unfinished scans, average
+duration, discovered/evaluated/eligible/alerted totals, headline coverage and biggest
+blockers. **Performance**, **Funnel**, **Data quality**, **Scan configuration**,
+**Near misses**, and **Full diagnostics** open focused pages. Per-route API timing is
+not available in this issue. Coverage percentages describe saved evaluations with
+fields/history available, not API success rates or proof of safety. When a report
+spans multiple configurations, it says so; its footer describes only the latest scan.
+Telegram controls fonts, spacing and theme; these layouts use native messages and
+buttons with text labels on phone and desktop.
 
 `/health` summarizes the past 24 hours: completed/unfinished scans, durations, source
 successes/failures, discovery counts, unique chain/address pairs, score buckets,
@@ -169,3 +202,24 @@ docker compose run --rm --no-deps radar revival-radar health --hours 24 --json
 The GMGN [Telegram interface reference](https://docs.gmgn.ai/index/tg-wallet-import-export-private-key-deposit-withdraw)
 informed the button navigation. Radar controls manage monitoring parameters only; they
 do not import wallets or handle trading keys.
+
+
+## Bot profile and original icon
+
+The repository includes an original square [Revival Radar icon](../assets/revival-radar.png),
+with no Raybot branding or artwork. Profile updates are explicit, never run on startup:
+
+```bash
+revival-radar setup-profile --photo assets/revival-radar.png
+# On the VPS, after rebuilding the image:
+docker compose run --rm --no-deps radar revival-radar setup-profile --photo /app/assets/revival-radar.png
+```
+
+This uses Telegram's official `setMyName`, `setMyDescription`, `setMyShortDescription`,
+`setMyCommands`, and `setMyProfilePhoto` methods. The configured `TELEGRAM_BOT_TOKEN`
+is required; output contains operation status only. The command updates profile metadata
+regardless of alert dry-run mode, because running it is an explicit profile action.
+If Telegram does not support the photo method on your bot/server, use **@BotFather**:
+send `/setuserpic`, select your Revival Radar bot, and upload `assets/revival-radar.png`
+as the picture. `/setname`, `/setdescription`, `/setabouttext`, and `/setcommands`
+provide the corresponding manual metadata controls.

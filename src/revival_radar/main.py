@@ -13,6 +13,7 @@ from pydantic import ValidationError
 from revival_radar.clients.gmgn import DataSourceError, GMGNClient
 from revival_radar.clients.telegram import TelegramClient, format_alert
 from revival_radar.config import Settings
+from revival_radar.config_context import configuration_context
 from revival_radar.demo import DemoSource
 from revival_radar.diagnostics import format_health
 from revival_radar.logging_config import configure_logging
@@ -66,6 +67,12 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
     ):
         raise DataSourceError("Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID for live delivery")
     async with httpx.AsyncClient() as http:
+        if args.command == "setup-profile":
+            from revival_radar.bot_profile import configure_profile
+
+            result = await configure_profile(config, http, args.photo)
+            print(json.dumps(result, indent=2))
+            return 0 if result and all(v == "updated" for v in result.values()) else 1
         telegram = TelegramClient(config, http)
         if args.command == "test-telegram":
             delivery = await telegram.send_text("♻️ Revival Radar test — Telegram connected.")
@@ -86,7 +93,13 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
                     await run_service(runtime, repo, http)
                 return 0
             source = DemoSource() if args.command == "demo" else GMGNClient(config, http)
-            scanner = Scanner(config, source, repo, telegram)
+            scanner = Scanner(
+                config,
+                source,
+                repo,
+                telegram,
+                configuration=configuration_context(config, runtime.revision if runtime else 0),
+            )
             if args.command == "demo":
                 for snapshot in source.histories():
                     repo.save_snapshot(snapshot)
@@ -115,7 +128,7 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
                 if args.command == "demo":
                     for token, result in report.signals:
                         if result.eligible:
-                            print(format_alert(token, result))
+                            print(format_alert(token, result, scanner.configuration))
                 return 1 if report.errors else 0
         finally:
             db.close()
@@ -124,6 +137,11 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Read-only GMGN revival radar")
     sub = parser.add_subparsers(dest="command")
+    profile = sub.add_parser(
+        "setup-profile",
+        help="Explicitly update official Telegram name, descriptions, commands and optional photo",
+    )
+    profile.add_argument("--photo", type=Path)
     sub.add_parser("run", help="Scan continuously (default)")
     sub.add_parser("scan-once", help="One live scan; nonzero exit on partial failures")
     sub.add_parser("test-telegram", help="Send one test message when DRY_RUN=false")

@@ -8,8 +8,9 @@ from revival_radar.analysis.filters import first_pass
 from revival_radar.analysis.market_structure import analyze_structure
 from revival_radar.analysis.scoring import score_token
 from revival_radar.clients.gmgn import MarketDataSource
-from revival_radar.clients.telegram import TelegramClient, format_alert
+from revival_radar.clients.telegram import TelegramClient, alert_buttons, format_alert
 from revival_radar.config import Settings
+from revival_radar.config_context import configuration_context
 from revival_radar.models.signal import RevivalResult, Structure
 from revival_radar.models.token import TokenSnapshot
 from revival_radar.storage.repository import Repository
@@ -74,10 +75,14 @@ class Scanner:
         repository: Repository,
         telegram: TelegramClient,
         delivery_muted: Callable[[], bool] | None = None,
+        configuration: dict | None = None,
     ):
         self.config, self.source = config, source
         self.repository, self.telegram = repository, telegram
         self.delivery_muted = delivery_muted
+        self.configuration = (
+            configuration if configuration is not None else configuration_context(config)
+        )
 
     async def inspect(self, token: TokenSnapshot) -> tuple[TokenSnapshot, RevivalResult]:
         token = await self.source.enrich(token)
@@ -104,7 +109,9 @@ class Scanner:
         report.processed += 1
         report.signals.append((token, result))
         if report.scan_id is not None:
-            self.repository.record_evaluation(report.scan_id, token, result, self.config)
+            self.repository.record_evaluation(
+                report.scan_id, token, result, self.config, self.configuration
+            )
         log.info(
             "signal symbol=%s chain=%s score=%d status=%s eligible=%s",
             token.symbol,
@@ -127,11 +134,13 @@ class Scanner:
         if self.config.alerts_paused or (self.delivery_muted and self.delivery_muted()):
             log.info("alerts paused chain=%s symbol=%s", token.chain, token.symbol)
             return
-        alert_id = self.repository.reserve_alert(token, result, self.config)
+        alert_id = self.repository.reserve_alert(token, result, self.config, self.configuration)
         if alert_id is None:
             log.info("alert cooldown chain=%s symbol=%s", token.chain, token.symbol)
             return
-        delivery = await self.telegram.send_text(format_alert(token, result))
+        delivery = await self.telegram.send_text(
+            format_alert(token, result, self.configuration), alert_buttons(token, alert_id)
+        )
         self.repository.finish_alert(alert_id, delivery.status, delivery.message_id)
         if delivery.status == "sent":
             report.sent += 1
@@ -196,7 +205,7 @@ class Scanner:
     async def scan_once(self) -> ScanReport:
         report = ScanReport(started_at=time.time())
         started = time.monotonic()
-        report.scan_id = self.repository.begin_scan(report.started_at)
+        report.scan_id = self.repository.begin_scan(report.started_at, self.configuration)
         outcomes = await asyncio.gather(
             *(self.scan_chain(chain, report) for chain in self.config.chains),
             return_exceptions=True,

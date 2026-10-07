@@ -15,6 +15,7 @@ FROM python:3.12-slim-bookworm
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1
 WORKDIR /app
 COPY requirements.lock ./
+COPY assets /app/assets
 COPY --from=builder /wheels /wheels
 RUN pip install --no-index --find-links=/wheels --require-hashes -r requirements.lock && \
     pip install --no-index --no-deps /wheels/gmgn_revival_radar-*.whl && \

@@ -47,7 +47,11 @@ class Repository:
         return [TokenSnapshot.model_validate_json(r["payload"]) for r in rows]
 
     def reserve_alert(
-        self, token: TokenSnapshot, result: RevivalResult, config: Settings
+        self,
+        token: TokenSnapshot,
+        result: RevivalResult,
+        config: Settings,
+        configuration: dict | None = None,
     ) -> int | None:
         if config.dry_run or not result.eligible or result.score < config.alert_score_threshold:
             return None
@@ -74,11 +78,39 @@ class Repository:
                 (timestamp,chain,contract_address,score,reason) VALUES (?,?,?,?,?)""",
                 (token.timestamp, *token.key, result.score, json.dumps(result.reasons)),
             )
+            self.db.execute(
+                "INSERT INTO state (key,value,updated_at) VALUES (?,?,?)",
+                (
+                    f"telegram:alert:{cursor.lastrowid}",
+                    self._presentation(token, result, configuration),
+                    token.timestamp,
+                ),
+            )
             self.db.commit()
             return cursor.lastrowid
         except sqlite3.Error:
             self.db.rollback()
             raise
+
+    @staticmethod
+    def _presentation(
+        token: TokenSnapshot, result: RevivalResult, configuration: dict | None
+    ) -> str:
+        # The caller supplies an allowlisted nonsecret configuration snapshot.
+        return json.dumps(
+            {
+                "token": token.model_dump(mode="json"),
+                "signal": result.model_dump(mode="json"),
+                "configuration": configuration or {},
+            }
+        )
+
+    def presentation_detail(self, kind: str, identity: int) -> dict | None:
+        if kind not in {"a", "e"} or not 0 < identity < 2**63:
+            return None
+        key = "alert" if kind == "a" else "evaluation"
+        value = self.get_state(f"telegram:{key}:{identity}")
+        return json.loads(value) if value else None
 
     def finish_alert(self, alert_id: int, status: str, message_id: int | None = None) -> None:
         if status not in {"sent", "failed", "unknown"}:
@@ -89,13 +121,23 @@ class Repository:
                 (status, message_id, alert_id),
             )
 
-    def begin_scan(self, started: float) -> int:
+    def begin_scan(self, started: float, configuration: dict | None = None) -> int:
         with self.db:
             cursor = self.db.execute("INSERT INTO scan_runs (started) VALUES (?)", (started,))
+            if configuration:
+                self.db.execute(
+                    "INSERT INTO state (key,value,updated_at) VALUES (?,?,?)",
+                    (f"telegram:scan:{cursor.lastrowid}", json.dumps(configuration), started),
+                )
         return cursor.lastrowid
 
     def record_evaluation(
-        self, scan_id: int, token: TokenSnapshot, result: RevivalResult, config: Settings
+        self,
+        scan_id: int,
+        token: TokenSnapshot,
+        result: RevivalResult,
+        config: Settings,
+        configuration: dict | None = None,
     ) -> None:
         """Retain every scored token, including those capped by the initial filter."""
         gate = first_pass(token, config)
@@ -154,6 +196,20 @@ class Repository:
                     json.dumps(sorted(token.discovery_source)),
                 ),
             )
+            identity = self.db.execute(
+                "SELECT id FROM evaluations WHERE scan_id=? AND chain=? AND contract_address=?",
+                (scan_id, *token.key),
+            ).fetchone()["id"]
+            self.db.execute(
+                """INSERT INTO state (key,value,updated_at) VALUES (?,?,?)
+                ON CONFLICT(key) DO UPDATE SET
+                value=excluded.value,updated_at=excluded.updated_at""",
+                (
+                    f"telegram:evaluation:{identity}",
+                    self._presentation(token, result, configuration),
+                    token.timestamp,
+                ),
+            )
             self.db.execute(
                 """UPDATE scan_runs SET processed=(SELECT COUNT(*) FROM evaluations WHERE scan_id=?)
                 WHERE id=? AND finished IS NULL""",
@@ -203,6 +259,16 @@ class Repository:
 
     def prune_diagnostics(self, before: float) -> None:
         with self.db:
+            for table, kind in (("evaluations", "evaluation"), ("scan_runs", "scan")):
+                self.db.execute(
+                    f"DELETE FROM state WHERE key IN (SELECT 'telegram:{kind}:' || id FROM {table} "
+                    + (
+                        "WHERE scan_id IN (SELECT id FROM scan_runs WHERE started<?))"
+                        if table == "evaluations"
+                        else "WHERE started<?)"
+                    ),
+                    (before,),
+                )
             self.db.execute(
                 "DELETE FROM evaluations WHERE scan_id IN "
                 "(SELECT id FROM scan_runs WHERE started<?)",
@@ -332,6 +398,7 @@ class Repository:
             item = {
                 name: row[name]
                 for name in (
+                    "id",
                     "timestamp",
                     "chain",
                     "contract_address",
@@ -344,6 +411,8 @@ class Repository:
             item["eligible"] = bool(row["eligible"])
             for field in ("rejection_reasons", "missing_fields", "warnings"):
                 item[field] = json.loads(row[field])
+            detail = self.presentation_detail("e", item["id"])
+            item["configuration"] = detail.get("configuration", {}) if detail else {}
             candidates.append(item)
         alerts = {"sent": 0, "failed": 0, "pending": 0, "unknown": 0}
         for row in self.db.execute(
@@ -353,9 +422,21 @@ class Repository:
         ):
             alerts[row["delivery_status"]] = row["n"]
         alerts["total"] = sum(alerts.values())
+        configurations = []
+        for run in runs:
+            value = self.get_state(f"telegram:scan:{run['id']}")
+            context = json.loads(value) if value else {}
+            if context not in configurations:
+                configurations.append(context)
+        latest = dict(runs[-1]) if runs else {}
+        if latest:
+            value = self.get_state(f"telegram:scan:{latest['id']}")
+            latest["configuration"] = json.loads(value) if value else {}
         return {
             "since": since,
             "until": until,
+            "latest_scan": latest,
+            "configurations": configurations,
             "scans": scans,
             "discovery": discovery,
             "evaluations": evaluations,
