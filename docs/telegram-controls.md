@@ -20,8 +20,8 @@ docker compose logs --tail=80 radar
 ```
 
 If a command fails, resolve it before proceeding. The new image migrates the database
-to schema 2 on startup, preserving snapshots and alert cooldowns. The backup stays in
-`data/`; an older image needs a restored pre-upgrade database rather than schema 2.
+to schema 4 on startup, preserving snapshots and alert cooldowns. The backup stays in
+`data/`; an older image needs a restored pre-upgrade database rather than schema 4.
 Keep an off-server copy of important backups.
 
 With alerts already going to your own positive numeric `TELEGRAM_CHAT_ID`, no extra
@@ -161,8 +161,9 @@ reason for an older alert. Existing records without presentation snapshots show 
 explicit legacy/unavailable message. Historical buttons stay readable after restart,
 while owner/private-chat authorization still applies. Near-miss details expire with
 the existing seven-day diagnostics retention; alert details remain with alert history.
-Presentation snapshots use the existing SQLite state table; the additive schema version 2 → 3 migration,
-alert cooldown behavior and existing snapshots remain compatible.
+Presentation snapshots use the existing SQLite state table. Cache/watchlist migration
+introduced schema 3; [outcome tracking](outcomes.md) now adds schema 4. Alert cooldown
+behavior and existing snapshots remain compatible.
 
 The health overview leads with scanner status, completed/unfinished scans, average
 duration, discovered/evaluated/eligible/alerted totals, headline coverage and biggest
@@ -238,3 +239,27 @@ If Telegram does not support the photo method on your bot/server, use **@BotFath
 send `/setuserpic`, select your Revival Radar bot, and upload `assets/revival-radar.png`
 as the picture. `/setname`, `/setdescription`, `/setabouttext`, and `/setcommands`
 provide the corresponding manual metadata controls.
+
+## Health and outcome drill-downs
+
+Health stays compact: scanner state, chains, preset/revision, completed/unfinished
+scans, average/last duration, discovered/evaluated/eligible/sent counts, history and
+candle/security coverage, and biggest blockers. Context is the latest saved scan;
+edits waiting for the next scan do not rewrite it.
+
+- **Performance:** last duration vs target, endpoint attempts including retries,
+  operation times, security/candle hit rates, pipeline counts and budget deferrals.
+- **Funnel:** per-chain discovered, prefilter, market, baseline, activity, detected
+  base, serious candidates, security, eligible and sent counts. Operations overlap;
+  watchlist candidates are included and this is not a disjoint conversion funnel.
+- **Data Quality:** percentage of saved evaluations supplying Top10, Dev, Sniper,
+  Bundler and Insider, plus baseline/candle/security availability. Zero values count
+  as available; absent data remains unknown. Skipped enrichment affects coverage.
+- **Near Misses:** saved overall and dimension scores, blockers/missing fields,
+  GMGN links and owner-only saved inspection. Legacy dimensions say unknown.
+- **Outcomes:** the last seven days of sent alerts at +1h/+6h/+24h/+72h, including
+  observations, median available return and pending/missed checks. See [tracking semantics](outcomes.md).
+
+Pages use escaped, bounded HTML for phone and desktop, with common navigation buttons.
+The optional missing-insider note belongs in coverage, while known risks and missing
+security assessments remain visible on alerts.

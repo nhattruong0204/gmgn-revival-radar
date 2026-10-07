@@ -268,7 +268,7 @@ def test_dimensions_persist_without_changing_old_alert_payloads(config, repo, to
         assert evaluation["signal"]["setup_score"] == 100
         assert evaluation["configuration"]["settings"]["base_maturity_hours"] == [6, 12, 24, 48, 72]
         assert restored.get_state(f"telegram:alert:{identity}") == prior
-        assert other.execute("PRAGMA user_version").fetchone()[0] == 3
+        assert other.execute("PRAGMA user_version").fetchone()[0] == 4
         assert "fixture-key" not in json.dumps(evaluation)
     finally:
         other.close()

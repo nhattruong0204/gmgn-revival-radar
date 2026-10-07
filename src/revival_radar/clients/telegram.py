@@ -192,7 +192,14 @@ def format_full_alert(token: TokenSnapshot, result: RevivalResult) -> str:
         if len(reasons) > 3:
             details.append(f"+{len(reasons) - 3} other scoring factors")
 
-    warnings = list(dict.fromkeys(_warning(warning) for warning in result.warnings))
+    # Universally sparse optional fields belong in coverage, not repeated watchouts.
+    warnings = list(
+        dict.fromkeys(
+            _warning(warning)
+            for warning in result.warnings
+            if warning != "Insider holdings unavailable"
+        )
+    )
     risk_findings = []
     for key, value in result.components.items():
         if value < 0:

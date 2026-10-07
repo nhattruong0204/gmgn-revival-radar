@@ -2,6 +2,8 @@ import json
 import sqlite3
 import time
 from collections import Counter
+from math import isfinite
+from statistics import median
 from typing import Any
 
 from revival_radar.analysis.acceleration import fresh_history
@@ -91,6 +93,22 @@ class Repository:
                     token.timestamp,
                 ),
             )
+            context = configuration or {}
+            self.db.execute(
+                "INSERT INTO alert_signals VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (
+                    cursor.lastrowid,
+                    token.price,
+                    token.market_cap,
+                    result.score,
+                    result.setup_score,
+                    result.trigger_score,
+                    result.confirmation_score,
+                    result.status,
+                    context.get("preset"),
+                    context.get("revision"),
+                ),
+            )
             self.db.commit()
             return cursor.lastrowid
         except sqlite3.Error:
@@ -150,8 +168,12 @@ class Repository:
         """Retain every scored token, including those capped by the initial filter."""
         gate = first_pass(token, config)
         blockers = list(gate.reasons)
-        if not result.structure.base_detected:
+        if not result.structure.available or not result.structure.base_detected:
             blockers.append("no_base")
+        elif result.structure.base_duration_hours < config.base_min_hours:
+            blockers.append("base_too_short")
+        if not result.eligible and any("deferred" in w.lower() for w in result.warnings):
+            blockers.append("enrichment_deferred")
         if not has_returning_activity(result):
             blockers.append("no_returning_activity")
         if token.security.dangerous is True:
@@ -162,7 +184,14 @@ class Repository:
         for field in ("ath_market_cap", "volume_5m", "tx_5m", "tx_1h"):
             if getattr(token, field) is None:
                 missing.append(field)
-        for field in ("top10_ratio", "insider_ratio", "dangerous"):
+        for field in (
+            "top10_ratio",
+            "dev_ratio",
+            "sniper_ratio",
+            "bundler_ratio",
+            "insider_ratio",
+            "dangerous",
+        ):
             if getattr(token.security, field) is None:
                 missing.append(f"security.{field}")
         recent = fresh_history(token, self.history(token, config.history_observations * 3), config)
@@ -411,6 +440,32 @@ class Repository:
             "counting_note": "Counts describe evaluations, not unique tokens. Each evaluation "
             "can have multiple rejection reasons and missing fields; counts are not exclusive.",
         }
+        coverage = self.db.execute(
+            """SELECT COUNT(*) AS known,
+                SUM(json_extract(st.value,'$.signal.structure.available')=1) AS candles,
+                SUM(json_extract(st.value,'$.token.security.top10_ratio') IS NOT NULL)
+                    AS "security.top10_ratio",
+                SUM(json_extract(st.value,'$.token.security.dev_ratio') IS NOT NULL)
+                    AS "security.dev_ratio",
+                SUM(json_extract(st.value,'$.token.security.sniper_ratio') IS NOT NULL)
+                    AS "security.sniper_ratio",
+                SUM(json_extract(st.value,'$.token.security.bundler_ratio') IS NOT NULL)
+                    AS "security.bundler_ratio",
+                SUM(json_extract(st.value,'$.token.security.insider_ratio') IS NOT NULL)
+                    AS "security.insider_ratio",
+                SUM(json_extract(st.value,'$.token.security.dangerous') IS NOT NULL
+                    OR json_extract(st.value,'$.token.security.top10_ratio') IS NOT NULL
+                    OR json_extract(st.value,'$.token.security.dev_ratio') IS NOT NULL
+                    OR json_extract(st.value,'$.token.security.sniper_ratio') IS NOT NULL
+                    OR json_extract(st.value,'$.token.security.bundler_ratio') IS NOT NULL
+                    OR json_extract(st.value,'$.token.security.insider_ratio') IS NOT NULL
+                ) AS security
+            FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id
+            JOIN state st ON st.key='telegram:evaluation:' || e.id AND json_valid(st.value)
+            WHERE s.started>=? AND s.started<=?""",
+            params,
+        ).fetchone()
+        evaluations["coverage"] = {key: value or 0 for key, value in dict(coverage).items()}
         candidates = []
         # Bound the report to ten distinct chain/address pairs, including low-score near misses.
         query = (
@@ -440,6 +495,9 @@ class Repository:
                 item[field] = json.loads(row[field])
             detail = self.presentation_detail("e", item["id"])
             item["configuration"] = detail.get("configuration", {}) if detail else {}
+            signal = detail.get("signal", {}) if detail else {}
+            for dimension in ("setup_score", "trigger_score", "confirmation_score"):
+                item[dimension] = signal.get(dimension)
             candidates.append(item)
         alerts = {"sent": 0, "failed": 0, "pending": 0, "unknown": 0}
         for row in self.db.execute(
@@ -472,6 +530,7 @@ class Repository:
             "evaluations": evaluations,
             "alerts": alerts,
             "best_candidates": candidates,
+            "outcomes": self.outcome_summary(until - 7 * 86400, until),
         }
 
     @sqlite_timed
@@ -596,3 +655,95 @@ class Repository:
             token.key,
         ).fetchone()
         return dict(row) if row else {}
+
+    @sqlite_timed
+    def observe_outcomes(self, token: TokenSnapshot) -> int:
+        """First usable snapshot within one hour after each horizon, without interpolation."""
+        if token.price is None and token.market_cap is None:
+            return 0
+        rows = self.db.execute(
+            """WITH horizons(hours) AS (VALUES(1),(6),(24),(72))
+            SELECT a.id, s.price, h.hours, a.timestamp+h.hours*3600 AS due
+            FROM alerts a JOIN alert_signals s ON s.alert_id=a.id CROSS JOIN horizons h
+            WHERE a.chain=? AND a.contract_address=? AND a.delivery_status='sent'
+            AND ? BETWEEN a.timestamp+h.hours*3600 AND a.timestamp+(h.hours+1)*3600""",
+            (*token.key, token.timestamp),
+        ).fetchall()
+        inserted = 0
+        with self.db:
+            for row in rows:
+                initial = row["price"]
+                change = (
+                    (token.price / initial - 1) * 100
+                    if token.price is not None and initial is not None and initial > 0
+                    else None
+                )
+                if change is not None and not isfinite(change):
+                    change = None
+                cursor = self.db.execute(
+                    "INSERT OR IGNORE INTO signal_outcomes VALUES (?,?,?,?,?,?,?)",
+                    (
+                        row["id"],
+                        row["hours"],
+                        row["due"],
+                        token.timestamp,
+                        token.price,
+                        token.market_cap,
+                        change,
+                    ),
+                )
+                inserted += cursor.rowcount
+        return inserted
+
+    @sqlite_timed
+    def due_outcome_tokens(self, now: float, chains: list[str], limit: int) -> list[TokenSnapshot]:
+        """Poll sent alerts independently of watchlist expiry; share the market budget."""
+        if not chains or limit <= 0:
+            return []
+        placeholders = ",".join("?" for _ in chains)
+        rows = self.db.execute(
+            """WITH horizons(hours) AS (VALUES(1),(6),(24),(72))
+            SELECT a.chain,a.contract_address,MIN(a.timestamp+h.hours*3600) AS due
+            FROM alerts a CROSS JOIN horizons h
+            LEFT JOIN signal_outcomes o ON o.alert_id=a.id AND o.horizon_hours=h.hours
+            WHERE a.delivery_status='sent' AND o.alert_id IS NULL
+            AND a.timestamp BETWEEN ? AND ?
+            AND ? BETWEEN a.timestamp+h.hours*3600 AND a.timestamp+(h.hours+1)*3600
+            AND a.chain IN ("""
+            + placeholders
+            + """ )
+            GROUP BY a.chain,a.contract_address ORDER BY due,a.chain,a.contract_address LIMIT ?""",
+            (now - 73 * 3600, now - 3600, now, *chains, limit),
+        ).fetchall()
+        return [
+            TokenSnapshot(
+                timestamp=now, chain=row["chain"], contract_address=row["contract_address"]
+            )
+            for row in rows
+        ]
+
+    def outcome_summary(self, since: float, until: float) -> dict:
+        result = {}
+        for hours in (1, 6, 24, 72):
+            rows = self.db.execute(
+                """SELECT a.timestamp,o.observed_at,o.return_pct FROM alerts a
+                LEFT JOIN signal_outcomes o ON o.alert_id=a.id AND o.horizon_hours=?
+                WHERE a.delivery_status='sent' AND a.timestamp BETWEEN ? AND ?""",
+                (hours, since, until),
+            ).fetchall()
+            values = [row["return_pct"] for row in rows if row["return_pct"] is not None]
+            result[str(hours)] = {
+                "observed": sum(row["observed_at"] is not None for row in rows),
+                "returns_available": len(values),
+                "positive": sum(value > 0 for value in values),
+                "median_return_pct": median(values) if values else None,
+                "pending": sum(
+                    row["observed_at"] is None and until <= row["timestamp"] + (hours + 1) * 3600
+                    for row in rows
+                ),
+                "missed": sum(
+                    row["observed_at"] is None and until > row["timestamp"] + (hours + 1) * 3600
+                    for row in rows
+                ),
+            }
+        return result

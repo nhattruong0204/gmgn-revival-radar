@@ -312,7 +312,7 @@ def test_schema_two_migration_preserves_all_existing_content(config, tmp_path, t
     migrated = connect(path)
     for name, records in saved.items():
         assert [tuple(r) for r in migrated.execute(f"SELECT * FROM {name}")] == records
-    assert migrated.execute("PRAGMA user_version").fetchone()[0] == 3
+    assert migrated.execute("PRAGMA user_version").fetchone()[0] == 4
     migrated.close()
     reopened = connect(path)
     assert reopened.execute("SELECT count(*) FROM token_snapshots").fetchone()[0] == 1

@@ -21,7 +21,7 @@ chmod 600 .env
 
 The demo needs no credentials or Internet. It runs three synthetic scenarios through
 the real analysis, scanner, SQLite, and alert formatting code. Expected results:
-REVIVE **100**, DEAD **0**, PUMPED **39**; one potential alert, **zero messages sent**.
+REVIVE **90**, DEAD **0**, PUMPED **39**; one potential alert, **zero messages sent**.
 Demo always forces dry-run and uses `data/demo.db`, separate from the live database.
 Fixture addresses are illustrative; the synthetic numbers are not real market claims.
 
@@ -69,7 +69,9 @@ for the official source revision, exact units, observed API differences, and cov
 | `robinhood` | Robinhood Chain | Supported; metric availability varies |
 | `arc` | Arc | Supported; metric availability varies |
 
-Use `ENABLED_CHAINS=sol,bsc` to restrict scanning. Discovery windows are
+Start with **`ENABLED_CHAINS=sol`**, the runtime and example default. Add other chains
+only after reviewing API quota and measured scan duration. `ENABLED_CHAINS=sol,bsc`
+opts into two chains. Discovery windows are
 `1m,5m,1h,6h,24h` via `DISCOVERY_INTERVAL`; token info supplies those metric windows
 when available. Base analysis deliberately uses **closed 1h candles**, up to seven days.
 GMGN also documents finer candle resolutions, but those are outside this small V1.
@@ -91,10 +93,16 @@ Alerts lead with a compact token/chain, score/stage, market, trigger and structu
 summary. **GMGN**, **Explorer**, **Why this alert**, and **Full details** buttons keep
 secondary information out of the first view. Historical detail uses the saved alert
 snapshot and preset/revision, never newer metrics. Setup/trigger/confirmation sub-scores
-appear only if the scorer supplies them; the current scoring algorithm is unchanged.
+are each shown out of 100 for new signals. Legacy observations keep unknown dimensions;
+the overall score combines dimension weights before risk deductions.
 
 **/health** opens a compact overview; timing, discovery/delivery, coverage, configuration,
-near misses, and full diagnostics have separate pages. Scan Now requests the next scan
+near misses, outcomes, and full diagnostics have separate pages. Performance includes
+endpoint attempts, operation times and security/candle cache hit rates. Funnel shows
+per-chain discovery, prefilter, market, baseline, activity, base, eligibility and delivery
+counts. Near misses show all three scores, blockers and missing data, with GMGN and
+saved-inspection buttons. Data Quality reports availability of Top10, Dev, Sniper,
+Bundler and Insider fields instead of repeating missing insider notes in every alert. Scan Now requests the next scan
 without overlapping a running scan. Test Alert sends an explicitly synthetic example
 to the owner chat without any GMGN requests, including when live alerts are suppressed.
 Both actions require confirmation. See [Telegram controls and the VPS upgrade guide](docs/telegram-controls.md)
@@ -148,7 +156,7 @@ Environment variables override `.env`. Invalid ranges fail at startup without du
 |---|---:|---|
 | `GMGN_API_KEY` | empty | Required for live market requests |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | empty | Required for live delivery |
-| `ENABLED_CHAINS` | `sol,bsc,base,robinhood,arc` | Comma-separated chain IDs |
+| `ENABLED_CHAINS` | `sol` | Comma-separated chain IDs; start with Solana only |
 | `SCAN_INTERVAL_SECONDS` | 300 | Target cadence; cycles never overlap |
 | `DATABASE_PATH` | `data/revival_radar.db` | Persistent SQLite database |
 | `TOKEN_MIN_AGE_HOURS` | 48 | Minimum token age |
@@ -171,6 +179,19 @@ Environment variables override `.env`. Invalid ranges fail at startup without du
 | `BASE_MAX_RANGE_RATIO`, `KLINE_LOOKBACK_HOURS` | 0.25 / 168 | Base width and candle window |
 | `HTTP_TIMEOUT_SECONDS`, `HTTP_ATTEMPTS` | 20 / 3 | Bounded read retries |
 | `REQUEST_SPACING_SECONDS`, `RETRY_MAX_WAIT_SECONDS` | 1.5 / 10 | Shared quota pacing |
+| `MIN_TX_5M_FOR_ACCELERATION`, `MIN_TX_1H_FOR_ACCELERATION` | 10 / 60 | Matching-window transaction floors |
+| `MIN_VOLUME_5M_FOR_ACCELERATION` | 2000 | USD 5m volume floor |
+| `MIN_VOLUME_5M_LIQUIDITY_RATIO`, `MIN_VOLUME_1H_LIQUIDITY_RATIO` | 0.01 / 0.06 | Matching-window volume/liquidity floors |
+| `VOLATILITY_COMPRESSION_THRESHOLD` | 0.25 | Small Setup bonus threshold |
+| `BASE_MATURITY_HOURS` | `[6,12,24,48,72]` | Progressive maturity boundaries |
+| `BASE_MATURITY_FRACTIONS` | `[0.3333333333333333,0.5333333333333333,0.8,1]` | Fractions of the base weight |
+| `STRONG_BASE_MIN_HOURS`, `CONFIRMED_BASE_MIN_HOURS` | 48 / 72 | Maturity for top stages |
+| `WATCH_SCORE_THRESHOLD`, `EARLY_REVIVAL_SCORE_THRESHOLD`, `REVIVING_SCORE_THRESHOLD` | 40 / 60 / 70 | Stage gates, with structural requirements |
+| `STRONG_REVIVAL_SCORE_THRESHOLD`, `CONFIRMED_REVIVAL_SCORE_THRESHOLD` | 80 / 85 | Top-stage score gates |
+| `SECURITY_CACHE_TTL_SECONDS`, `KLINE_CACHE_TTL_SECONDS` | 1800 / 900 | Persistent slow-data cache settings |
+| `MAX_MARKET_ENRICH_PER_SCAN`, `MAX_SECURITY_ENRICH_PER_SCAN`, `MAX_KLINE_FETCH_PER_SCAN` | 40 / 8 / 12 | Operation budgets; retries still use shared HTTP pacing |
+| `WATCHLIST_HIGH_SCORE_INTERVAL_SECONDS`, `WATCHLIST_NORMAL_INTERVAL_SECONDS` | 150 / 600 | Due polling tiers |
+| `WATCHLIST_EXPIRE_HOURS` | unset | Uses `WATCHLIST_HOURS` when unset |
 
 Advanced knobs are in `config.py`: holder retention (0.9), new-low tolerance (0.03),
 breakout margin (0.01), retest tolerance (0.02), concentration (0.5), insider/dev
@@ -212,7 +233,7 @@ Telegram (or dry-run log)
    Three-candle swing points identify higher lows/highs; volatility compression compares
    normalized candle ranges in the two halves. This is a deliberately approximate pattern.
 6. Fetch security for candidates whose base, activity and optimistic score can qualify
-   for an alert, then apply the unchanged scorer with fresh security. Retain warnings
+   for an alert, then compute all scoring dimensions with fresh security. Retain warnings
    when optional security is unavailable. Award points and explain every contribution.
    **Alerts also require a detected base,
    returning volume or transactions, and no known dangerous security flag.** First
@@ -223,6 +244,10 @@ Telegram (or dry-run log)
    Rejected sends may retry next scan; transport/5xx uncertainty is not immediately retried
    because Telegram has no idempotency key. A crash can therefore miss an alert instead of
    duplicating one. Dry-run stores snapshots but creates no alert reservations.
+8. Persist each alert's price, market cap, scores, stage and preset/revision atomically.
+   Once delivery is confirmed, observe **+1h, +6h, +24h and +72h** outcomes. Reuse
+   fresh market polls; any extra checkpoint polls share the market request budget.
+   Tracking continues after watchlist expiry on enabled chains. See [outcome tracking](docs/outcomes.md).
 
 Each completed scan records operation timings, endpoint attempts including retries,
 and candidate counts. Open **Health → Performance / Funnel** to inspect the latest
@@ -230,6 +255,24 @@ scan. See [scanner performance and measured benchmarks](docs/scanner-performance
 for timing definitions, limitations and reproducible Solana dry runs.
 [Cache, budget and watchlist settings](docs/scanner-caching.md) describe persistent
 security/candle reuse, candidate priority, the schema migration and repeat-scan benchmarks.
+
+### Post-alert learning
+
+**Health → Outcomes** summarizes the last seven days of confirmed deliveries at each
+checkpoint: observations, available returns, median return, pending and missed checks.
+The first usable snapshot within one hour after a checkpoint wins; actual due and
+observation times are stored. Price return is `(later_price / alert_price − 1) × 100`.
+Missing or zero initial prices produce unknown returns, never fabricated zero returns.
+Unique alert/horizon keys prevent duplicates across scans and restarts. These are
+sampled market observations, not executable returns or a trading/backtest engine.
+
+### Final Solana benchmark
+
+[Final measured validation](docs/final-validation.md) records a fresh Solana-only
+live dry run and repeated public-response replay with endpoint counts, stage timing,
+cache reuse, candidate counts and limitations. Both use isolated temporary databases
+and disable Telegram delivery. To reproduce, use the benchmark commands documented
+there; do not copy credentials into command lines or artifacts.
 
 ### Score rules
 
@@ -242,7 +285,8 @@ subtracts existing risk penalties. Failed essential filters still cap it at 39.
 Volume/TX acceleration bonuses require matching-window absolute floors. A 2 → 4 TX
 surge cannot earn the transaction bonus. Volume is also measured relative to liquidity;
 missing or zero liquidity does not become a fabricated zero ratio. Detected bases earn
-progressive credit at 6/12/24/48 hours, with a maturity bonus at 72 hours by default.
+progressive credit at 6/12/24/48 hours once `BASE_MIN_HOURS` (24h by default)
+passes, with a maturity bonus at 72 hours by default.
 Compression adds a small Setup component.
 
 New stages are `IGNORE`, `WATCH`, `EARLY_REVIVAL`, `REVIVING`, `STRONG_REVIVAL`, and
@@ -344,9 +388,9 @@ uv pip compile requirements-build.in --generate-hashes -o requirements-build.loc
 
 `clients/gmgn.py` exposes a small `MarketDataSource` protocol so another documented
 provider can supply discovery/enrichment/candles later without replacing scoring or storage.
-SQLite initializes schema version 3 automatically, enables WAL and busy timeout,
-and refuses a newer unknown schema. Version 0.2 migrates to schema 2 while preserving
-snapshots and cooldowns; back up with `scripts/backup_database.py` inside the existing
+SQLite initializes schema version 4 automatically, enables WAL and busy timeout,
+and refuses a newer unknown schema. Version 0.2 safely migrates older schemas while preserving
+snapshots, alerts, presentation payloads and cooldowns; back up with `scripts/backup_database.py` inside the existing
 container before upgrading (see the upgrade guide). Diagnostic evaluations are retained
 for seven days, while `data/radar-controls.json` stores nonsecret Telegram overrides.
 Keep database/WAL files together when backing up

@@ -1,0 +1,354 @@
+{
+  "label": "issue5-final-solana-live",
+  "mode": "live GMGN Solana dry run",
+  "measured_at_utc": "2026-10-07T15:57:12.698150+00:00",
+  "duration_seconds": 18.243793,
+  "endpoint_attempts": {
+    "/v1/market/hot_searches": 1,
+    "/v1/market/rank": 1,
+    "/v1/token/info": 5,
+    "/v1/token/security": 0,
+    "/v1/market/token_kline": 0
+  },
+  "http_status_counts": {
+    "200": 7
+  },
+  "adapter_request_seconds": {
+    "discovery": 3.38209,
+    "market": 14.815924,
+    "security": 0,
+    "kline": 0,
+    "sqlite": 0.014861,
+    "telegram": 0
+  },
+  "candidates": {
+    "discovered": 38,
+    "evaluated": 38,
+    "market_filter_pass": 5,
+    "activity_trigger": 0,
+    "base_detected": 0,
+    "eligible": 0,
+    "potential_alerts": 0,
+    "sent": 0,
+    "errors": 0
+  },
+  "discovered_keys": [
+    [
+      "sol",
+      "2WZnseF9pVjbEgbyuiPA9uukpDGymsMF2JcfLQGypump"
+    ],
+    [
+      "sol",
+      "39ahtL8ynzE4amH26J29C93PA5172V3ft9UuUcqQS8fz"
+    ],
+    [
+      "sol",
+      "41QF43mQKs1Qm51xK7uQWjxRA9oZ6S5mBVYveR4wLfzx"
+    ],
+    [
+      "sol",
+      "4AvWfTKcEFqwRjxBnoyWRY7wF7UV9cqH3492UFKHpump"
+    ],
+    [
+      "sol",
+      "4GLrkSYby3c9mQvHPKKwV1vLELYjx9yKVSq1gkzRpump"
+    ],
+    [
+      "sol",
+      "4dwmQNVWQbeEhsTuofWNVrmN7JPnmPXgGETLW6kvHwPM"
+    ],
+    [
+      "sol",
+      "4g2ToCkuFSBdW8GTJWMgnL7hGH2b2G2WkxgmS87Rpump"
+    ],
+    [
+      "sol",
+      "4tDqdSp4QHu5NqUgs5LtqiZ9kYCTquHVGVnMqYzRpump"
+    ],
+    [
+      "sol",
+      "544hXznGDYNX1R5bKHETtSTcaZ7kVhBZz2tk9dUR23H8"
+    ],
+    [
+      "sol",
+      "5sLHWDe5yLwjjGvjpPgyceMgLo5HG1a6JH77XN1Spump"
+    ],
+    [
+      "sol",
+      "5tCju6YNxHq5zrA6tGndr6F7TK42mpUFmeE31cSFpump"
+    ],
+    [
+      "sol",
+      "6GmAFSYs4gk3FDao5FzzySQpPZaWsa4rUJHacpMpUNgx"
+    ],
+    [
+      "sol",
+      "6K1u9GCafYNKqYxJZe2norKK25UAf9pWZ32tuD5wpump"
+    ],
+    [
+      "sol",
+      "6yE29HvdN2B8qyNXX99Fgz98vr1gVbFTPTDvbmXxpump"
+    ],
+    [
+      "sol",
+      "7VertkgF9KLhxxJXHX6uaWuoYZTP9LdGj2bWmVXVpump"
+    ],
+    [
+      "sol",
+      "7sGrkreGkheyJamnsu55uRX527rrH2Fue9io9p72P6Ka"
+    ],
+    [
+      "sol",
+      "8WnqhViGhJ8t4i22Kip8QUEuw7nGyqRqUdVhn11pump"
+    ],
+    [
+      "sol",
+      "8tbpzN7Noa6ZxDg5dREGJqWuLkdScJxvJ3L2sL7io4Jg"
+    ],
+    [
+      "sol",
+      "8uA5fVLw2TeK3UMympuorTXNY7ni8qpuW4MdfP6apump"
+    ],
+    [
+      "sol",
+      "98kfF7rmsg1QDUEoCqNE7g7M1FdrTt92TEp2CLzypump"
+    ],
+    [
+      "sol",
+      "9CQNgNBy4DGiuZefQqmvUCC7GzEme1RkfLVrb49Npump"
+    ],
+    [
+      "sol",
+      "9tV8cs2ezwb4ovC7AELZqvytYCGfvPJwXantJ7tupump"
+    ],
+    [
+      "sol",
+      "Bjdhn1qsygJ2FUKz4RsxKJDhS4hgafvWN5Jybx19Gjh2"
+    ],
+    [
+      "sol",
+      "C1mBfBoDkwWfd6uTFZp62ARHLjeVp3bDpCDMfMZtPngE"
+    ],
+    [
+      "sol",
+      "CscZaq5twomhUkvCY8Jdd1tge32L4Yj9FbkFFEZQpump"
+    ],
+    [
+      "sol",
+      "DEQKHY5YVPFiwcVhoUUE5gnkWj66LVPoPgLHAswqpump"
+    ],
+    [
+      "sol",
+      "DEW9dSN6QpWyNthphCpMmAbZP1Q4cEKR9xQXAri98WDP"
+    ],
+    [
+      "sol",
+      "DHTDhRAKK5yrhdgnoKFShCtK1WcrZNnp75z6ibo5pump"
+    ],
+    [
+      "sol",
+      "DJTu7vi8norVzdVAffgvb39VP7wjKeTsgaMBJrzfxvoF"
+    ],
+    [
+      "sol",
+      "DY5bMEtaFmtpqX1quq3Rh87D5dKAbkEt7hqoY94GrHCW"
+    ],
+    [
+      "sol",
+      "DcqjTXZeE2nY6s2jXuQaeR1FEW4ZDziddhijxGPnmPsE"
+    ],
+    [
+      "sol",
+      "Dm4ubhDZh7BihSs9uvvEDTm7hTqHsnymwJdx5rtmkGUL"
+    ],
+    [
+      "sol",
+      "DoVAVzViX8Bjy3r15nwikSaSbzE6dV4ovd28aWpJpump"
+    ],
+    [
+      "sol",
+      "EFn88CiiFHhihqdr1Y11XBDxbbYarBf1ij92DsrigYwR"
+    ],
+    [
+      "sol",
+      "EkVwpbXdiuQQ26gd3kvY2k5XSY9aCLFokeL43d6Syt7A"
+    ],
+    [
+      "sol",
+      "FyGhuKZgCDUBbGJkG2qx1pX2ZfRpgtnEwiZcneKspump"
+    ],
+    [
+      "sol",
+      "HzYCHqAN2uoHGRnL9v2ChCfFQX3bvJuJd5zu2Hd5MZQy"
+    ],
+    [
+      "sol",
+      "J4KKkYhmA6WxN9KkZ55EywFeujDEopwh3aX9MuoUpump"
+    ]
+  ],
+  "configuration": {
+    "preset": "Strict",
+    "revision": 0,
+    "overrides": 0,
+    "settings": {
+      "acceleration_cap": 20.0,
+      "alert_cooldown_hours": 6.0,
+      "alert_score_threshold": 75,
+      "alerts_paused": false,
+      "base_maturity_fractions": [
+        0.3333333333333333,
+        0.5333333333333333,
+        0.8,
+        1.0
+      ],
+      "base_maturity_hours": [
+        6.0,
+        12.0,
+        24.0,
+        48.0,
+        72.0
+      ],
+      "base_max_range_ratio": 0.25,
+      "base_min_hours": 24.0,
+      "base_sufficient_hours": 72.0,
+      "breakout_margin": 0.01,
+      "bundler_max_ratio": 0.3,
+      "confirmed_base_min_hours": 72.0,
+      "confirmed_revival_score_threshold": 85,
+      "daily_summary_enabled": false,
+      "daily_summary_hour": 9,
+      "dev_drop_threshold": 0.02,
+      "discovery_interval": "1h",
+      "discovery_limit": 20,
+      "dry_run": true,
+      "early_revival_score_threshold": 60,
+      "enabled_chains": "sol",
+      "exclude_stablecoins": true,
+      "exclude_tokenized_stocks": true,
+      "exclude_wrapped_assets": true,
+      "history_max_gap_seconds": 900.0,
+      "history_observations": 6,
+      "holder_retention_ratio": 0.9,
+      "hot_rank_improvement": 10,
+      "insider_drop_threshold": 0.05,
+      "kline_cache_ttl_seconds": 900.0,
+      "kline_lookback_hours": 168,
+      "liquidity_drop_threshold": 0.2,
+      "major_low_tolerance": 0.03,
+      "max_ath_drawdown": 0.95,
+      "max_kline_fetch_per_scan": 12,
+      "max_market_cap": 10000000.0,
+      "max_market_enrich_per_scan": 40,
+      "max_price_change_1h": 75.0,
+      "max_price_change_5m": 30.0,
+      "max_security_enrich_per_scan": 8,
+      "min_ath_drawdown": 0.65,
+      "min_holders": 300,
+      "min_liquidity": 30000.0,
+      "min_market_cap": 100000.0,
+      "min_tx_1h_for_acceleration": 60,
+      "min_tx_5m_for_acceleration": 10,
+      "min_volume_1h": 50000.0,
+      "min_volume_1h_liquidity_ratio": 0.06,
+      "min_volume_5m_for_acceleration": 2000.0,
+      "min_volume_5m_liquidity_ratio": 0.01,
+      "minimum_history_observations": 3,
+      "realert_score_increase": 10,
+      "report_timezone": "Asia/Bangkok",
+      "request_spacing_seconds": 3.0,
+      "retest_tolerance": 0.02,
+      "reviving_score_threshold": 70,
+      "scan_interval_seconds": 300.0,
+      "security_cache_ttl_seconds": 1800.0,
+      "sniper_max_ratio": 0.3,
+      "strong_base_min_hours": 48.0,
+      "strong_revival_score_threshold": 80,
+      "token_min_age_hours": 48.0,
+      "top10_max_ratio": 0.5,
+      "tx_acceleration_threshold": 1.5,
+      "volatility_compression_threshold": 0.25,
+      "volume_acceleration_threshold": 1.5,
+      "watch_score_threshold": 40,
+      "watchlist_expire_hours": null,
+      "watchlist_high_score_interval_seconds": 150.0,
+      "watchlist_hours": 24.0,
+      "watchlist_limit": 100,
+      "watchlist_normal_interval_seconds": 600.0,
+      "weights": {
+        "drawdown": 10,
+        "liquidity": 10,
+        "holders": 5,
+        "base": 15,
+        "base_duration": 5,
+        "volume_5m": 15,
+        "volume_1h": 10,
+        "transactions": 10,
+        "hot_rank": 5,
+        "both_sources": 5,
+        "higher_low": 5,
+        "higher_high": 5,
+        "breakout": 5,
+        "concentration_penalty": 10,
+        "insider_penalty": 20,
+        "dev_penalty": 25,
+        "liquidity_penalty": 25,
+        "danger_penalty": 40,
+        "compression": 5,
+        "trending": 5,
+        "retest": 5,
+        "setup_dimension": 30,
+        "trigger_dimension": 40,
+        "confirmation_dimension": 30,
+        "sniper_penalty": 5,
+        "bundler_penalty": 5
+      }
+    }
+  },
+  "instrumentation": {
+    "seconds": {
+      "total": 18.243244,
+      "discovery": 3.387476,
+      "market": 14.82309,
+      "security": 0,
+      "kline": 0,
+      "sqlite": 0.021053,
+      "telegram": 0
+    },
+    "calls": {
+      "/v1/market/hot_searches": 1,
+      "/v1/market/rank": 1,
+      "/v1/token/info": 5,
+      "/v1/token/security": 0,
+      "/v1/market/token_kline": 0
+    },
+    "failures": {},
+    "cache": {
+      "market_fetch": 5
+    },
+    "deferred": {}
+  },
+  "funnel": {
+    "sol": {
+      "discovered": 38,
+      "watchlist_added": 0,
+      "prefilter_checked": 38,
+      "prefilter_pass": 5,
+      "prefilter_rejected": 33,
+      "market_enriched": 5,
+      "market_pass": 5,
+      "baseline_ready": 0,
+      "activity_trigger": 0,
+      "kline_requested": 0,
+      "base_detected": 0,
+      "serious_candidates": 0,
+      "security_requested": 0,
+      "security_enriched": 0,
+      "evaluated": 38,
+      "eligible": 0,
+      "potential_alerts": 0,
+      "alerted": 0,
+      "outcome_polled": 0
+    }
+  },
+  "stopped_for_auth_or_rate_limit": false
+}

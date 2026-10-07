@@ -120,7 +120,7 @@ def test_saved_alert_detail_is_immutable_survives_reopen_and_contains_no_secrets
     other = connect(Path(path))
     try:
         assert Repository(other).presentation_detail("a", identity) == detail
-        assert other.execute("PRAGMA user_version").fetchone()[0] == 3
+        assert other.execute("PRAGMA user_version").fetchone()[0] == 4
     finally:
         other.close()
     assert repo.presentation_detail("a", 2**63) is None
@@ -356,6 +356,7 @@ async def test_health_submenus_and_near_miss_inspection_use_saved_observations(
             ("performance", "Scan timing"),
             ("funnel", "Discovery &amp; delivery"),
             ("quality", "Data coverage"),
+            ("outcomes", "Post-alert outcomes"),
             ("config", "Latest scan configuration"),
             ("near", "Near misses"),
             ("full", "Radar health"),

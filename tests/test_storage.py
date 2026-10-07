@@ -21,7 +21,7 @@ def test_snapshots_nullable_dedup_and_persistence(repo, token, history):
     row = repo.db.execute("SELECT volume_1m FROM token_snapshots LIMIT 1").fetchone()
     assert row[0] is None
     assert len(repo.history(token)) == 4
-    assert repo.db.execute("PRAGMA user_version").fetchone()[0] == 3
+    assert repo.db.execute("PRAGMA user_version").fetchone()[0] == 4
     assert len(repo.watchlist("sol", 0, 10)) == 1
 
 

@@ -135,7 +135,8 @@ Telegram preset controls and weight editing continue to work. Non-secret thresho
 allocations and score version are persisted with each new observation; later edits
 cannot rewrite an older alert's explanation.
 
-No SQLite migration is needed beyond the existing schema version 3. New fields
+Scoring dimension fields require no separate schema migration. Outcome tracking
+now uses additive schema version 4 (see [migration details](outcomes.md)). Scoring fields
 are inside persisted signal JSON in the existing state table. Older alerts and
 snapshots are neither rescored nor backfilled. Legacy dimension fields default to
 unknown and remain hidden; existing stage strings such as `EARLY_WATCH` and

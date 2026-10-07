@@ -283,7 +283,7 @@ async def test_timing_counts_persist_restart_reset_and_leave_schema_compatible(c
         restored = Repository(reopened).health(0)
         assert restored["latest_scan"]["performance"] == second.performance
         assert restored["latest_scan"]["funnel"] == second.funnel
-        assert reopened.execute("PRAGMA user_version").fetchone()[0] == 3
+        assert reopened.execute("PRAGMA user_version").fetchone()[0] == 4
         for view in ("performance", "funnel"):
             text = health_page(restored, view)
             assert len(text.encode("utf-16-le")) // 2 <= 4096

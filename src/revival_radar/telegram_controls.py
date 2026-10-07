@@ -911,20 +911,31 @@ class TelegramControls:
                 self._button("🧪 Data quality", "health:quality"),
                 self._button("🎯 Near misses", "health:near"),
             ],
-            [self._button("⚙️ Scan configuration", "health:config")],
+            [
+                self._button("📈 Outcomes", "health:outcomes"),
+                self._button("⚙️ Scan configuration", "health:config"),
+            ],
             [self._button("📋 Full diagnostics", "health:full")],
             [self._button("🔄 Overview", "health"), self._button("🏠 Main menu", "m:home")],
         ]
         if view == "near" and isinstance(result, Mapping):
             for item in result.get("best_candidates", [])[:3]:
                 if item.get("id"):
+                    from revival_radar.chains import CHAINS
+
                     rows.insert(
                         0,
                         [
                             {
                                 "text": f"🔎 Inspect {str(item['symbol'])[:16]} snapshot",
                                 "callback_data": f"e:{item['id']}:full",
-                            }
+                            },
+                            {
+                                "text": "📈 GMGN",
+                                "url": CHAINS[item["chain"]].links(item["contract_address"])[
+                                    "GMGN"
+                                ],
+                            },
                         ],
                     )
         await self._send(text, rows, edit=True)

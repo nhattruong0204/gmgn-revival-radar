@@ -46,7 +46,7 @@ def test_schema_one_migration_preserves_snapshot_payload_and_alert(tmp_path, tok
     legacy.close()
 
     migrated = connect(path)
-    assert migrated.execute("PRAGMA user_version").fetchone()[0] == 3
+    assert migrated.execute("PRAGMA user_version").fetchone()[0] == 4
     assert migrated.execute("SELECT payload FROM token_snapshots").fetchone()[0] == payload
     assert tuple(migrated.execute("SELECT * FROM alerts").fetchone()) == old_alert
     columns = {
@@ -73,11 +73,11 @@ def test_schema_one_migration_preserves_snapshot_payload_and_alert(tmp_path, tok
 def test_unknown_newer_schema_is_rejected_without_mutation(tmp_path):
     path = tmp_path / "future.db"
     future = sqlite3.connect(path)
-    future.execute("PRAGMA user_version=4")
+    future.execute("PRAGMA user_version=5")
     future.close()
     with pytest.raises(RuntimeError, match="newer"):
         connect(path)
     check = sqlite3.connect(path)
-    assert check.execute("PRAGMA user_version").fetchone()[0] == 4
+    assert check.execute("PRAGMA user_version").fetchone()[0] == 5
     assert check.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table'").fetchone()[0] == 0
     check.close()

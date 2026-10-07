@@ -14,6 +14,11 @@ _CHAIN_NAMES = {
 }
 _LABELS = {
     "no_base": "No price base detected",
+    "base_too_short": "Base too short",
+    "enrichment_deferred": "Enrichment deferred by budget",
+    "security.dev_ratio": "Developer holdings",
+    "security.sniper_ratio": "Sniper holdings",
+    "security.bundler_ratio": "Bundler aggregate",
     "no_returning_activity": "Activity has not returned",
     "score_below_threshold": "Score below alert threshold",
     "security_dangerous": "Known security risk",

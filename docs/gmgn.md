@@ -113,3 +113,21 @@ work rather than sleeping through the entire scan or repeatedly extending a ban.
 Adapters implement `MarketDataSource.discover`, `.enrich`, and `.candles`. Future
 documented providers can fill gaps without adding browser endpoint dependencies.
 Required filter gaps suppress alerts; optional security gaps produce warnings.
+
+## Insider holdings audit (2026-10-07)
+
+Re-fetched the official pinned [token/security documentation](https://github.com/GMGNAI/gmgn-skills/blob/4575ef539e6a3115fa0481d41285cb79e77970bf/skills/gmgn-token/SKILL.md)
+and [market documentation](https://github.com/GMGNAI/gmgn-skills/blob/4575ef539e6a3115fa0481d41285cb79e77970bf/skills/gmgn-market/SKILL.md).
+The security field `suspected_insider_hold_rate` is documented as the ratio **held**
+by suspected insider wallets. `rat_trader_amount_rate` and token-info
+`stat.top_rat_trader_percentage` describe **trading volume**, not holdings.
+They cannot substitute for an unavailable holding ratio. Official docs also describe
+[insider traders and snipers](https://docs.gmgn.ai/index/insider-traders-snipers-first-70-buyers).
+
+The adapter accepts only an explicitly supplied finite holding fraction in [0,1].
+Missing values remain NULL and no insider-decrease penalty is inferred without known
+current/prior holdings. Health → Data Quality reports Insider availability alongside
+Top10, Dev, Sniper and Bundler. A 0% coverage reading means no evaluated observation
+supplied the field; it does **not** mean tokens had zero insider holdings. Compact and
+full alert watchouts omit the repetitive missing-insider note; known risk deductions
+and unavailable security assessments remain visible. Legacy alert payloads are unchanged.

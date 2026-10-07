@@ -4,6 +4,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
+from revival_radar.analysis.acceleration import fresh_history
 from revival_radar.analysis.filters import discovery_prefilter, first_pass
 from revival_radar.analysis.market_structure import analyze_structure
 from revival_radar.analysis.scoring import score_token
@@ -26,6 +27,7 @@ FUNNEL_STAGES = (
     "prefilter_rejected",
     "market_enriched",
     "market_pass",
+    "baseline_ready",
     "activity_trigger",
     "kline_requested",
     "base_detected",
@@ -36,6 +38,7 @@ FUNNEL_STAGES = (
     "eligible",
     "potential_alerts",
     "alerted",
+    "outcome_polled",
 )
 
 
@@ -131,11 +134,18 @@ class Scanner:
             raise
         self._count(report, token.chain, "market_enriched")
         history = self.repository.history(token, self.config.history_observations * 3)
+        self.repository.observe_outcomes(token)
         structure = Structure()
         result = score_token(token, history, structure, self.config)
         if not first_pass(token, self.config).passed:
             return token, result
         self._count(report, token.chain, "market_pass")
+        recent = fresh_history(token, history, self.config)
+        if (
+            sum(entry.volume_5m is not None for entry in recent)
+            >= self.config.minimum_history_observations
+        ):
+            self._count(report, token.chain, "baseline_ready")
         activity = has_returning_activity(result)
         if not activity:
             return token, result
@@ -374,6 +384,7 @@ class Scanner:
                         token.contract_address,
                         type(exc).__name__,
                     )
+            await self.track_outcomes(report)
             report.finished_at = time.time()
             self.repository.finish_scan(report.scan_id, report, report.finished_at)
             report.finished_at = time.time()
@@ -400,3 +411,23 @@ class Scanner:
                 self.config.scan_interval_seconds,
             )
         return report
+
+    async def track_outcomes(self, report: ScanReport) -> None:
+        remaining = self.config.max_market_enrich_per_scan - self.enrichment.used["market"]
+        due = self.repository.due_outcome_tokens(time.time(), self.config.chains, remaining)
+        for seed in due:
+            try:
+                with self.metrics.measure("market"):
+                    token = await self.enrichment.market(seed)
+                # A new poll is required; cached/discovery snapshots never count as checkpoints.
+                self.repository.save_snapshot(token)
+                self.repository.observe_outcomes(token)
+                self._count(report, token.chain, "outcome_polled")
+            except EnrichmentDeferred:
+                break
+            except Exception as exc:
+                report.errors += 1
+                self.metrics.failures["outcome_market"] += 1
+                log.warning(
+                    "outcome observation failed chain=%s error=%s", seed.chain, type(exc).__name__
+                )

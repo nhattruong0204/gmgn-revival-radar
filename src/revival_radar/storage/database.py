@@ -14,7 +14,7 @@ TEXT_FIELDS = {
     "asset_classification_reason",
 }
 SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in {"security", "data_warnings"}]
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 
 def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
@@ -51,6 +51,8 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             _migrate_diagnostics(db)
         if version < 3:
             _migrate_enrichment(db)
+        if version < 4:
+            _migrate_outcomes(db)
         db.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
         db.commit()
     except Exception:
@@ -105,3 +107,38 @@ def _migrate_enrichment(db: sqlite3.Connection) -> None:
         PRIMARY KEY(chain,contract_address)
     )""")
     db.execute("CREATE INDEX watch_due ON watch_state(chain,next_due,last_seen)")
+
+
+def _migrate_outcomes(db: sqlite3.Connection) -> None:
+    # Additive migration: original alerts, snapshots and cooldown records are untouched.
+    db.execute("""CREATE TABLE alert_signals (
+        alert_id INTEGER PRIMARY KEY REFERENCES alerts(id),
+        price REAL, market_cap REAL, score INTEGER NOT NULL,
+        setup_score INTEGER, trigger_score INTEGER, confirmation_score INTEGER,
+        stage TEXT, preset TEXT, revision INTEGER
+    )""")
+    db.execute("""CREATE TABLE signal_outcomes (
+        alert_id INTEGER NOT NULL REFERENCES alerts(id),
+        horizon_hours INTEGER NOT NULL CHECK(horizon_hours IN (1,6,24,72)),
+        due_at REAL NOT NULL, observed_at REAL NOT NULL,
+        price REAL, market_cap REAL, return_pct REAL,
+        PRIMARY KEY(alert_id,horizon_hours)
+    )""")
+    db.execute("CREATE INDEX outcomes_observed ON signal_outcomes(observed_at)")
+    db.execute("""CREATE INDEX IF NOT EXISTS outcome_alerts_due
+        ON alerts(timestamp,chain,contract_address)
+        WHERE delivery_status='sent'""")
+    # Existing saved presentation is the only trustworthy source for alert-time data.
+    # Legacy alerts without it keep unknown fields; never infer from newer snapshots.
+    db.execute("""INSERT INTO alert_signals
+        SELECT a.id,
+            json_extract(s.value,'$.token.price'),
+            json_extract(s.value,'$.token.market_cap'), a.score,
+            json_extract(s.value,'$.signal.setup_score'),
+            json_extract(s.value,'$.signal.trigger_score'),
+            json_extract(s.value,'$.signal.confirmation_score'),
+            json_extract(s.value,'$.signal.status'),
+            json_extract(s.value,'$.configuration.preset'),
+            json_extract(s.value,'$.configuration.revision')
+        FROM alerts a LEFT JOIN state s
+        ON s.key='telegram:alert:' || a.id AND json_valid(s.value)""")
