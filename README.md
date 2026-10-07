@@ -78,6 +78,9 @@ GMGN also documents finer candle resolutions, but those are outside this small V
 
 Version 0.2 supports owner-only inline buttons. Send **/menu** in your private chat
 with the bot to change presets, filters, chains, exclusions, and alert settings.
+Choose **Advanced configuration** for individual buttons covering all preset settings
+and the scan interval. Tap a value, send its replacement, and confirm to save it without
+editing code or restarting the bot.
 Changes require a preview/confirmation and persist across restarts. **/health** reports
 rejections, missing data, actual scan durations, and delivery outcomes. See
 [Telegram controls and the VPS upgrade guide](docs/telegram-controls.md).

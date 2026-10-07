@@ -32,6 +32,11 @@ private chat; other users and group messages cannot view or change settings.
 
 ## Menu actions
 
+- **Advanced configuration:** all 20 preset settings plus the scan interval, each with
+  its current value. Tap a setting, send a number, review the old/new values, then
+  **Confirm**. No code change, `.env` edit, or restart is needed for subsequent tuning.
+  These edits customize the running configuration; they do not rewrite the named
+  presets. Selecting a preset later replaces the values that preset controls.
 - **Strategy presets:** preview Strict, Balanced, or Broad, then confirm.
 - **Token filters:** age, market cap, liquidity, holders, drawdown, volume, price change.
 - **Base / ratios:** base duration/range, acceleration, holder retention, concentration.

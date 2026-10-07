@@ -386,6 +386,7 @@ class TelegramControls:
             rows = [
                 [self._button("Status", "status"), self._button("Health", "health")],
                 [self._button("Strategy presets", "m:presets")],
+                [self._button("Advanced configuration", "m:advanced")],
                 [
                     self._button("Token filters", "m:filters"),
                     self._button("Base / ratios", "m:structure"),
@@ -403,6 +404,22 @@ class TelegramControls:
         elif name == "presets":
             title = "Strategy presets — choose one to review all threshold changes"
             rows = [[self._button(p.title(), f"p:{p}")] for p in PRESETS]
+            rows.append([self._button("Advanced configuration", "m:advanced")])
+        elif name == "advanced":
+            title = (
+                "Advanced configuration\n"
+                "Choose a setting, send its new value, then confirm. "
+                "Use full numbers (15000), drawdown ratios (0.60), "
+                "and price-change percentages (40).\n"
+                "Edits are saved across restarts. Selecting a preset later replaces "
+                "the values controlled by that preset."
+            )
+            fields = dict.fromkeys(key for preset in PRESETS.values() for key in preset)
+            fields["scan_interval_seconds"] = None
+            rows = [
+                [self._button(f"{LABELS[key]}: {getattr(config, key)}", f"n:{key}")]
+                for key in fields
+            ]
         elif name in GROUPS:
             title = name.title()
             rows = [
@@ -548,7 +565,10 @@ class TelegramControls:
         self._input = None
         await self._send(
             f"Saved revision {self.runtime.revision}. New settings take effect on the next scan.",
-            [[self._button("Open menu", "m:home")]],
+            [
+                [self._button("Advanced configuration", "m:advanced")],
+                [self._button("Open menu", "m:home")],
+            ],
         )
 
     async def _custom(self, text: str) -> None:

@@ -187,12 +187,50 @@ async def test_owner_menu_and_callback_sizes(bot):
     controls, requests = bot
     await controls.handle_update(message())
     assert last_message(requests)["chat_id"] == 1234
-    for menu in ("filters", "structure", "alerts", "discovery", "chains", "assets", "presets"):
+    for menu in (
+        "advanced",
+        "filters",
+        "structure",
+        "alerts",
+        "discovery",
+        "chains",
+        "assets",
+        "presets",
+    ):
         await controls.handle_update(callback(f"m:{menu}"))
     for _, payload in requests:
         for row in payload.get("reply_markup", {}).get("inline_keyboard", []):
             assert all(len(button["callback_data"].encode()) <= 64 for button in row)
     assert "fixture-" not in json.dumps([payload for _, payload in requests])
+
+
+async def test_advanced_button_edit_survives_restart_without_changing_other_values(bot):
+    controls, requests = bot
+
+    async def tap(label):
+        buttons = last_message(requests)["reply_markup"]["inline_keyboard"]
+        button = next(button for row in buttons for button in row if button["text"] == label)
+        update = callback("unused")
+        update["callback_query"]["data"] = button["callback_data"]
+        await controls.handle_update(update)
+
+    await controls.handle_update(message("/menu"))
+    await tap("Advanced configuration")
+    buttons = last_message(requests)["reply_markup"]["inline_keyboard"]
+    offered = {button["callback_data"] for row in buttons for button in row}
+    expected = {key for preset in PRESETS.values() for key in preset}
+    expected.add("scan_interval_seconds")
+    assert {f"r:0:n:{key}" for key in expected} <= offered
+
+    before = controls.runtime.public_values()
+    await tap(f"Minimum liquidity ($): {before['min_liquidity']}")
+    await controls.handle_update(message("20000"))
+    assert controls.runtime.public_values() == before
+    await confirm(bot)
+    resumed = RuntimeSettings(controls.runtime.base)
+    assert resumed.public_values() == before | {"min_liquidity": 20000}
+    await tap("Advanced configuration")
+    assert "Minimum liquidity ($): 20000.0" in str(last_message(requests))
 
 
 @pytest.mark.parametrize("name", list(PRESETS))
