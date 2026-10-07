@@ -16,18 +16,39 @@ from .conftest import changed
         (39, "IGNORE"),
         (40, "WATCH"),
         (59, "WATCH"),
-        (60, "EARLY_WATCH"),
-        (69, "EARLY_WATCH"),
+        (60, "EARLY_REVIVAL"),
+        (69, "EARLY_REVIVAL"),
         (70, "REVIVING"),
         (79, "REVIVING"),
         (80, "STRONG_REVIVAL"),
-        (89, "STRONG_REVIVAL"),
-        (90, "HIGH_CONVICTION_REVIVAL"),
-        (100, "HIGH_CONVICTION_REVIVAL"),
+        (84, "STRONG_REVIVAL"),
+        (85, "CONFIRMED_REVIVAL"),
+        (90, "CONFIRMED_REVIVAL"),
+        (100, "CONFIRMED_REVIVAL"),
     ],
 )
-def test_status_boundaries(score, status):
-    assert status_for(score) == status
+def test_status_boundaries_with_complete_evidence(score, status, config):
+    structure = Structure(
+        available=True,
+        base_detected=True,
+        base_duration_hours=96,
+        higher_low_detected=True,
+        higher_high_detected=True,
+        breakout_detected=True,
+        retest_detected=True,
+    )
+    assert (
+        status_for(
+            score,
+            config=config,
+            qualifies=True,
+            activity=True,
+            structure=structure,
+            meaningful=True,
+            dual_trigger=True,
+        )
+        == status
+    )
 
 
 def test_synthetic_scenarios(config):
@@ -62,10 +83,14 @@ def test_all_penalties_capped_and_explained(token, history, candles, config):
 
 
 def test_security_penalty_applies_after_positive_cap(token, history, candles, config):
+    structure = analyze_structure(candles, config).model_copy(
+        update={"volatility_compression_score": 0.5, "retest_detected": True}
+    )
+    assert score_token(token, history, structure, config).score == 100
     result = score_token(
         changed(token, security=token.security.model_dump() | {"dangerous": True}),
         history,
-        analyze_structure(candles, config),
+        structure,
         config,
     )
     assert result.score == 60
@@ -84,4 +109,6 @@ def test_configurable_weights(token, history, candles, config):
     config.weights.base = 0
     config.weights.base_duration = 0
     result = score_token(token, history, analyze_structure(candles, config), config)
-    assert result.score == 85  # 105 possible positive points minus the 20 overridden points
+    assert result.components["base"] == 0 and "base_duration" in result.components
+    assert result.setup_score == 83  # 25 earned of 30 remaining setup weight.
+    assert result.score == 87

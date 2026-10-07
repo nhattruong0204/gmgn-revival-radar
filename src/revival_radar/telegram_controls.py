@@ -771,17 +771,20 @@ class TelegramControls:
                 )
                 await self._send(html.escape(answer), [[self._button("🏠 Main menu", "m:home")]])
             else:
+                from revival_radar.analysis.market_structure import analyze_structure
+                from revival_radar.analysis.scoring import score_token
                 from revival_radar.clients.telegram import format_alert
                 from revival_radar.demo import DemoSource
-                from revival_radar.models.signal import RevivalResult
-                from revival_radar.models.token import TokenSnapshot
+                from revival_radar.models.token import Candle, TokenSnapshot
 
                 demo = DemoSource().data[0]
                 token = TokenSnapshot(**demo["token"])
-                signal = RevivalResult(
-                    score=65,
-                    status="EARLY_WATCH",
-                    eligible=False,
+                config = self.runtime.effective()
+                signal = score_token(
+                    token,
+                    [TokenSnapshot(**h) for h in demo["history"]],
+                    analyze_structure([Candle(**c) for c in demo["candles"]], config),
+                    config,
                 )
                 await self._send(
                     "🧪 <b>TEST · Synthetic example, not a live signal</b>\n\n"

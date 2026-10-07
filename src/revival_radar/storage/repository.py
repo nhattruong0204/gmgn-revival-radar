@@ -8,7 +8,7 @@ from revival_radar.analysis.acceleration import fresh_history
 from revival_radar.analysis.filters import first_pass
 from revival_radar.config import Settings
 from revival_radar.metrics import sqlite_timed
-from revival_radar.models.signal import RevivalResult
+from revival_radar.models.signal import RevivalResult, has_returning_activity
 from revival_radar.models.token import TokenSnapshot
 from revival_radar.storage.database import SNAPSHOT_FIELDS
 
@@ -152,9 +152,7 @@ class Repository:
         blockers = list(gate.reasons)
         if not result.structure.base_detected:
             blockers.append("no_base")
-        if not any(
-            name in result.components for name in ("volume_5m", "volume_1h", "transactions")
-        ):
+        if not has_returning_activity(result):
             blockers.append("no_returning_activity")
         if token.security.dangerous is True:
             blockers.append("security_dangerous")

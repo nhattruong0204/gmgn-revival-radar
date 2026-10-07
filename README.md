@@ -233,33 +233,29 @@ security/candle reuse, candidate priority, the schema migration and repeat-scan 
 
 ### Score rules
 
-| Evidence | Default points / penalty |
-|---|---:|
-| ATH drawdown within configured band | +10 |
-| Liquidity survives threshold | +10 |
-| Holders above threshold and ≥90% of prior snapshot | +5 |
-| Base / base ≥72 hours | +15 / +5 |
-| 5m volume versus baseline / 1h versus prior ≥1.5× | +15 / +10 |
-| 5m or 1h transaction ratio ≥1.5× | +10 total |
-| Hot Search climb ≥10 places / both discovery sources | +5 / +5 |
-| Higher low / higher high / breakout | +5 each |
-| Top10 concentration >50% | −10 |
-| Insider holding ratio decreases ≥5 percentage points | −20 |
-| Developer holding ratio decreases ≥2 percentage points | −25 |
-| Liquidity drops ≥20% from prior snapshot | −25 |
-| Dangerous security flag | −40 and ineligible |
-| Sniper / bundler ratio >30% | −5 each |
+Setup, Trigger and Confirmation are each normalized to 0–100. Setup measures
+resurrection fit and progressive base quality; Trigger measures meaningful activity
+and current attention; Confirmation measures higher lows/highs, breakout and retest.
+The overall score combines them with configurable default weights **30:40:30**, then
+subtracts existing risk penalties. Failed essential filters still cap it at 39.
 
-The positive maximum is 105; positive points cap at 100 **before** penalties. The final
-score clamps to 0–100. Failed first-pass filters cap it at 39. Holding-ratio decreases
-are distribution proxies, not proof of selling. Retest/compression are informational in V1.
-Override any weight using `WEIGHTS__BASE=20`, `WEIGHTS__DEV_PENALTY=30`, etc.
+Volume/TX acceleration bonuses require matching-window absolute floors. A 2 → 4 TX
+surge cannot earn the transaction bonus. Volume is also measured relative to liquidity;
+missing or zero liquidity does not become a fabricated zero ratio. Detected bases earn
+progressive credit at 6/12/24/48 hours, with a maturity bonus at 72 hours by default.
+Compression adds a small Setup component.
 
-Statuses: 0–39 `IGNORE`, 40–59 `WATCH`, 60–69 `EARLY_WATCH`, 70–79 `REVIVING`,
-80–89 `STRONG_REVIVAL`, 90–100 `HIGH_CONVICTION_REVIVAL`. These are heuristic labels,
-not certainty. The default alert threshold remains 75; choose Balanced in Telegram to
-apply a 65 threshold and moderately looser survivor/base filters. All presets retain
-essential data, a detected base, returning activity, and dangerous-flag gates.
+New stages are `IGNORE`, `WATCH`, `EARLY_REVIVAL`, `REVIVING`, `STRONG_REVIVAL`, and
+`CONFIRMED_REVIVAL`. Numeric thresholds are necessary but insufficient: strong stages
+require a mature base, meaningful activity and chart confirmation. Off-ranking top
+stages additionally require both volume and TX acceleration plus HL + HH and breakout
+or retest. Existing stored stages and scores remain unchanged.
+
+See [scoring dimensions, evidence gates and configuration](docs/scoring.md) for the
+formula, defaults, synthetic examples and compatibility details. Override component
+or dimension weights with `WEIGHTS__BASE=20`, `WEIGHTS__SETUP_DIMENSION=30`, etc.
+The alert threshold remains 75 (Balanced 65, Broad 60); alert delivery also requires
+core filters, a detected base, meaningful returning activity, and no known danger.
 
 ## Commands
 

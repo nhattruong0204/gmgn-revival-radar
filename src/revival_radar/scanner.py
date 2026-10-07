@@ -13,7 +13,7 @@ from revival_radar.config import Settings
 from revival_radar.config_context import configuration_context
 from revival_radar.enrichment import Enrichment, EnrichmentDeferred
 from revival_radar.metrics import CURRENT_SCAN, ScanMetrics
-from revival_radar.models.signal import RevivalResult, Structure
+from revival_radar.models.signal import RevivalResult, Structure, has_returning_activity
 from revival_radar.models.token import Security, TokenSnapshot
 from revival_radar.storage.repository import Repository
 
@@ -119,9 +119,11 @@ class Scanner:
         self, token: TokenSnapshot, report: ScanReport | None = None
     ) -> tuple[TokenSnapshot, RevivalResult]:
         # The fallback keeps old third-party adapters usable; production GMGN is split.
+        seed_warnings = list(token.data_warnings)
         try:
             with self.metrics.measure("market"):
                 token = await self.enrichment.market(token)
+                token.data_warnings = list(dict.fromkeys(seed_warnings + token.data_warnings))
         except EnrichmentDeferred:
             raise
         except Exception:
@@ -134,9 +136,7 @@ class Scanner:
         if not first_pass(token, self.config).passed:
             return token, result
         self._count(report, token.chain, "market_pass")
-        activity = any(
-            name in result.components for name in ("volume_5m", "volume_1h", "transactions")
-        )
+        activity = has_returning_activity(result)
         if not activity:
             return token, result
         self._count(report, token.chain, "activity_trigger")
@@ -309,7 +309,12 @@ class Scanner:
                         asset_type=old_token.asset_type,
                         asset_classification_reason=old_token.asset_classification_reason,
                         ath_market_cap=old_token.ath_market_cap,
-                        data_warnings=["Off rankings; ATH cap from last discovery observation"],
+                        data_warnings=["Off rankings; ATH cap from last discovery observation"]
+                        + (
+                            ["Current ranking coverage incomplete"]
+                            if report.source_errors[chain]
+                            else []
+                        ),
                     )
                 )
         return candidates

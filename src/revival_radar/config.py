@@ -30,6 +30,12 @@ class ScoreWeights(BaseModel):
     dev_penalty: Weight = 25
     liquidity_penalty: Weight = 25
     danger_penalty: Weight = 40
+    compression: Weight = 5
+    trending: Weight = 5
+    retest: Weight = 5
+    setup_dimension: Weight = 30
+    trigger_dimension: Weight = 40
+    confirmation_dimension: Weight = 30
     sniper_penalty: Weight = 5
     bundler_penalty: Weight = 5
 
@@ -97,6 +103,27 @@ class Settings(BaseSettings):
     http_attempts: int = Field(default=3, ge=1, le=5)
     request_spacing_seconds: Positive = 1.5
     retry_max_wait_seconds: Positive = 10
+    min_tx_5m_for_acceleration: int = Field(default=10, ge=1)
+    min_tx_1h_for_acceleration: int = Field(default=60, ge=1)
+    min_volume_5m_for_acceleration: Positive = 2000
+    min_volume_5m_liquidity_ratio: Ratio = 0.01
+    min_volume_1h_liquidity_ratio: Ratio = 0.06
+    volatility_compression_threshold: Ratio = 0.25
+    base_maturity_hours: tuple[Positive, Positive, Positive, Positive, Positive] = (
+        6,
+        12,
+        24,
+        48,
+        72,
+    )
+    base_maturity_fractions: tuple[Ratio, Ratio, Ratio, Ratio] = (1 / 3, 8 / 15, 0.8, 1)
+    strong_base_min_hours: Positive = 48
+    confirmed_base_min_hours: Positive = 72
+    watch_score_threshold: int = Field(default=40, ge=0, le=100)
+    early_revival_score_threshold: int = Field(default=60, ge=0, le=100)
+    reviving_score_threshold: int = Field(default=70, ge=0, le=100)
+    strong_revival_score_threshold: int = Field(default=80, ge=0, le=100)
+    confirmed_revival_score_threshold: int = Field(default=85, ge=0, le=100)
     security_cache_ttl_seconds: float = Field(default=1800, ge=0, allow_inf_nan=False)
     kline_cache_ttl_seconds: float = Field(default=900, ge=0, allow_inf_nan=False)
     max_market_enrich_per_scan: int = Field(default=40, ge=0, le=500)
@@ -131,6 +158,21 @@ class Settings(BaseSettings):
             raise ValueError("BASE_SUFFICIENT_HOURS must cover BASE_MIN_HOURS")
         if self.kline_lookback_hours < self.base_min_hours:
             raise ValueError("KLINE_LOOKBACK_HOURS must cover BASE_MIN_HOURS")
+        if list(self.base_maturity_hours) != sorted(set(self.base_maturity_hours)):
+            raise ValueError("BASE_MATURITY_HOURS must contain five increasing durations")
+        if list(self.base_maturity_fractions) != sorted(self.base_maturity_fractions):
+            raise ValueError("BASE_MATURITY_FRACTIONS must be nondecreasing")
+        if self.confirmed_base_min_hours < self.strong_base_min_hours:
+            raise ValueError("CONFIRMED_BASE_MIN_HOURS must cover STRONG_BASE_MIN_HOURS")
+        stage_thresholds = [
+            self.watch_score_threshold,
+            self.early_revival_score_threshold,
+            self.reviving_score_threshold,
+            self.strong_revival_score_threshold,
+            self.confirmed_revival_score_threshold,
+        ]
+        if stage_thresholds != sorted(stage_thresholds):
+            raise ValueError("Stage score thresholds must be nondecreasing")
         try:
             ZoneInfo(self.report_timezone)
         except (ZoneInfoNotFoundError, ValueError):

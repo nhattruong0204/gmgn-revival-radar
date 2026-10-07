@@ -98,7 +98,7 @@ inspect `/health` over several days before changing more thresholds.
 | ATH drawdown | 65–95% | 60–95% | 60–95% |
 | 1h volume | $50K | $20K | $10K |
 | Minimum base | 24h | 12h | 8h |
-| Base duration bonus | 72h | 48h | 48h |
+| Base bonus setting (minimum) | 72h | 48h | 48h |
 | Volume / TX acceleration | 1.5× | 1.4× | 1.4× |
 | Maximum 5m / 1h price change | 30% / 75% | 40% / 100% | 40% / 100% |
 
@@ -106,11 +106,18 @@ All presets keep 20 discovery results per source, a 24-hour watchlist with a 100
 limit per chain, a six-hour alert cooldown and +10 score re-alert increase. They do not
 change your enabled chains, delivery mode or exclusion switches. A detected base,
 returning activity, available essential metrics and no known dangerous flag remain
-required. Higher lows, higher highs and breakouts are score bonuses.
+required. New activity bonuses also require absolute and liquidity-normalized floors.
+The maturity bonus uses the later of the preset's base bonus setting and the configured
+maturity threshold (72h by default).
 
-Scores 60–69 are labeled `EARLY_WATCH`, 70–79 `REVIVING`, 80–89 `STRONG_REVIVAL`,
-and 90–100 `HIGH_CONVICTION_REVIVAL`. Labels do not override eligibility or delivery
-thresholds. Missing metrics still block the corresponding essential gates.
+New observations display Setup / Trigger / Confirmation scores, each out of 100.
+Stages require chart evidence and base maturity as well as score: `EARLY_REVIVAL`,
+`REVIVING`, `STRONG_REVIVAL`, and `CONFIRMED_REVIVAL` replace total-only brackets.
+Historical `EARLY_WATCH` / `HIGH_CONVICTION_REVIVAL` messages remain readable with
+unchanged stored scores. Missing legacy dimension scores are not invented. Labels
+do not override eligibility or delivery thresholds. See [scoring rules](scoring.md)
+for all weights, activity floors, stage gates and environment settings. Existing
+Telegram weight controls support the new component and dimension weights.
 
 Increasing discovery to 50 and watchlists to 300 across five chains can produce
 thousands of requests in a cycle. Request spacing is shared across chains and defaults

@@ -17,6 +17,27 @@ PERFORMANCE_SETTINGS = frozenset(
 )
 
 
+SCORING_SETTINGS = frozenset(
+    {
+        "min_tx_5m_for_acceleration",
+        "min_tx_1h_for_acceleration",
+        "min_volume_5m_for_acceleration",
+        "min_volume_5m_liquidity_ratio",
+        "min_volume_1h_liquidity_ratio",
+        "volatility_compression_threshold",
+        "base_maturity_hours",
+        "base_maturity_fractions",
+        "strong_base_min_hours",
+        "confirmed_base_min_hours",
+        "watch_score_threshold",
+        "early_revival_score_threshold",
+        "reviving_score_threshold",
+        "strong_revival_score_threshold",
+        "confirmed_revival_score_threshold",
+    }
+)
+
+
 def configuration_context(config: Settings, revision: int = 0, overrides: int = 0) -> dict:
     preset = next(
         (
@@ -31,5 +52,8 @@ def configuration_context(config: Settings, revision: int = 0, overrides: int = 
         "preset": preset,
         "revision": revision,
         "overrides": overrides,
-        "settings": {key: values[key] for key in sorted(ALLOWED_SETTINGS | PERFORMANCE_SETTINGS)},
+        "settings": {
+            key: values[key]
+            for key in sorted(ALLOWED_SETTINGS | PERFORMANCE_SETTINGS | SCORING_SETTINGS)
+        },
     }

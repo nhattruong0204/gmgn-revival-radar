@@ -59,6 +59,9 @@ _COMPONENT_LABELS = {
     "holders": "Holder retention",
     "base": "Base formed",
     "base_duration": "Established base",
+    "compression": "Volatility compression",
+    "trending": "On Trending",
+    "retest": "Retest",
     "volume_5m": "5m volume above baseline",
     "volume_1h": "Hourly volume rising",
     "transactions": "Transactions rising",
@@ -127,6 +130,17 @@ def format_full_alert(token: TokenSnapshot, result: RevivalResult) -> str:
     ]
     details = [
         "<b>Signal details</b>",
+        *([_subscores(result)] if _subscores(result) else []),
+        *(
+            [f"Volume / liquidity · 5m {a.volume_5m_to_liquidity:.1%}"]
+            if a.volume_5m_to_liquidity is not None
+            else []
+        ),
+        *(
+            [f"Volume / liquidity · 1h {a.volume_1h_to_liquidity:.1%}"]
+            if a.volume_1h_to_liquidity is not None
+            else []
+        ),
         f"Age {_text(age, 24)} · ATH cap {money(token.ath_market_cap)}",
         f"Hot Search {_text(rank, 48)} · Trending {_text(trending, 24)}",
     ]
@@ -266,7 +280,7 @@ def format_alert(token: TokenSnapshot, result: RevivalResult, context: dict | No
         f"Breakout {'✓' if s.breakout_detected else '—'} · "
         f"Retest {'✓' if s.retest_detected else '—'}",
     ]
-    # Show category scores only when supplied by a future scorer; this UI never creates them.
+    # Stored category scores remain unknown for legacy observations.
     category_scores = _subscores(result)
     if category_scores:
         lines.append(category_scores)
@@ -301,6 +315,11 @@ def _subscores(result: RevivalResult) -> str:
     values = [getattr(result, name, None) for name in names]
     if any(value is None for value in values):
         return ""
+    if result.score_version == "setup-trigger-confirmation-v1":
+        return (
+            f"Setup {_text(values[0], 12)}/100 · Trigger {_text(values[1], 12)}/100 · "
+            f"Confirm {_text(values[2], 12)}/100"
+        )
     return (
         f"Setup {_text(values[0], 12)}/30 · Trigger {_text(values[1], 12)}/40 · "
         f"Confirm {_text(values[2], 12)}/30"
@@ -323,8 +342,14 @@ def format_why(token: TokenSnapshot, result: RevivalResult, context: dict) -> st
             *("• " + _text(reason, 100) for reason in factors[:22]),
             *([f"+{len(factors) - 22} other factors"] if len(factors) > 22 else []),
             "",
-            "Weighted contributions; risk deductions reduce the score. "
-            "The score is capped after failed core checks.",
+            (
+                "Factors are within-dimension weights, not overall points. Dimension scores "
+                "are combined by their configured weights, then risk deductions apply. "
+                "Failed core checks cap the overall score."
+                if result.score_version == "setup-trigger-confirmation-v1"
+                else "Weighted contributions; risk deductions reduce the score. "
+                "The score is capped after failed core checks."
+            ),
             config_footer(context),
         ]
     )

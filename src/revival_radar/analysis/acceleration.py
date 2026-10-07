@@ -6,12 +6,15 @@ from revival_radar.models.signal import Acceleration
 from revival_radar.models.token import TokenSnapshot
 
 
-def safe_ratio(current: float | None, baseline: float | None, cap: float = 20) -> float | None:
+def safe_ratio(
+    current: float | None, baseline: float | None, cap: float | None = 20
+) -> float | None:
     if current is None or baseline is None:
         return None
     if not math.isfinite(current) or not math.isfinite(baseline) or current < 0 or baseline <= 0:
         return None
-    return min(current / baseline, cap)
+    ratio = current / baseline
+    return (ratio if math.isfinite(ratio) else None) if cap is None else min(ratio, cap)
 
 
 def fresh_history(
@@ -39,7 +42,10 @@ def calculate_acceleration(
     token: TokenSnapshot, history: list[TokenSnapshot], config: Settings
 ) -> Acceleration:
     recent = fresh_history(token, history, config)
-    result = Acceleration()
+    result = Acceleration(
+        volume_5m_to_liquidity=safe_ratio(token.volume_5m, token.liquidity, None),
+        volume_1h_to_liquidity=safe_ratio(token.volume_1h, token.liquidity, None),
+    )
     if recent:
         for field in ("volume_5m", "volume_1h", "tx_5m", "tx_1h"):
             name = field.replace("_", "_acceleration_", 1)
