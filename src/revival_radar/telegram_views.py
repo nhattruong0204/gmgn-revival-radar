@@ -85,6 +85,10 @@ def health_page(report: dict, view: str = "overview") -> str:
             }
             for route, label in routes.items():
                 lines.append(f"{label}  {metrics['calls'].get(route, 0)}")
+            if metrics.get("cache"):
+                lines += ["", "<b>Cache hits / fetches</b>", _counted(metrics["cache"])]
+            if metrics.get("deferred"):
+                lines += ["", "<b>Budget deferrals</b>", _counted(metrics["deferred"])]
             if metrics.get("failures"):
                 lines += ["", "<b>Operation failures</b>", _counted(metrics["failures"])]
             lines.append("Operation times include API waiting; concurrent stages can overlap.")

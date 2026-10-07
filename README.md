@@ -193,7 +193,9 @@ Telegram (or dry-run log)
 
 1. Fetch both rankings independently for each chain. A failed source/chain does not
    cancel other work. Solana addresses preserve case; EVM addresses normalize to lowercase.
-2. Revisit recent discoveries for up to 24 hours even after they leave rankings. Reset
+2. Revisit recent discoveries for up to 24 hours even after they leave rankings, using
+   high/medium/low polling tiers and scan-wide enrichment budgets. Deferred candidates
+   remain due for later scans. Reset
    live ranks/metrics; only historical ATH cap and identity survive until refreshed.
 3. Skip enrichment for known discovery values that fail existing thresholds. Missing
    discovery fields pass this cheap gate. Fetch token info for survivors, retain nullable
@@ -226,6 +228,8 @@ Each completed scan records operation timings, endpoint attempts including retri
 and candidate counts. Open **Health → Performance / Funnel** to inspect the latest
 scan. See [scanner performance and measured benchmarks](docs/scanner-performance.md)
 for timing definitions, limitations and reproducible Solana dry runs.
+[Cache, budget and watchlist settings](docs/scanner-caching.md) describe persistent
+security/candle reuse, candidate priority, the schema migration and repeat-scan benchmarks.
 
 ### Score rules
 
@@ -344,7 +348,7 @@ uv pip compile requirements-build.in --generate-hashes -o requirements-build.loc
 
 `clients/gmgn.py` exposes a small `MarketDataSource` protocol so another documented
 provider can supply discovery/enrichment/candles later without replacing scoring or storage.
-SQLite initializes schema version 2 automatically, enables WAL and busy timeout,
+SQLite initializes schema version 3 automatically, enables WAL and busy timeout,
 and refuses a newer unknown schema. Version 0.2 migrates to schema 2 while preserving
 snapshots and cooldowns; back up with `scripts/backup_database.py` inside the existing
 container before upgrading (see the upgrade guide). Diagnostic evaluations are retained

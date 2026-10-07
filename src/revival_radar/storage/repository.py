@@ -302,6 +302,8 @@ class Repository:
                 (before,),
             )
             self.db.execute("DELETE FROM scan_runs WHERE started<?", (before,))
+            self.db.execute("DELETE FROM enrichment_cache WHERE expires_at<?", (before,))
+            self.db.execute("DELETE FROM watch_state WHERE last_seen<?", (before,))
             self.db.execute(
                 "DELETE FROM state WHERE key LIKE 'daily_summary:%' AND updated_at<?", (before,)
             )
@@ -473,3 +475,126 @@ class Repository:
             "alerts": alerts,
             "best_candidates": candidates,
         }
+
+    @sqlite_timed
+    def cache_entry(self, kind: str, token: TokenSnapshot) -> dict | None:
+        row = self.db.execute(
+            "SELECT * FROM enrichment_cache WHERE kind=? AND chain=? AND contract_address=?",
+            (kind, *token.key),
+        ).fetchone()
+        return dict(row) if row else None
+
+    @sqlite_timed
+    def cache_save(self, kind: str, token: TokenSnapshot, payload: str, expires: float) -> None:
+        with self.db:
+            self.db.execute(
+                """INSERT INTO enrichment_cache VALUES (?,?,?,?,?,?)
+                ON CONFLICT(kind,chain,contract_address) DO UPDATE SET
+                fetched_at=excluded.fetched_at,expires_at=excluded.expires_at,payload=excluded.payload""",
+                (kind, *token.key, token.timestamp, expires, payload),
+            )
+
+    @sqlite_timed
+    def watch_discovered(self, token: TokenSnapshot) -> None:
+        with self.db:
+            self.db.execute(
+                """INSERT INTO watch_state(chain,contract_address,first_seen,last_seen,payload)
+                VALUES(?,?,?,?,?) ON CONFLICT(chain,contract_address) DO UPDATE SET
+                last_seen=MAX(watch_state.last_seen,excluded.last_seen),payload=excluded.payload""",
+                (*token.key, token.timestamp, token.timestamp, token.model_dump_json()),
+            )
+
+    @sqlite_timed
+    def watch_due(self, chain: str, now: float, config: Settings) -> list[dict]:
+        since = now - (config.watchlist_expire_hours or config.watchlist_hours) * 3600
+        # Seed older installations once, without rewriting any historical snapshot.
+        marker = f"watch:seeded:{chain}"
+        if self.get_state(marker) is None:
+            with self.db:
+                self.db.execute(
+                    """INSERT OR IGNORE INTO watch_state
+                    (chain,contract_address,first_seen,last_seen,last_score,tier,payload)
+                    SELECT chain,contract_address,timestamp,timestamp,observed_score,
+                        CASE WHEN observed_score>=60 OR ?-timestamp<=? THEN 'high'
+                             WHEN observed_score>=40 THEN 'medium' ELSE 'low' END,payload
+                    FROM (
+                        SELECT s.*,COALESCE((SELECT score FROM evaluations e
+                            WHERE e.chain=s.chain AND e.contract_address=s.contract_address
+                            ORDER BY e.timestamp DESC,e.id DESC LIMIT 1),0) AS observed_score,
+                            ROW_NUMBER() OVER (
+                                PARTITION BY contract_address ORDER BY timestamp DESC,id DESC
+                            ) AS position FROM token_snapshots s
+                        WHERE chain=? AND timestamp>=? AND discovery_source!=''
+                    ) WHERE position=1""",
+                    (
+                        now,
+                        config.minimum_history_observations * config.scan_interval_seconds * 2,
+                        chain,
+                        since,
+                    ),
+                )
+                self.db.execute("INSERT INTO state VALUES(?,?,?)", (marker, "1", now))
+        return [
+            dict(row)
+            for row in self.db.execute(
+                """SELECT * FROM watch_state WHERE chain=? AND last_seen>=? AND next_due<=?
+            ORDER BY CASE tier WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END,
+            deferred DESC,last_score DESC,last_polled,last_seen DESC,contract_address LIMIT ?""",
+                (chain, since, now, config.watchlist_limit),
+            )
+        ]
+
+    @sqlite_timed
+    def watch_polled(self, token: TokenSnapshot, result: RevivalResult, config: Settings) -> None:
+        row = self.db.execute(
+            "SELECT first_seen FROM watch_state WHERE chain=? AND contract_address=?", token.key
+        ).fetchone()
+        recent = row is not None and token.timestamp - row[0] <= (
+            config.minimum_history_observations * config.scan_interval_seconds * 2
+        )
+        warming = (
+            recent
+            and first_pass(token, config).passed
+            and (result.acceleration.volume_ratio_5m is None)
+        )
+        tier = (
+            "high" if result.score >= 60 or warming else "medium" if result.score >= 40 else "low"
+        )
+        interval = (
+            config.watchlist_high_score_interval_seconds
+            if tier == "high"
+            else (config.watchlist_normal_interval_seconds * (3 if tier == "low" else 1))
+        )
+        if tier != "low":
+            interval = min(interval, config.history_max_gap_seconds * 0.75)
+        with self.db:
+            self.db.execute(
+                """UPDATE watch_state SET last_polled=?,last_score=?,next_due=?,
+                deferred=0,tier=?,payload=? WHERE chain=? AND contract_address=?""",
+                (
+                    token.timestamp,
+                    result.score,
+                    token.timestamp + interval,
+                    tier,
+                    token.model_dump_json(),
+                    *token.key,
+                ),
+            )
+
+    @sqlite_timed
+    def watch_defer(self, token: TokenSnapshot) -> None:
+        with self.db:
+            self.db.execute(
+                "UPDATE watch_state SET deferred=deferred+1,next_due=0 "
+                "WHERE chain=? AND contract_address=?",
+                token.key,
+            )
+
+    @sqlite_timed
+    def watch_priority(self, token: TokenSnapshot) -> dict:
+        row = self.db.execute(
+            "SELECT tier,deferred,last_score,last_polled,last_seen FROM watch_state "
+            "WHERE chain=? AND contract_address=?",
+            token.key,
+        ).fetchone()
+        return dict(row) if row else {}

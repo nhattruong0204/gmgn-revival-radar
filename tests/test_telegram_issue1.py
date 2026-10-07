@@ -120,7 +120,7 @@ def test_saved_alert_detail_is_immutable_survives_reopen_and_contains_no_secrets
     other = connect(Path(path))
     try:
         assert Repository(other).presentation_detail("a", identity) == detail
-        assert other.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert other.execute("PRAGMA user_version").fetchone()[0] == 3
     finally:
         other.close()
     assert repo.presentation_detail("a", 2**63) is None

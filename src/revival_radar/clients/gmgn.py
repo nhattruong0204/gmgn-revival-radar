@@ -220,6 +220,11 @@ class GMGNClient:
             return token
 
     async def candles(self, token: TokenSnapshot) -> list[Candle]:
+        return await self.candles_since(
+            token, token.timestamp - self.config.kline_lookback_hours * 3600
+        )
+
+    async def candles_since(self, token: TokenSnapshot, since: float) -> list[Candle]:
         data = await self.request(
             "GET",
             "/v1/market/token_kline",
@@ -227,7 +232,7 @@ class GMGNClient:
                 "chain": token.chain,
                 "address": token.contract_address,
                 "resolution": "1h",
-                "from": int((token.timestamp - self.config.kline_lookback_hours * 3600) * 1000),
+                "from": int(since * 1000),
                 "to": int(token.timestamp * 1000),
             },
         )

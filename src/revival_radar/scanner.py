@@ -11,6 +11,7 @@ from revival_radar.clients.gmgn import DataSourceError, MarketDataSource
 from revival_radar.clients.telegram import TelegramClient, alert_buttons, format_alert
 from revival_radar.config import Settings
 from revival_radar.config_context import configuration_context
+from revival_radar.enrichment import Enrichment, EnrichmentDeferred
 from revival_radar.metrics import CURRENT_SCAN, ScanMetrics
 from revival_radar.models.signal import RevivalResult, Structure
 from revival_radar.models.token import Security, TokenSnapshot
@@ -103,6 +104,7 @@ class Scanner:
         self.repository, self.telegram = repository, telegram
         self.delivery_muted = delivery_muted
         self.metrics = ScanMetrics()
+        self.enrichment = Enrichment(config, source, repository, self.metrics)
         self.configuration = (
             configuration if configuration is not None else configuration_context(config)
         )
@@ -117,10 +119,11 @@ class Scanner:
         self, token: TokenSnapshot, report: ScanReport | None = None
     ) -> tuple[TokenSnapshot, RevivalResult]:
         # The fallback keeps old third-party adapters usable; production GMGN is split.
-        market = getattr(self.source, "enrich_market", None) or self.source.enrich
         try:
             with self.metrics.measure("market"):
-                token = await market(token)
+                token = await self.enrichment.market(token)
+        except EnrichmentDeferred:
+            raise
         except Exception:
             self.metrics.failures["market"] += 1
             raise
@@ -139,19 +142,25 @@ class Scanner:
         self._count(report, token.chain, "activity_trigger")
         if token.security.dangerous is True:
             return token, result
-        self._count(report, token.chain, "kline_requested")
+        before_kline = self.enrichment.used["kline"]
         try:
             with self.metrics.measure("kline"):
-                candles = await self.source.candles(token)
+                candles = await self.enrichment.candles(token)
                 if candles and token.timestamp - max(c.timestamp for c in candles) > 7200:
                     token.data_warnings.append(
                         "Latest closed candle is stale; structure unavailable"
                     )
                 else:
                     structure = analyze_structure(candles, self.config)
+        except EnrichmentDeferred:
+            self.repository.watch_defer(token)
+            token.data_warnings.append("Candle request deferred by per-scan budget")
         except Exception as exc:
             self.metrics.failures["kline"] += 1
             token.data_warnings.append(f"Candles unavailable ({type(exc).__name__})")
+        finally:
+            if self.enrichment.used["kline"] > before_kline:
+                self._count(report, token.chain, "kline_requested")
         if structure.base_detected:
             self._count(report, token.chain, "base_detected")
         # Security can remove discovery-time penalties as well as add deductions.
@@ -164,17 +173,26 @@ class Scanner:
             self._count(report, token.chain, "serious_candidates")
             security = getattr(self.source, "enrich_security", None)
             if security is not None:
-                self._count(report, token.chain, "security_requested")
+                before_security = self.enrichment.used["security"]
                 try:
                     with self.metrics.measure("security"):
-                        token = await security(token)
+                        token = await self.enrichment.security(token)
                     self._count(report, token.chain, "security_enriched")
+                except EnrichmentDeferred:
+                    self.repository.watch_defer(token)
+                    result = score_token(token, history, structure, self.config)
+                    result.eligible = False
+                    result.warnings.append("Security request deferred by per-scan budget; no alert")
+                    return token, result
                 except Exception as exc:
                     self.metrics.failures["security"] += 1
                     if not isinstance(exc, DataSourceError):
                         raise
                     # Preserve the existing nullable-security behavior and warnings.
                     token.data_warnings.append("Security enrichment unavailable")
+                finally:
+                    if self.enrichment.used["security"] > before_security:
+                        self._count(report, token.chain, "security_requested")
         return token, score_token(token, history, structure, self.config)
 
     async def process(self, token: TokenSnapshot, report: ScanReport) -> None:
@@ -182,12 +200,18 @@ class Scanner:
         gate = discovery_prefilter(token, self.config)
         if gate.passed:
             self._count(report, token.chain, "prefilter_pass")
-            token, result = await self.inspect(token, report)
+            try:
+                token, result = await self.inspect(token, report)
+            except EnrichmentDeferred:
+                self.repository.watch_defer(token)
+                return
             self.repository.save_snapshot(token)
         else:
             self._count(report, token.chain, "prefilter_rejected")
             history = self.repository.history(token, self.config.history_observations * 3)
             result = score_token(token, history, Structure(), self.config)
+        if token.key not in self.enrichment.deferred_tokens:
+            self.repository.watch_polled(token, result, self.config)
         report.processed += 1
         report.signals.append((token, result))
         self._count(report, token.chain, "evaluated")
@@ -241,7 +265,7 @@ class Scanner:
             report.errors += 1
             self.metrics.failures["telegram"] += 1
 
-    async def scan_chain(self, chain: str, report: ScanReport) -> None:
+    async def scan_chain(self, chain: str, report: ScanReport) -> list[TokenSnapshot]:
         found = []
         report.funnel[chain] = dict.fromkeys(FUNNEL_STAGES, 0)
         report.discovered_by_source[chain] = {}
@@ -269,41 +293,54 @@ class Scanner:
         report.funnel.setdefault(chain, {})["discovered"] = len(keys)
         report.discovered_keys.update(keys)
         now = time.time()
-        watched = self.repository.watchlist(
-            chain, now - self.config.watchlist_hours * 3600, self.config.watchlist_limit
-        )
+        for token in candidates:
+            self.repository.watch_discovered(token)
+        watched = self.repository.watch_due(chain, now, self.config)
         for old in watched:
-            if old.key not in keys:
+            old_token = TokenSnapshot.model_validate_json(old["payload"])
+            if old_token.key not in keys:
                 self._count(report, chain, "watchlist_added")
-                # Only identity + historical ATH survive. Live metrics and ranks must be refreshed.
                 candidates.append(
                     TokenSnapshot(
                         chain=chain,
-                        contract_address=old.contract_address,
-                        symbol=old.symbol,
-                        name=old.name,
-                        asset_type=old.asset_type,
-                        asset_classification_reason=old.asset_classification_reason,
-                        ath_market_cap=old.ath_market_cap,
+                        contract_address=old_token.contract_address,
+                        symbol=old_token.symbol,
+                        name=old_token.name,
+                        asset_type=old_token.asset_type,
+                        asset_classification_reason=old_token.asset_classification_reason,
+                        ath_market_cap=old_token.ath_market_cap,
                         data_warnings=["Off rankings; ATH cap from last discovery observation"],
                     )
                 )
-        for token in candidates:
-            try:
-                await self.process(token, report)
-            except Exception as exc:
-                report.errors += 1
-                log.warning(
-                    "token failed chain=%s address=%s error=%s",
-                    chain,
-                    token.contract_address,
-                    type(exc).__name__,
-                )
+        return candidates
+
+    def priority(self, token: TokenSnapshot) -> tuple:
+        state = self.repository.watch_priority(token)
+        sources = token.discovery_source
+        # Explicit source tiers: Trending-only, Hot-only, both, then due watchlist tiers.
+        if sources == {"trending"}:
+            tier, rank = 0, token.trending_rank or 10**9
+        elif sources == {"hot_search"}:
+            tier, rank = 1, token.hot_search_rank or 10**9
+        elif sources:
+            tier, rank = 2, min(token.trending_rank or 10**9, token.hot_search_rank or 10**9)
+        else:
+            tier = 3 if state.get("tier") == "high" else 4 if state.get("tier") == "medium" else 5
+            rank = -state.get("last_score", 0)
+        return (
+            tier,
+            -state.get("deferred", 0),
+            rank,
+            state.get("last_polled", 0),
+            -state.get("last_seen", 0),
+            *token.key,
+        )
 
     async def scan_once(self) -> ScanReport:
         self.metrics = ScanMetrics()
         if hasattr(self.source, "metrics"):
             self.source.metrics = self.metrics
+        self.enrichment = Enrichment(self.config, self.source, self.repository, self.metrics)
         report = ScanReport(started_at=time.time())
         started = time.monotonic()
         metric_scope = CURRENT_SCAN.set(self.metrics)
@@ -317,6 +354,21 @@ class Scanner:
                 if isinstance(outcome, BaseException):
                     report.errors += 1
                     log.warning("chain failed chain=%s error=%s", chain, type(outcome).__name__)
+            candidates = [
+                token for outcome in outcomes if isinstance(outcome, list) for token in outcome
+            ]
+            for token in sorted(candidates, key=self.priority):
+                try:
+                    await self.process(token, report)
+                except Exception as exc:
+                    report.errors += 1
+                    self.repository.watch_defer(token)
+                    log.warning(
+                        "token failed chain=%s address=%s error=%s",
+                        token.chain,
+                        token.contract_address,
+                        type(exc).__name__,
+                    )
             report.finished_at = time.time()
             self.repository.finish_scan(report.scan_id, report, report.finished_at)
             report.finished_at = time.time()

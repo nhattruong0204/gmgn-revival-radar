@@ -121,6 +121,7 @@ async def run_service(runtime: RuntimeSettings, repo: Repository, http: httpx.As
             schedule["running"] = True
             schedule["next_due"] = None
             try:
+                # Await completion even on cadence overruns: no timer spawns another scan.
                 await scanner.scan_once()
             finally:
                 schedule["running"] = False

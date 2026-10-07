@@ -1,0 +1,125 @@
+{
+  "label": "before",
+  "mode": "offline Solana public-response replay; synthetic history; no network latency",
+  "baseline_commit": "e3a6ff8c99458d7a243ffe04c7da494854b465c7",
+  "chains": [
+    "sol"
+  ],
+  "discovery_limit": 20,
+  "watchlist_limit": 100,
+  "seeded_tokens": 4,
+  "history_method": "four prior observations: volume / 6, transactions / 4; 300s apart",
+  "scan_spacing_seconds": 300,
+  "scans": [
+    {
+      "scan": 1,
+      "duration_seconds": 0.093,
+      "endpoint_attempts": {
+        "/v1/market/hot_searches": 1,
+        "/v1/market/rank": 1,
+        "/v1/token/info": 4,
+        "/v1/token/security": 0,
+        "/v1/market/token_kline": 4
+      },
+      "discovered": 36,
+      "evaluated": 36,
+      "potential_alerts": 0,
+      "errors": 0,
+      "performance": {
+        "seconds": {
+          "total": 0.09273,
+          "discovery": 0.005897,
+          "market": 0.014779,
+          "security": 0,
+          "kline": 0.013359,
+          "sqlite": 0.048469,
+          "telegram": 0
+        },
+        "calls": {
+          "/v1/market/hot_searches": 1,
+          "/v1/market/rank": 1,
+          "/v1/token/info": 4,
+          "/v1/token/security": 0,
+          "/v1/market/token_kline": 4
+        },
+        "failures": {}
+      },
+      "funnel": {
+        "sol": {
+          "discovered": 36,
+          "watchlist_added": 0,
+          "prefilter_checked": 36,
+          "prefilter_pass": 4,
+          "prefilter_rejected": 32,
+          "market_enriched": 4,
+          "market_pass": 4,
+          "activity_trigger": 4,
+          "kline_requested": 4,
+          "base_detected": 0,
+          "serious_candidates": 0,
+          "security_requested": 0,
+          "security_enriched": 0,
+          "evaluated": 36,
+          "eligible": 0,
+          "potential_alerts": 0,
+          "alerted": 0
+        }
+      }
+    },
+    {
+      "scan": 2,
+      "duration_seconds": 0.061111,
+      "endpoint_attempts": {
+        "/v1/market/hot_searches": 1,
+        "/v1/market/rank": 1,
+        "/v1/token/info": 4,
+        "/v1/token/security": 0,
+        "/v1/market/token_kline": 4
+      },
+      "discovered": 36,
+      "evaluated": 36,
+      "potential_alerts": 0,
+      "errors": 0,
+      "performance": {
+        "seconds": {
+          "total": 0.06049,
+          "discovery": 0.010049,
+          "market": 0.00689,
+          "security": 0,
+          "kline": 0.011898,
+          "sqlite": 0.025176,
+          "telegram": 0
+        },
+        "calls": {
+          "/v1/market/hot_searches": 1,
+          "/v1/market/rank": 1,
+          "/v1/token/info": 4,
+          "/v1/token/security": 0,
+          "/v1/market/token_kline": 4
+        },
+        "failures": {}
+      },
+      "funnel": {
+        "sol": {
+          "discovered": 36,
+          "watchlist_added": 0,
+          "prefilter_checked": 36,
+          "prefilter_pass": 4,
+          "prefilter_rejected": 32,
+          "market_enriched": 4,
+          "market_pass": 4,
+          "activity_trigger": 4,
+          "kline_requested": 4,
+          "base_detected": 0,
+          "serious_candidates": 0,
+          "security_requested": 0,
+          "security_enriched": 0,
+          "evaluated": 36,
+          "eligible": 0,
+          "potential_alerts": 0,
+          "alerted": 0
+        }
+      }
+    }
+  ]
+}

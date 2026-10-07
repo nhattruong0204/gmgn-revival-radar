@@ -22,6 +22,8 @@ class ScanMetrics:
     seconds: Counter = field(default_factory=Counter)
     calls: Counter = field(default_factory=Counter)
     failures: Counter = field(default_factory=Counter)
+    cache: Counter = field(default_factory=Counter)
+    deferred: Counter = field(default_factory=Counter)
 
     @contextmanager
     def measure(self, stage: str):
@@ -39,6 +41,8 @@ class ScanMetrics:
             },
             "calls": {route: self.calls[route] for route in ENDPOINTS},
             "failures": dict(self.failures),
+            "cache": dict(self.cache),
+            "deferred": dict(self.deferred),
         }
 
 

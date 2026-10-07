@@ -14,7 +14,7 @@ TEXT_FIELDS = {
     "asset_classification_reason",
 }
 SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in {"security", "data_warnings"}]
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
@@ -49,6 +49,8 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
                 ON alerts(chain, contract_address, timestamp DESC)""")
         if version < 2:
             _migrate_diagnostics(db)
+        if version < 3:
+            _migrate_enrichment(db)
         db.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
         db.commit()
     except Exception:
@@ -86,3 +88,20 @@ def _migrate_diagnostics(db: sqlite3.Connection) -> None:
     db.execute("""CREATE TABLE state (
         key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at REAL NOT NULL
     )""")
+
+
+def _migrate_enrichment(db: sqlite3.Connection) -> None:
+    db.execute("""CREATE TABLE enrichment_cache (
+        kind TEXT NOT NULL, chain TEXT NOT NULL, contract_address TEXT NOT NULL,
+        fetched_at REAL NOT NULL, expires_at REAL NOT NULL, payload TEXT NOT NULL,
+        PRIMARY KEY(kind,chain,contract_address)
+    )""")
+    db.execute("""CREATE TABLE watch_state (
+        chain TEXT NOT NULL, contract_address TEXT NOT NULL,
+        first_seen REAL NOT NULL, last_seen REAL NOT NULL,
+        last_polled REAL NOT NULL DEFAULT 0, last_score INTEGER NOT NULL DEFAULT 0,
+        next_due REAL NOT NULL DEFAULT 0, deferred INTEGER NOT NULL DEFAULT 0,
+        tier TEXT NOT NULL DEFAULT 'high', payload TEXT NOT NULL,
+        PRIMARY KEY(chain,contract_address)
+    )""")
+    db.execute("CREATE INDEX watch_due ON watch_state(chain,next_due,last_seen)")

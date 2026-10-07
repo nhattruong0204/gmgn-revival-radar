@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     daily_summary_enabled: bool = False
     daily_summary_hour: int = Field(default=9, ge=0, le=23)
     report_timezone: str = "Asia/Bangkok"
-    enabled_chains: str = "sol,bsc,base,robinhood,arc"
+    enabled_chains: str = "sol"
     database_path: Path = Path("data/revival_radar.db")
     scan_interval_seconds: Positive = 300
     token_min_age_hours: Positive = 48
@@ -97,6 +97,15 @@ class Settings(BaseSettings):
     http_attempts: int = Field(default=3, ge=1, le=5)
     request_spacing_seconds: Positive = 1.5
     retry_max_wait_seconds: Positive = 10
+    security_cache_ttl_seconds: float = Field(default=1800, ge=0, allow_inf_nan=False)
+    kline_cache_ttl_seconds: float = Field(default=900, ge=0, allow_inf_nan=False)
+    max_market_enrich_per_scan: int = Field(default=40, ge=0, le=500)
+    max_security_enrich_per_scan: int = Field(default=8, ge=0, le=100)
+    max_kline_fetch_per_scan: int = Field(default=12, ge=0, le=100)
+    watchlist_high_score_interval_seconds: Positive = 150
+    watchlist_normal_interval_seconds: Positive = 600
+    # None preserves the existing WATCHLIST_HOURS / Telegram preset setting.
+    watchlist_expire_hours: Positive | None = None
     sqlite_busy_timeout_ms: int = Field(default=5000, ge=100, le=30000)
     weights: ScoreWeights = Field(default_factory=ScoreWeights)
 

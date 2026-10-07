@@ -154,7 +154,7 @@ reason for an older alert. Existing records without presentation snapshots show 
 explicit legacy/unavailable message. Historical buttons stay readable after restart,
 while owner/private-chat authorization still applies. Near-miss details expire with
 the existing seven-day diagnostics retention; alert details remain with alert history.
-Presentation snapshots use the existing SQLite state table; schema version 2,
+Presentation snapshots use the existing SQLite state table; the additive schema version 2 → 3 migration,
 alert cooldown behavior and existing snapshots remain compatible.
 
 The health overview leads with scanner status, completed/unfinished scans, average
@@ -162,7 +162,9 @@ duration, discovered/evaluated/eligible/alerted totals, headline coverage and bi
 blockers. **Performance**, **Funnel**, **Data quality**, **Scan configuration**,
 **Near misses**, and **Full diagnostics** open focused pages. **Performance** includes
 the latest scan's discovery, market, security, candles, SQLite and Telegram durations,
-plus endpoint attempts including retries. **Funnel** includes counts through the
+plus endpoint attempts including retries. It also shows security/candle cache hits,
+fetches and budget deferrals. [Cache and watchlist settings](scanner-caching.md)
+are configured through environment variables; existing strategy presets are unchanged. **Funnel** includes counts through the
 prefilter, market, activity, candles, security and delivery stages. Legacy or unfinished
 scans explicitly show unavailable metrics. Operation times include API pacing and may
 overlap across concurrent chains; they are not additive. See

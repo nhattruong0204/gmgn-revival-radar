@@ -1,5 +1,8 @@
 # Scanner performance (issue #2)
 
+Issue #3 adds [persistent caches, request budgets and watchlist tiers](scanner-caching.md)
+to this pipeline. Measurements below describe the issue #2 implementation.
+
 The scanner now rejects known discovery failures before token-info requests, uses
 market history to decide whether candles are needed, and requests security only for
 serious candidates. Thresholds, presets, weights, scoring formulas, discovery limits,

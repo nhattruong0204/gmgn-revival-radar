@@ -180,6 +180,7 @@ async def test_security_refresh_can_remove_discovery_penalties_and_add_new_risks
 ):
     for snapshot in history:
         repo.save_snapshot(snapshot)
+    config.security_cache_ttl_seconds = 0
     config.weights.concentration_penalty = 40
     concentrated = changed(token, security=token.security.model_dump() | {"top10_ratio": 0.9})
     source = SplitSource(concentrated, candles=candles, security=token.security)
@@ -282,7 +283,7 @@ async def test_timing_counts_persist_restart_reset_and_leave_schema_compatible(c
         restored = Repository(reopened).health(0)
         assert restored["latest_scan"]["performance"] == second.performance
         assert restored["latest_scan"]["funnel"] == second.funnel
-        assert reopened.execute("PRAGMA user_version").fetchone()[0] == 2
+        assert reopened.execute("PRAGMA user_version").fetchone()[0] == 3
         for view in ("performance", "funnel"):
             text = health_page(restored, view)
             assert len(text.encode("utf-16-le")) // 2 <= 4096
