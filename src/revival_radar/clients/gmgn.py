@@ -14,8 +14,10 @@ from revival_radar.clients.normalization import (
     number,
     parse_candles,
     ranked_token,
+    security_from,
 )
 from revival_radar.config import Settings
+from revival_radar.metrics import ScanMetrics
 from revival_radar.models.token import Candle, TokenSnapshot
 
 log = logging.getLogger(__name__)
@@ -28,7 +30,8 @@ class DataSourceError(Exception):
 
 class MarketDataSource(Protocol):
     async def discover(self, chain: str, source: str) -> list[TokenSnapshot]: ...
-    async def enrich(self, token: TokenSnapshot) -> TokenSnapshot: ...
+    async def enrich_market(self, token: TokenSnapshot) -> TokenSnapshot: ...
+    async def enrich_security(self, token: TokenSnapshot) -> TokenSnapshot: ...
     async def candles(self, token: TokenSnapshot) -> list[Candle]: ...
 
 
@@ -54,6 +57,7 @@ class GMGNClient:
         self._lock = asyncio.Lock()
         self._next_request = 0.0
         self._blocked_until = 0.0
+        self.metrics = ScanMetrics()
 
     async def request(
         self, method: str, path: str, *, params: dict | None = None, body: dict | None = None
@@ -74,6 +78,7 @@ class GMGNClient:
                     "client_id": str(uuid.uuid4()),
                 }
                 try:
+                    self.metrics.calls[path] += 1
                     response = await self.http.request(
                         method,
                         API_BASE + path,
@@ -169,9 +174,12 @@ class GMGNClient:
         log.info("scanning chain=%s source=%s count=%d", chain, source, len(result))
         return result
 
-    async def enrich(self, token: TokenSnapshot) -> TokenSnapshot:
-        params = {"chain": token.chain, "address": token.contract_address}
-        info = await self.request("GET", "/v1/token/info", params=params)
+    async def enrich_market(self, token: TokenSnapshot) -> TokenSnapshot:
+        info = await self.request(
+            "GET",
+            "/v1/token/info",
+            params={"chain": token.chain, "address": token.contract_address},
+        )
         if not isinstance(info, dict) or not isinstance(info.get("price"), dict):
             raise DataSourceError("Unexpected token info response shape")
         address = info.get("address")
@@ -179,18 +187,37 @@ class GMGNClient:
             address = address.lower()
         if address is not None and address != token.contract_address:
             raise DataSourceError("Token info address mismatch")
-        security = {}
-        warnings = []
+        enriched = enriched_token(token, info, {})
+        enriched._market_security_info = {
+            "stat": info.get("stat"),
+            "wallet_tags_stat": info.get("wallet_tags_stat"),
+        }
+        return enriched
+
+    async def enrich_security(self, token: TokenSnapshot) -> TokenSnapshot:
+        raw = await self.request(
+            "GET",
+            "/v1/token/security",
+            params={"chain": token.chain, "address": token.contract_address},
+        )
+        if not isinstance(raw, dict):
+            raise DataSourceError("Unexpected security response shape")
+        return token.model_copy(
+            update={
+                "security": security_from(
+                    token._market_security_info, raw, token.chain, token.security
+                )
+            }
+        )
+
+    async def enrich(self, token: TokenSnapshot) -> TokenSnapshot:
+        """Compatibility convenience; the scanner uses the split operations."""
+        token = await self.enrich_market(token)
         try:
-            security = await self.request("GET", "/v1/token/security", params=params)
-            if not isinstance(security, dict):
-                security = {}
-                warnings.append("Security response malformed")
+            return await self.enrich_security(token)
         except DataSourceError:
-            warnings.append("Security enrichment unavailable")
-        result = enriched_token(token, info, security)
-        result.data_warnings.extend(warnings)
-        return result
+            token.data_warnings.append("Security enrichment unavailable")
+            return token
 
     async def candles(self, token: TokenSnapshot) -> list[Candle]:
         data = await self.request(

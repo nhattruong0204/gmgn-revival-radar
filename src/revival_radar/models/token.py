@@ -2,7 +2,7 @@ import re
 import time
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator, model_validator
 
 from revival_radar.analysis.asset_classification import classify_asset
 
@@ -30,6 +30,9 @@ class Security(BaseModel):
 
 class TokenSnapshot(BaseModel):
     model_config = ConfigDict(allow_inf_nan=False)
+    # Transient market-stat provenance preserves field priority during split enrichment.
+    # Private attributes never enter snapshots, database columns, or Telegram output.
+    _market_security_info: dict = PrivateAttr(default_factory=dict)
     timestamp: Nonnegative = Field(default_factory=time.time)
     chain: Literal["sol", "bsc", "base", "robinhood", "arc"]
     contract_address: str

@@ -7,6 +7,7 @@ from typing import Any
 from revival_radar.analysis.acceleration import fresh_history
 from revival_radar.analysis.filters import first_pass
 from revival_radar.config import Settings
+from revival_radar.metrics import sqlite_timed
 from revival_radar.models.signal import RevivalResult
 from revival_radar.models.token import TokenSnapshot
 from revival_radar.storage.database import SNAPSHOT_FIELDS
@@ -16,6 +17,7 @@ class Repository:
     def __init__(self, db: sqlite3.Connection):
         self.db = db
 
+    @sqlite_timed
     def save_snapshot(self, token: TokenSnapshot) -> None:
         data = token.model_dump(mode="json")
         data["discovery_source"] = ",".join(sorted(token.discovery_source))
@@ -27,6 +29,7 @@ class Repository:
                 f"INSERT OR IGNORE INTO token_snapshots ({names}) VALUES ({placeholders})", values
             )
 
+    @sqlite_timed
     def history(self, token: TokenSnapshot, limit: int = 24) -> list[TokenSnapshot]:
         rows = self.db.execute(
             """SELECT payload FROM token_snapshots
@@ -35,6 +38,7 @@ class Repository:
         ).fetchall()
         return [TokenSnapshot.model_validate_json(r["payload"]) for r in rows]
 
+    @sqlite_timed
     def watchlist(self, chain: str, since: float, limit: int) -> list[TokenSnapshot]:
         rows = self.db.execute(
             """SELECT payload FROM (
@@ -46,6 +50,7 @@ class Repository:
         )
         return [TokenSnapshot.model_validate_json(r["payload"]) for r in rows]
 
+    @sqlite_timed
     def reserve_alert(
         self,
         token: TokenSnapshot,
@@ -112,6 +117,7 @@ class Repository:
         value = self.get_state(f"telegram:{key}:{identity}")
         return json.loads(value) if value else None
 
+    @sqlite_timed
     def finish_alert(self, alert_id: int, status: str, message_id: int | None = None) -> None:
         if status not in {"sent", "failed", "unknown"}:
             raise ValueError("Invalid alert delivery state")
@@ -121,6 +127,7 @@ class Repository:
                 (status, message_id, alert_id),
             )
 
+    @sqlite_timed
     def begin_scan(self, started: float, configuration: dict | None = None) -> int:
         with self.db:
             cursor = self.db.execute("INSERT INTO scan_runs (started) VALUES (?)", (started,))
@@ -131,6 +138,7 @@ class Repository:
                 )
         return cursor.lastrowid
 
+    @sqlite_timed
     def record_evaluation(
         self,
         scan_id: int,
@@ -216,6 +224,7 @@ class Repository:
                 (scan_id, scan_id),
             )
 
+    @sqlite_timed
     def finish_scan(self, scan_id: int, report: object, finished: float) -> None:
         metrics = [
             int(getattr(report, name, 0))
@@ -233,6 +242,19 @@ class Repository:
                 discovered_by_chain=?,discovered_by_source=?,source_errors=?,discovered_keys=?
                 WHERE id=? AND finished IS NULL""",
                 (finished, finished, *metrics, *counts, keys, scan_id),
+            )
+
+    def persist_scan_metrics(self, scan_id: int, report: object) -> None:
+        """Final metric persistence is excluded from the measured scan's operations."""
+        payload = json.dumps({"performance": report.performance, "funnel": report.funnel})
+        with self.db:
+            self.db.execute(
+                "UPDATE scan_runs SET finished=?,duration_seconds=? WHERE id=?",
+                (report.finished_at, report.duration_seconds, scan_id),
+            )
+            self.db.execute(
+                "INSERT INTO state (key,value,updated_at) VALUES (?,?,?)",
+                (f"scan:metrics:{scan_id}", payload, report.finished_at),
             )
 
     def get_state(self, key: str) -> str | None:
@@ -272,6 +294,11 @@ class Repository:
             self.db.execute(
                 "DELETE FROM evaluations WHERE scan_id IN "
                 "(SELECT id FROM scan_runs WHERE started<?)",
+                (before,),
+            )
+            self.db.execute(
+                "DELETE FROM state WHERE key IN "
+                "(SELECT 'scan:metrics:' || id FROM scan_runs WHERE started<?)",
                 (before,),
             )
             self.db.execute("DELETE FROM scan_runs WHERE started<?", (before,))
@@ -432,6 +459,9 @@ class Repository:
         if latest:
             value = self.get_state(f"telegram:scan:{latest['id']}")
             latest["configuration"] = json.loads(value) if value else {}
+            metrics = self.get_state(f"scan:metrics:{latest['id']}")
+            if metrics:
+                latest.update(json.loads(metrics))
         return {
             "since": since,
             "until": until,

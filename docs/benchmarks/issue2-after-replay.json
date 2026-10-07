@@ -1,0 +1,300 @@
+{
+  "label": "optimized-replay",
+  "mode": "captured response replay; no network latency",
+  "measured_at_utc": "2026-10-07T14:52:27.761339+00:00",
+  "duration_seconds": 0.041193,
+  "endpoint_attempts": {
+    "/v1/market/hot_searches": 1,
+    "/v1/market/rank": 1,
+    "/v1/token/info": 4,
+    "/v1/token/security": 0,
+    "/v1/market/token_kline": 0
+  },
+  "http_status_counts": {
+    "200": 6
+  },
+  "adapter_request_seconds": {
+    "discovery": 0.007692,
+    "market": 0.005013,
+    "security": 0,
+    "kline": 0,
+    "sqlite": 0.01603,
+    "telegram": 0
+  },
+  "candidates": {
+    "discovered": 36,
+    "evaluated": 36,
+    "market_filter_pass": 4,
+    "activity_trigger": 0,
+    "base_detected": 0,
+    "eligible": 0,
+    "potential_alerts": 0,
+    "sent": 0,
+    "errors": 0
+  },
+  "discovered_keys": [
+    [
+      "sol",
+      "2XauZLfyEtqCwFjeegbaJpnXexA86vmefpx8R4W5pump"
+    ],
+    [
+      "sol",
+      "39ahtL8ynzE4amH26J29C93PA5172V3ft9UuUcqQS8fz"
+    ],
+    [
+      "sol",
+      "43mLX2bHLqEygHm5foLQSz1PiRfn8virDHZJvyrWrRjN"
+    ],
+    [
+      "sol",
+      "4TwXKQoVWZcTscy4t7ukb2LpiFGKbt21pWkfeqqPUBH9"
+    ],
+    [
+      "sol",
+      "4ej9hF1mpnHSwXvJHBTuU2pwYf1JGCKgGJZXiXHapump"
+    ],
+    [
+      "sol",
+      "4g2ToCkuFSBdW8GTJWMgnL7hGH2b2G2WkxgmS87Rpump"
+    ],
+    [
+      "sol",
+      "5tCju6YNxHq5zrA6tGndr6F7TK42mpUFmeE31cSFpump"
+    ],
+    [
+      "sol",
+      "5wRNycheAbuqufLjpYWaTUHqcKFK6jHXjEeBmNLppump"
+    ],
+    [
+      "sol",
+      "6GmAFSYs4gk3FDao5FzzySQpPZaWsa4rUJHacpMpUNgx"
+    ],
+    [
+      "sol",
+      "6Rut47jLqecEQVmaPrGj6Lw3evnZqyAyH5yNw12MvkMB"
+    ],
+    [
+      "sol",
+      "78vQ4tf1LXnu78JHQPF6EUbAYGctn66HBTk41Ko6pXu2"
+    ],
+    [
+      "sol",
+      "7VertkgF9KLhxxJXHX6uaWuoYZTP9LdGj2bWmVXVpump"
+    ],
+    [
+      "sol",
+      "85WdpEBNDSN9oNkPomBGspnBZsaKb7WF1NQ51pdouxML"
+    ],
+    [
+      "sol",
+      "98kfF7rmsg1QDUEoCqNE7g7M1FdrTt92TEp2CLzypump"
+    ],
+    [
+      "sol",
+      "9ThxXpWNh3zhWQY7pUaZyxu3hwDt3D7HCyfvW7ywft8o"
+    ],
+    [
+      "sol",
+      "9su7Juk2tzRgH1rYyST4cbRXVXQqLzsHvXUpdSc8bVvt"
+    ],
+    [
+      "sol",
+      "9yXqev3LRVNCdPhAtYNXj8gd9fgEQZ4dVisMJj2vpump"
+    ],
+    [
+      "sol",
+      "9yfiomKJ2fdHiZQ3MK9AJniu8eR2eSjCzfMEo1zXpump"
+    ],
+    [
+      "sol",
+      "AQf9yBc3GdHAVbT1xMD6LCnvQkZaLTqH5dPZpoCmpump"
+    ],
+    [
+      "sol",
+      "BSbW8M2ZdnU9y5xQ1Sk1pieY1GBy6tX6GFf6uHe7avDy"
+    ],
+    [
+      "sol",
+      "C1mBfBoDkwWfd6uTFZp62ARHLjeVp3bDpCDMfMZtPngE"
+    ],
+    [
+      "sol",
+      "CscZaq5twomhUkvCY8Jdd1tge32L4Yj9FbkFFEZQpump"
+    ],
+    [
+      "sol",
+      "DEQKHY5YVPFiwcVhoUUE5gnkWj66LVPoPgLHAswqpump"
+    ],
+    [
+      "sol",
+      "DEW9dSN6QpWyNthphCpMmAbZP1Q4cEKR9xQXAri98WDP"
+    ],
+    [
+      "sol",
+      "DJTu7vi8norVzdVAffgvb39VP7wjKeTsgaMBJrzfxvoF"
+    ],
+    [
+      "sol",
+      "DTZJdzvBkmfVXv1JhL6wUC68k2ktnCXHYG6dz4ACS984"
+    ],
+    [
+      "sol",
+      "DcqjTXZeE2nY6s2jXuQaeR1FEW4ZDziddhijxGPnmPsE"
+    ],
+    [
+      "sol",
+      "DnPWJhBGQaMDnf633GdQkS7MVKUMqRuJF5bUU988pnVK"
+    ],
+    [
+      "sol",
+      "EFn88CiiFHhihqdr1Y11XBDxbbYarBf1ij92DsrigYwR"
+    ],
+    [
+      "sol",
+      "EHZF3dZmgRyLbe6cXYnor4nH94pkRgE9CNntxcinpump"
+    ],
+    [
+      "sol",
+      "EfecQSDH12GMAjgTQ7KJuzAhCsLiHjmba7dxQv9qpump"
+    ],
+    [
+      "sol",
+      "F6EDRhRzXGmkBabhSHdAnqx26XLhG6NCa83wwuqFpump"
+    ],
+    [
+      "sol",
+      "FbiZknTew5dVhZUdPhZUXhcWPKR8EPR2aqCkySFgdoom"
+    ],
+    [
+      "sol",
+      "G6SuvTdAAhdVZ9w1JneMpkjAArQ8vi9zqdSGGuhepump"
+    ],
+    [
+      "sol",
+      "HzYCHqAN2uoHGRnL9v2ChCfFQX3bvJuJd5zu2Hd5MZQy"
+    ],
+    [
+      "sol",
+      "LgsxNf1S5CgPKahx8q8171auHeyat6HHpZvBsQupump"
+    ]
+  ],
+  "configuration": {
+    "preset": "Strict",
+    "revision": 0,
+    "overrides": 0,
+    "settings": {
+      "acceleration_cap": 20.0,
+      "alert_cooldown_hours": 6.0,
+      "alert_score_threshold": 75,
+      "alerts_paused": false,
+      "base_max_range_ratio": 0.25,
+      "base_min_hours": 24.0,
+      "base_sufficient_hours": 72.0,
+      "breakout_margin": 0.01,
+      "bundler_max_ratio": 0.3,
+      "daily_summary_enabled": false,
+      "daily_summary_hour": 9,
+      "dev_drop_threshold": 0.02,
+      "discovery_interval": "1h",
+      "discovery_limit": 20,
+      "dry_run": true,
+      "enabled_chains": "sol",
+      "exclude_stablecoins": true,
+      "exclude_tokenized_stocks": true,
+      "exclude_wrapped_assets": true,
+      "history_max_gap_seconds": 900.0,
+      "history_observations": 6,
+      "holder_retention_ratio": 0.9,
+      "hot_rank_improvement": 10,
+      "insider_drop_threshold": 0.05,
+      "kline_lookback_hours": 168,
+      "liquidity_drop_threshold": 0.2,
+      "major_low_tolerance": 0.03,
+      "max_ath_drawdown": 0.95,
+      "max_market_cap": 10000000.0,
+      "max_price_change_1h": 75.0,
+      "max_price_change_5m": 30.0,
+      "min_ath_drawdown": 0.65,
+      "min_holders": 300,
+      "min_liquidity": 30000.0,
+      "min_market_cap": 100000.0,
+      "min_volume_1h": 50000.0,
+      "minimum_history_observations": 3,
+      "realert_score_increase": 10,
+      "report_timezone": "Asia/Bangkok",
+      "request_spacing_seconds": 1e-05,
+      "retest_tolerance": 0.02,
+      "scan_interval_seconds": 300.0,
+      "sniper_max_ratio": 0.3,
+      "token_min_age_hours": 48.0,
+      "top10_max_ratio": 0.5,
+      "tx_acceleration_threshold": 1.5,
+      "volume_acceleration_threshold": 1.5,
+      "watchlist_hours": 24.0,
+      "watchlist_limit": 100,
+      "weights": {
+        "drawdown": 10,
+        "liquidity": 10,
+        "holders": 5,
+        "base": 15,
+        "base_duration": 5,
+        "volume_5m": 15,
+        "volume_1h": 10,
+        "transactions": 10,
+        "hot_rank": 5,
+        "both_sources": 5,
+        "higher_low": 5,
+        "higher_high": 5,
+        "breakout": 5,
+        "concentration_penalty": 10,
+        "insider_penalty": 20,
+        "dev_penalty": 25,
+        "liquidity_penalty": 25,
+        "danger_penalty": 40,
+        "sniper_penalty": 5,
+        "bundler_penalty": 5
+      }
+    }
+  },
+  "instrumentation": {
+    "seconds": {
+      "total": 0.040745,
+      "discovery": 0.015501,
+      "market": 0.005848,
+      "security": 0,
+      "kline": 0,
+      "sqlite": 0.015101,
+      "telegram": 0
+    },
+    "calls": {
+      "/v1/market/hot_searches": 1,
+      "/v1/market/rank": 1,
+      "/v1/token/info": 4,
+      "/v1/token/security": 0,
+      "/v1/market/token_kline": 0
+    },
+    "failures": {}
+  },
+  "funnel": {
+    "sol": {
+      "discovered": 36,
+      "watchlist_added": 0,
+      "prefilter_checked": 36,
+      "prefilter_pass": 4,
+      "prefilter_rejected": 32,
+      "market_enriched": 4,
+      "market_pass": 4,
+      "activity_trigger": 0,
+      "kline_requested": 0,
+      "base_detected": 0,
+      "serious_candidates": 0,
+      "security_requested": 0,
+      "security_enriched": 0,
+      "evaluated": 36,
+      "eligible": 0,
+      "potential_alerts": 0,
+      "alerted": 0
+    }
+  },
+  "stopped_for_auth_or_rate_limit": false
+}

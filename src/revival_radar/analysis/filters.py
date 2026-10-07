@@ -39,3 +39,17 @@ def first_pass(token: TokenSnapshot, config: Settings) -> FilterResult:
         elif maximum is not None and value > maximum:
             reasons.append(f"{field}: above maximum")
     return FilterResult(not reasons, reasons)
+
+
+def discovery_prefilter(token: TokenSnapshot, config: Settings) -> FilterResult:
+    """Reject known threshold failures; omitted discovery values remain unknown.
+
+    Ranking volume is mapped to its declared interval by ranked_token, so only a
+    genuine 1h value can fail the hourly-volume threshold. No missing value is zero.
+    """
+    reasons = [
+        reason
+        for reason in first_pass(token, config).reasons
+        if not reason.endswith(": unavailable")
+    ]
+    return FilterResult(not reasons, reasons)

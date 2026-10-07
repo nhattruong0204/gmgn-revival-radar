@@ -160,8 +160,14 @@ alert cooldown behavior and existing snapshots remain compatible.
 The health overview leads with scanner status, completed/unfinished scans, average
 duration, discovered/evaluated/eligible/alerted totals, headline coverage and biggest
 blockers. **Performance**, **Funnel**, **Data quality**, **Scan configuration**,
-**Near misses**, and **Full diagnostics** open focused pages. Per-route API timing is
-not available in this issue. Coverage percentages describe saved evaluations with
+**Near misses**, and **Full diagnostics** open focused pages. **Performance** includes
+the latest scan's discovery, market, security, candles, SQLite and Telegram durations,
+plus endpoint attempts including retries. **Funnel** includes counts through the
+prefilter, market, activity, candles, security and delivery stages. Legacy or unfinished
+scans explicitly show unavailable metrics. Operation times include API pacing and may
+overlap across concurrent chains; they are not additive. See
+[scanner performance](scanner-performance.md) for definitions and benchmarks.
+Coverage percentages describe saved evaluations with
 fields/history available, not API success rates or proof of safety. When a report
 spans multiple configurations, it says so; its footer describes only the latest scan.
 Telegram controls fonts, spacing and theme; these layouts use native messages and

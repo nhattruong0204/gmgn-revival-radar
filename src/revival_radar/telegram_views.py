@@ -63,7 +63,33 @@ def health_page(report: dict, view: str = "overview") -> str:
             lines.append(f"Target  {_duration(target)}")
             if elapsed is not None and elapsed > target:
                 lines.append("⚠️ Latest scan exceeded the interval target")
-        lines += ["", "Timing covers whole scans; per-route API metrics are not recorded."]
+        metrics = latest.get("performance")
+        if metrics:
+            lines += ["", "<b>Time by operation</b>"]
+            for stage, label in (
+                ("discovery", "Discovery"),
+                ("market", "Market info"),
+                ("security", "Security"),
+                ("kline", "Candles"),
+                ("sqlite", "SQLite"),
+                ("telegram", "Telegram"),
+            ):
+                lines.append(f"{label}  {metrics['seconds'].get(stage, 0):.2f}s")
+            lines += ["", "<b>API attempts · retries included</b>"]
+            routes = {
+                "/v1/market/hot_searches": "Hot Search",
+                "/v1/market/rank": "Trending",
+                "/v1/token/info": "Token info",
+                "/v1/token/security": "Security",
+                "/v1/market/token_kline": "Candles",
+            }
+            for route, label in routes.items():
+                lines.append(f"{label}  {metrics['calls'].get(route, 0)}")
+            if metrics.get("failures"):
+                lines += ["", "<b>Operation failures</b>", _counted(metrics["failures"])]
+            lines.append("Operation times include API waiting; concurrent stages can overlap.")
+        else:
+            lines += ["", "No per-stage metrics saved for this scan (legacy / unfinished)."]
     elif view == "funnel":
         lines = [
             "🔻 <b>Discovery &amp; delivery</b>",
@@ -77,6 +103,25 @@ def health_page(report: dict, view: str = "overview") -> str:
             "Evaluations include watchlist observations; discovery counts exclude watchlist. "
             "Potential alerts can be suppressed by dry run, pause, or cooldown.",
         ]
+        for chain, counts in latest.get("funnel", {}).items():
+            lines += ["", f"<b>Latest {_text(chain.upper(), 20)} scan</b>"]
+            for key, label in (
+                ("discovered", "Discovered"),
+                ("prefilter_pass", "Prefilter passed"),
+                ("market_enriched", "Market enriched"),
+                ("market_pass", "Market passed"),
+                ("activity_trigger", "Returning activity"),
+                ("kline_requested", "Candle requests"),
+                ("base_detected", "Base detected"),
+                ("serious_candidates", "Serious candidates"),
+                ("security_requested", "Security requests"),
+                ("eligible", "Eligible"),
+                ("alerted", "Sent"),
+            ):
+                lines.append(f"{label}  {counts.get(key, 0)}")
+            lines.append(
+                "Stage counts describe operations, not a disjoint population; watchlist included."
+            )
     elif view == "quality":
         lines = [
             "🧪 <b>Data coverage</b>",

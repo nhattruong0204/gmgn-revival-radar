@@ -29,6 +29,12 @@ class DemoSource:
     async def enrich(self, token: TokenSnapshot) -> TokenSnapshot:
         return token
 
+    async def enrich_market(self, token: TokenSnapshot) -> TokenSnapshot:
+        return await self.enrich(token)
+
+    async def enrich_security(self, token: TokenSnapshot) -> TokenSnapshot:
+        return token
+
     async def candles(self, token: TokenSnapshot) -> list[Candle]:
         scenario = next(
             s for s in self.data if s["token"]["contract_address"] == token.contract_address

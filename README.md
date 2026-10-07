@@ -183,8 +183,9 @@ If increasing the scan interval, also increase `HISTORY_MAX_GAP_SECONDS` accordi
 ```text
 Official GMGN Hot Searches + Trending
                  ↓ merge by (chain, address)
-Token info + optional security → SQLite snapshots
-                 ↓ filters + history + closed candles
+Cheap prefilter (known failures only) → Token info → Market filter
+                 ↓ history / returning activity
+Closed candles when needed → Security for serious candidates
 Deterministic Revival Score + explanations
                  ↓ eligible + threshold + durable cooldown
 Telegram (or dry-run log)
@@ -194,18 +195,24 @@ Telegram (or dry-run log)
    cancel other work. Solana addresses preserve case; EVM addresses normalize to lowercase.
 2. Revisit recent discoveries for up to 24 hours even after they leave rankings. Reset
    live ranks/metrics; only historical ATH cap and identity survive until refreshed.
-3. Fetch token info and optional security, retain nullable values, and save snapshots.
-   Required filter data missing means **ineligible**, not a zero measurement.
+3. Skip enrichment for known discovery values that fail existing thresholds. Missing
+   discovery fields pass this cheap gate. Fetch token info for survivors, retain nullable
+   values, and save market snapshots. Required market filter data missing means
+   **ineligible**, not a zero measurement.
 4. Compute current/prior volume and transaction ratios for 5m/1h. The 5m volume score
    uses the mean of up to six previous observations, requiring at least three. Nulls
    are excluded; a zero baseline yields unknown, not infinity. Ratios cap at 20.
    Duplicate, too-close, stale and discontinuous snapshots do not warm up the baseline.
-5. For filter survivors, use hourly closed candles. Walk backward through a contiguous
+5. For market filter survivors with returning activity, use hourly closed candles.
+   Walk backward through a contiguous
    narrow range, reserving two final candles for breakout/retest checks. Count actual
    duration; gaps above 90 minutes break the base. A major new low invalidates it.
    Three-candle swing points identify higher lows/highs; volatility compression compares
    normalized candle ranges in the two halves. This is a deliberately approximate pattern.
-6. Award points and explain every contribution. **Alerts also require a detected base,
+6. Fetch security for candidates whose base, activity and optimistic score can qualify
+   for an alert, then apply the unchanged scorer with fresh security. Retain warnings
+   when optional security is unavailable. Award points and explain every contribution.
+   **Alerts also require a detected base,
    returning volume or transactions, and no known dangerous security flag.** First
    Hot Search appearance is reported without inventing a prior rank or awarding points.
 7. Reserve alerts transactionally before sending. Successful alerts enforce cooldown
@@ -214,6 +221,11 @@ Telegram (or dry-run log)
    Rejected sends may retry next scan; transport/5xx uncertainty is not immediately retried
    because Telegram has no idempotency key. A crash can therefore miss an alert instead of
    duplicating one. Dry-run stores snapshots but creates no alert reservations.
+
+Each completed scan records operation timings, endpoint attempts including retries,
+and candidate counts. Open **Health → Performance / Funnel** to inspect the latest
+scan. See [scanner performance and measured benchmarks](docs/scanner-performance.md)
+for timing definitions, limitations and reproducible Solana dry runs.
 
 ### Score rules
 
@@ -332,7 +344,7 @@ uv pip compile requirements-build.in --generate-hashes -o requirements-build.loc
 
 `clients/gmgn.py` exposes a small `MarketDataSource` protocol so another documented
 provider can supply discovery/enrichment/candles later without replacing scoring or storage.
-SQLite initializes schema version 1 automatically, enables WAL and busy timeout,
+SQLite initializes schema version 2 automatically, enables WAL and busy timeout,
 and refuses a newer unknown schema. Version 0.2 migrates to schema 2 while preserving
 snapshots and cooldowns; back up with `scripts/backup_database.py` inside the existing
 container before upgrading (see the upgrade guide). Diagnostic evaluations are retained

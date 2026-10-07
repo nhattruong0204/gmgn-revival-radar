@@ -54,7 +54,7 @@ async def test_full_dry_run_pipeline(config, repo):
     assert report.processed == 3 and report.errors == 0
     assert report.potential_alerts == 1 and report.sent == 0
     assert repo.db.execute("SELECT count(*) FROM alerts").fetchone()[0] == 0
-    assert repo.db.execute("SELECT count(*) FROM token_snapshots").fetchone()[0] == 15
+    assert repo.db.execute("SELECT count(*) FROM token_snapshots").fetchone()[0] == 13
 
 
 async def test_chain_source_and_token_failure_isolation(config, repo):
@@ -65,7 +65,7 @@ async def test_chain_source_and_token_failure_isolation(config, repo):
             return await super().discover(chain, source)
 
         async def enrich(self, token):
-            if token.symbol == "DEAD":
+            if token.symbol == "REVIVE":
                 raise ValueError("bad token")
             return token
 
