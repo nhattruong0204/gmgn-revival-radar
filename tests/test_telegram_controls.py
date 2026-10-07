@@ -75,7 +75,9 @@ def callback(action, revision=0, **kwargs):
 
 
 def last_message(requests):
-    return [payload for method, payload in requests if method == "sendMessage"][-1]
+    return [
+        payload for method, payload in requests if method in {"sendMessage", "editMessageText"}
+    ][-1]
 
 
 def confirm_data(requests):
@@ -189,6 +191,8 @@ async def test_owner_menu_and_callback_sizes(bot):
     assert last_message(requests)["chat_id"] == 1234
     for menu in (
         "advanced",
+        "advanced_1",
+        "advanced_2",
         "filters",
         "structure",
         "alerts",
@@ -207,30 +211,93 @@ async def test_owner_menu_and_callback_sizes(bot):
 async def test_advanced_button_edit_survives_restart_without_changing_other_values(bot):
     controls, requests = bot
 
-    async def tap(label):
+    async def tap(action):
         buttons = last_message(requests)["reply_markup"]["inline_keyboard"]
-        button = next(button for row in buttons for button in row if button["text"] == label)
+        button = next(
+            button
+            for row in buttons
+            for button in row
+            if button["callback_data"] == f"r:{controls.runtime.revision}:{action}"
+        )
         update = callback("unused")
         update["callback_query"]["data"] = button["callback_data"]
         await controls.handle_update(update)
 
     await controls.handle_update(message("/menu"))
-    await tap("Advanced configuration")
-    buttons = last_message(requests)["reply_markup"]["inline_keyboard"]
-    offered = {button["callback_data"] for row in buttons for button in row}
+    await tap("m:advanced")
+    offered = set()
+    for page in ("advanced", "advanced_1", "advanced_2"):
+        await controls.handle_update(callback(f"m:{page}"))
+        buttons = last_message(requests)["reply_markup"]["inline_keyboard"]
+        assert len(buttons) <= 10
+        offered.update(button["callback_data"] for row in buttons for button in row)
     expected = {key for preset in PRESETS.values() for key in preset}
     expected.add("scan_interval_seconds")
     assert {f"r:0:n:{key}" for key in expected} <= offered
 
     before = controls.runtime.public_values()
-    await tap(f"Minimum liquidity ($): {before['min_liquidity']}")
+    await controls.handle_update(callback("m:advanced"))
+    await tap("n:min_liquidity")
     await controls.handle_update(message("20000"))
     assert controls.runtime.public_values() == before
     await confirm(bot)
     resumed = RuntimeSettings(controls.runtime.base)
     assert resumed.public_values() == before | {"min_liquidity": 20000}
-    await tap("Advanced configuration")
-    assert "Minimum liquidity ($): 20000.0" in str(last_message(requests))
+    await tap("m:advanced")
+    assert "$20,000" in str(last_message(requests))
+
+
+async def test_navigation_edits_existing_menu_but_confirmation_is_a_new_message(bot):
+    controls, requests = bot
+    update = callback("m:advanced")
+    update["callback_query"]["message"]["message_id"] = 45
+    await controls.handle_update(update)
+    assert [method for method, _ in requests] == ["answerCallbackQuery", "editMessageText"]
+    assert last_message(requests)["message_id"] == 45
+    assert controls.runtime.revision == 0
+
+    update["callback_query"]["data"] = "r:0:n:min_ath_drawdown"
+    await controls.handle_update(update)
+    assert "60%" in last_message(requests)["text"]
+    await controls.handle_update(message("60%"))
+    assert requests[-1][0] == "sendMessage"
+    assert "message_id" not in last_message(requests)
+    assert "65%" in last_message(requests)["text"] and "60%" in last_message(requests)["text"]
+    assert controls.runtime.effective().min_ath_drawdown == 0.65
+    await confirm(bot)
+    assert controls.runtime.effective().min_ath_drawdown == 0.60
+
+
+@pytest.mark.parametrize(
+    "description,should_send",
+    [
+        ("Bad Request: message is not modified", False),
+        ("Bad Request: message to edit not found", True),
+        ("Bad Request: message can't be edited", True),
+    ],
+)
+async def test_menu_edit_failures_are_handled_without_duplicate_settings_changes(
+    runtime, description, should_send
+):
+    methods = []
+
+    def handler(request):
+        method = request.url.path.rsplit("/", 1)[-1]
+        methods.append(method)
+        if method == "editMessageText":
+            return httpx.Response(
+                400, json={"ok": False, "error_code": 400, "description": description}
+            )
+        return httpx.Response(200, json={"ok": True, "result": {}})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
+        controls = TelegramControls(runtime, http)
+        update = callback("m:advanced")
+        update["callback_query"]["message"]["message_id"] = 45
+        await controls.handle_update(update)
+    assert ("sendMessage" in methods) == should_send
+    assert runtime.revision == 0
+    assert controls._message_to_edit is None
 
 
 @pytest.mark.parametrize("name", list(PRESETS))
@@ -310,12 +377,12 @@ async def test_expired_confirmation_never_applies(bot):
 
 
 async def test_preview_splits_all_changes_before_confirmation(bot, monkeypatch):
-    from revival_radar.telegram_controls import LABELS
+    from revival_radar.telegram_presentation import SHORT_LABELS
 
     controls, requests = bot
     changes = PRESETS["broad"]
     for key in changes:
-        monkeypatch.setitem(LABELS, key, key + "x" * 350)
+        monkeypatch.setitem(SHORT_LABELS, key, key + "x" * 350)
     before = controls.runtime.public_values()
     await controls.handle_update(callback("p:broad"))
     messages = [payload for method, payload in requests if method == "sendMessage"]
@@ -325,7 +392,7 @@ async def test_preview_splits_all_changes_before_confirmation(bot, monkeypatch):
     complete = "\n".join(payload["text"] for payload in messages)
     for key, value in changes.items():
         if before[key] != value:
-            assert LABELS[key] in complete
+            assert SHORT_LABELS[key] in complete
     await confirm(bot)
     assert controls.runtime.revision == 1
 

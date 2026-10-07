@@ -15,6 +15,12 @@ import httpx
 
 from revival_radar.chains import CHAINS
 from revival_radar.runtime_settings import PRESETS, RuntimeSettings, SettingsChangeError
+from revival_radar.telegram_presentation import (
+    SHORT_LABELS,
+    parse_setting_number,
+    setting_hint,
+    setting_value,
+)
 
 log = logging.getLogger(__name__)
 
@@ -77,14 +83,60 @@ TOGGLES = {
     "exclude_stablecoins",
     "exclude_wrapped_assets",
 }
+ADVANCED_PAGES = (
+    (
+        "Market & eligibility",
+        (
+            "alert_score_threshold",
+            "token_min_age_hours",
+            "min_market_cap",
+            "max_market_cap",
+            "min_liquidity",
+            "min_holders",
+            "min_ath_drawdown",
+            "max_ath_drawdown",
+        ),
+    ),
+    (
+        "Activity & chart structure",
+        (
+            "min_volume_1h",
+            "max_price_change_5m",
+            "max_price_change_1h",
+            "base_min_hours",
+            "base_sufficient_hours",
+            "volume_acceleration_threshold",
+            "tx_acceleration_threshold",
+        ),
+    ),
+    (
+        "Delivery & discovery",
+        (
+            "alert_cooldown_hours",
+            "realert_score_increase",
+            "discovery_limit",
+            "watchlist_limit",
+            "watchlist_hours",
+            "scan_interval_seconds",
+        ),
+    ),
+)
 
 
 class ControlsError(RuntimeError):
     """Sanitized Telegram failure, safe to display or log."""
 
-    def __init__(self, message: str, *, fatal: bool = False, retry_after: float = 0):
+    def __init__(
+        self,
+        message: str,
+        *,
+        fatal: bool = False,
+        retry_after: float = 0,
+        edit_unavailable: bool = False,
+    ):
         super().__init__(message)
         self.fatal, self.retry_after = fatal, retry_after
+        self.edit_unavailable = edit_unavailable
 
 
 @dataclass
@@ -126,6 +178,8 @@ class TelegramControls:
         self._stop = asyncio.Event()
         self._proposal: Proposal | None = None
         self._input: tuple[str, int, float] | None = None
+        self._message_to_edit: int | None = None
+        self._current_menu = "advanced"
 
     def stop(self) -> None:
         self._stop.set()
@@ -160,6 +214,15 @@ class TelegramControls:
             if isinstance(data, dict)
             else (response.status_code)
         )
+        if method == "editMessageText" and code == 400 and isinstance(data, dict):
+            description = str(data.get("description", "")).lower()
+            if "message is not modified" in description:
+                return None
+            if (
+                "message to edit not found" in description
+                or "message can't be edited" in description
+            ):
+                raise ControlsError("This menu can no longer be edited.", edit_unavailable=True)
         if code == 409:
             raise ControlsError(
                 "Telegram polling conflict: another poller or webhook is active. "
@@ -263,7 +326,9 @@ class TelegramControls:
             raise ControlsError("Control callback is too long.")
         return {"text": label, "callback_data": data}
 
-    async def _send(self, text: str, rows: list[list[dict[str, str]]] | None = None) -> None:
+    async def _send(
+        self, text: str, rows: list[list[dict[str, str]]] | None = None, *, edit: bool = False
+    ) -> None:
         # All text is created internally with escaped values. Keep headroom for Telegram.
         text = self._safe(text)
         if len(text.encode("utf-16-le")) // 2 > 4096:
@@ -277,6 +342,15 @@ class TelegramControls:
         }
         if rows:
             payload["reply_markup"] = {"inline_keyboard": rows}
+        if edit and self._message_to_edit is not None:
+            try:
+                await self._request(
+                    "editMessageText", payload | {"message_id": self._message_to_edit}
+                )
+                return
+            except ControlsError as exc:
+                if not exc.edit_unavailable:
+                    raise
         await self._request("sendMessage", payload)
 
     async def handle_update(self, update: dict[str, Any]) -> None:
@@ -296,7 +370,14 @@ class TelegramControls:
             data = callback.get("data")
             if not isinstance(data, str) or len(data.encode()) > 64:
                 return
-            await self._callback(data)
+            message_id = message.get("message_id")
+            self._message_to_edit = (
+                message_id if type(message_id) is int and message_id > 0 else None
+            )
+            try:
+                await self._callback(data)
+            finally:
+                self._message_to_edit = None
             return
         message = update.get("message")
         if (
@@ -364,9 +445,12 @@ class TelegramControls:
                 self._input = (value, self.runtime.revision, time.monotonic() + 600)
                 current = getattr(self.runtime.effective(), value)
                 await self._send(
-                    f"Send a number for <b>{html.escape(LABELS[value])}</b>.\n"
-                    f"Current: {html.escape(str(current))}\n"
-                    "You will review a confirmation before applying. Use /cancel to cancel."
+                    f"✏️ <b>{html.escape(SHORT_LABELS.get(value, LABELS[value]))}</b>\n\n"
+                    f"Current  <b>{html.escape(setting_value(value, current))}</b>\n\n"
+                    f"{html.escape(setting_hint(value))}\n\n"
+                    "Send the new value in this chat. Nothing changes until you confirm.",
+                    [[self._button("✖ Cancel", f"m:{self._current_menu}")]],
+                    edit=True,
                 )
             elif action == "reset":
                 await self._preview({}, title="Reset to startup configuration", reset=True)
@@ -378,77 +462,148 @@ class TelegramControls:
         except SettingsChangeError as exc:
             await self._send(str(exc))
 
+    def _strategy_name(self) -> str:
+        config = self.runtime.effective()
+        for name, preset in PRESETS.items():
+            if all(getattr(config, key) == value for key, value in preset.items()):
+                return name.title()
+        return "Custom"
+
+    def _delivery_label(self) -> str:
+        config = self.runtime.effective()
+        if config.alerts_paused:
+            return "⏸ Alerts paused"
+        if config.dry_run:
+            return "🟡 Dry run · alerts off"
+        if not config.telegram_bot_token.get_secret_value() or not config.telegram_chat_id:
+            return "⚠️ Alert destination missing"
+        return "🟢 Live alerts enabled"
+
+    def _setting_button(self, key: str) -> dict[str, str]:
+        label = SHORT_LABELS.get(key, LABELS[key])
+        value = setting_value(key, getattr(self.runtime.effective(), key))
+        return self._button(f"✏️ {label} · {value}", f"n:{key}")
+
+    def _toggle_button(self, key: str) -> dict[str, str]:
+        value = getattr(self.runtime.effective(), key)
+        icon = "⚪"
+        if value:
+            icon = {"alerts_paused": "⏸", "dry_run": "🟡"}.get(key, "🟢")
+        return self._button(
+            f"{icon} {SHORT_LABELS.get(key, LABELS[key])} · {setting_value(key, value)}", f"t:{key}"
+        )
+
     async def _menu(self, name: str) -> None:
         config = self.runtime.effective()
         rows: list[list[dict[str, str]]] = []
+        note = ""
         if name in {"home", "settings"}:
-            title = "Revival Radar controls"
+            title = "📡 Revival Radar"
+            body = (
+                f"{self._delivery_label()}\n"
+                f"{html.escape(setting_value('enabled_chains', config.enabled_chains))}\n\n"
+                f"Strategy  <b>{self._strategy_name()}</b> · "
+                f"Score <b>{config.alert_score_threshold}+</b>\n"
+                "Scan target  "
+                f"<b>{setting_value('scan_interval_seconds', config.scan_interval_seconds)}</b>\n\n"
+                "Choose an action below."
+            )
             rows = [
-                [self._button("Status", "status"), self._button("Health", "health")],
-                [self._button("Strategy presets", "m:presets")],
-                [self._button("Advanced configuration", "m:advanced")],
+                [self._button("📊 Status", "status"), self._button("🩺 Health", "health")],
+                [self._button("🎯 Strategy presets", "m:presets")],
+                [self._button("⚙️ Advanced configuration", "m:advanced")],
+                [self._button("🌐 Chains", "m:chains"), self._button("🛡 Exclusions", "m:assets")],
                 [
-                    self._button("Token filters", "m:filters"),
-                    self._button("Base / ratios", "m:structure"),
+                    self._button("🔔 Alerts", "m:alerts"),
+                    self._button("🔎 Discovery", "m:discovery"),
                 ],
-                [self._button("Alerts", "m:alerts"), self._button("Discovery", "m:discovery")],
-                [self._button("Chains", "m:chains"), self._button("Asset exclusions", "m:assets")],
                 [
                     self._button(
-                        "Resume alerts" if config.alerts_paused else "Pause alerts",
+                        "▶️ Resume alerts" if config.alerts_paused else "⏸ Pause alerts",
                         "t:alerts_paused",
                     )
                 ],
-                [self._button("Reset overrides", "reset")],
             ]
         elif name == "presets":
-            title = "Strategy presets — choose one to review all threshold changes"
-            rows = [[self._button(p.title(), f"p:{p}")] for p in PRESETS]
-            rows.append([self._button("Advanced configuration", "m:advanced")])
-        elif name == "advanced":
-            title = (
-                "Advanced configuration\n"
-                "Choose a setting, send its new value, then confirm. "
-                "Use full numbers (15000), drawdown ratios (0.60), "
-                "and price-change percentages (40).\n"
-                "Edits are saved across restarts. Selecting a preset later replaces "
-                "the values controlled by that preset."
+            title = "🎯 Strategy presets"
+            body = (
+                f"Current strategy  <b>{self._strategy_name()}</b>\n\n"
+                "🛡 <b>Strict</b> · Selective filters · score 75+\n"
+                "⚖️ <b>Balanced</b> · Moderate filters · score 65+\n"
+                "🔭 <b>Broad</b> · Wider filters · score 60+\n\n"
+                "Choose a preset to review its changes before saving.\n"
+                "A preset replaces your custom values for the settings it controls."
             )
-            fields = dict.fromkeys(key for preset in PRESETS.values() for key in preset)
-            fields["scan_interval_seconds"] = None
             rows = [
-                [self._button(f"{LABELS[key]}: {getattr(config, key)}", f"n:{key}")]
-                for key in fields
+                [self._button(f"{icon} {preset.title()}", f"p:{preset}")]
+                for preset, icon in (("strict", "🛡"), ("balanced", "⚖️"), ("broad", "🔭"))
             ]
+            rows.append([self._button("⚙️ Advanced configuration", "m:advanced")])
+        elif name in {"advanced", "advanced_1", "advanced_2"}:
+            page = 0 if name == "advanced" else int(name.rsplit("_", 1)[1])
+            group, fields = ADVANCED_PAGES[page]
+            title = "⚙️ Advanced configuration"
+            body = (
+                f"<b>{html.escape(group)}</b> · {page + 1}/{len(ADVANCED_PAGES)}\n"
+                "Tap a value to edit it. You review every change before saving."
+            )
+            rows = [[self._setting_button(key)] for key in fields]
+            navigation = []
+            if page > 0:
+                target = "advanced" if page == 1 else "advanced_1"
+                navigation.append(self._button("‹ Previous", f"m:{target}"))
+            if page < len(ADVANCED_PAGES) - 1:
+                navigation.append(self._button("Next ›", f"m:advanced_{page + 1}"))
+            rows.append(navigation)
+            if page == 1:
+                rows.append([self._button("📈 More chart filters", "m:structure")])
+            if page == 2:
+                rows.append([self._button("↩️ Reset custom settings", "reset")])
+            note = "Saved edits persist across restarts."
         elif name in GROUPS:
-            title = name.title()
-            rows = [
-                [self._button(f"{label}: {getattr(config, key)}", f"n:{key}")]
-                for key, label in GROUPS[name]
-            ]
+            titles = {
+                "filters": "💰 Token filters",
+                "structure": "📈 Base & activity",
+                "alerts": "🔔 Alerts & reports",
+                "discovery": "🔎 Discovery & timing",
+            }
+            title = titles[name]
+            body = "Tap a value to edit it."
+            rows = [[self._setting_button(key)] for key, _ in GROUPS[name]]
             if name == "alerts":
+                body = (
+                    f"{self._delivery_label()}\n"
+                    f"Report timezone  {html.escape(config.report_timezone)}\n\n"
+                    "Tap a value or switch to review a change."
+                )
                 rows.extend(
                     [
-                        [
-                            self._button(
-                                f"{LABELS[key]}: {'on' if getattr(config, key) else 'off'}",
-                                f"t:{key}",
-                            )
-                        ]
+                        [self._toggle_button(key)]
                         for key in ("alerts_paused", "dry_run", "daily_summary_enabled")
                     ]
                 )
-                title += f"\nSummary timezone: {html.escape(config.report_timezone)}"
             if name == "discovery":
-                title += f"\nCurrent interval: {html.escape(config.discovery_interval)}"
-                rows.append(
-                    [
-                        self._button(interval, f"d:{interval}")
-                        for interval in ("1m", "5m", "1h", "6h", "24h")
-                    ]
+                body = (
+                    "Scan interval is a target; a scan can take longer.\n"
+                    "Request spacing controls how quickly API calls are made.\n\n"
+                    f"Ranking window  <b>{html.escape(config.discovery_interval)}</b>"
                 )
+                for intervals in (("1m", "5m", "1h"), ("6h", "24h")):
+                    rows.append(
+                        [
+                            self._button(
+                                f"{'✓ ' if interval == config.discovery_interval else ''}"
+                                f"{interval}",
+                                f"d:{interval}",
+                            )
+                            for interval in intervals
+                        ]
+                    )
         elif name == "chains":
-            title = "Enabled chains — at least one is required"
+            title = "🌐 Chains"
+            body = (
+                "✓ Enabled · ○ Disabled\nTap a chain to review a change. Keep at least one enabled."
+            )
             rows = [
                 [
                     self._button(
@@ -458,11 +613,18 @@ class TelegramControls:
                 for key, chain in CHAINS.items()
             ]
         elif name == "assets":
-            title = "Asset exclusions"
+            title = "🛡 Asset exclusions"
+            body = (
+                "On means these assets are filtered out.\n"
+                "Classification uses available metadata; unknown assets may still appear."
+            )
             rows = [
                 [
                     self._button(
-                        f"{LABELS[key]}: {'on' if getattr(config, key) else 'off'}", f"t:{key}"
+                        f"{'🟢' if getattr(config, key) else '⚪'} "
+                        f"{SHORT_LABELS.get(key, LABELS[key])} · "
+                        f"{setting_value(key, getattr(config, key))}",
+                        f"t:{key}",
                     )
                 ]
                 for key in (
@@ -473,13 +635,13 @@ class TelegramControls:
             ]
         else:
             return
+        self._current_menu = name
         if name not in {"home", "settings"}:
-            rows.append([self._button("Back to menu", "m:home")])
-        await self._send(
-            f"<b>{title}</b>\nRevision {self.runtime.revision}. "
-            "Changes apply to the next scan; scans continue while alerts are paused.",
-            rows,
-        )
+            rows.append([self._button("🏠 Main menu", "m:home")])
+        text = f"<b>{title}</b>\n\n{body}"
+        if note:
+            text += f"\n\n<i>{note}</i>"
+        await self._send(text, rows, edit=True)
 
     async def _preview(
         self, changes: dict[str, Any], title: str = "Review settings change", reset: bool = False
@@ -489,13 +651,14 @@ class TelegramControls:
         candidate = self.runtime.base if reset else self.runtime.preview(changes)
         after = candidate.model_dump(mode="json")
         keys = before.keys() if reset else changes.keys()
-        lines = [f"<b>{html.escape(title)}</b>"]
+        lines = [f"📝 <b>{html.escape(title)}</b>"]
         for key in sorted(keys):
             if before[key] != after[key]:
-                label = LABELS.get(key, key.replace("_", " ").title())
+                label = SHORT_LABELS.get(key, LABELS.get(key, key.replace("_", " ").title()))
                 lines.append(
-                    f"{html.escape(label)}: {html.escape(str(before[key]))} → "
-                    f"<b>{html.escape(str(after[key]))}</b>"
+                    f"\n{html.escape(label)}\n"
+                    f"{html.escape(setting_value(key, before[key]))} → "
+                    f"<b>{html.escape(setting_value(key, after[key]))}</b>"
                 )
         if len(lines) == 1:
             await self._send("These settings already match. Open /menu for other changes.")
@@ -508,9 +671,11 @@ class TelegramControls:
             lines.append("A larger discovery universe can increase API usage.")
         if "request_spacing_seconds" in changes:
             lines.append("Shorter request spacing can trigger API rate limits.")
+        if "scan_interval_seconds" in changes:
+            lines.append("Scan interval is a target. A full scan may take longer.")
         if changes.get("alerts_paused") is True or changes.get("dry_run") is True:
             lines.append("Alert suppression takes effect immediately, including the current scan.")
-        lines.append("Confirm within 10 minutes. Strategy changes apply at the next scan.")
+        lines.append("\nConfirm within 10 minutes. Strategy changes apply at the next scan.")
         proposal = Proposal(
             secrets.token_hex(6),
             self.runtime.revision,
@@ -540,8 +705,8 @@ class TelegramControls:
                 chunks[-1],
                 [
                     [
-                        self._button("Confirm", f"yes:{proposal.nonce}"),
-                        self._button("Cancel", "cancel"),
+                        self._button("✅ Confirm", f"yes:{proposal.nonce}"),
+                        self._button("✖ Cancel", "cancel"),
                     ]
                 ],
             )
@@ -563,11 +728,19 @@ class TelegramControls:
         else:
             self.runtime.apply(proposal.changes, expected_revision=proposal.revision)
         self._input = None
+        immediate = (
+            proposal.changes.get("alerts_paused") is True or proposal.changes.get("dry_run") is True
+        )
+        timing = (
+            "Alert suppression is active now. A send already in progress may finish."
+            if immediate
+            else "Your changes apply at the next scan."
+        )
         await self._send(
-            f"Saved revision {self.runtime.revision}. New settings take effect on the next scan.",
+            f"✅ <b>Settings saved</b>\n\n{timing}\nYour settings are kept across restarts.",
             [
-                [self._button("Advanced configuration", "m:advanced")],
-                [self._button("Open menu", "m:home")],
+                [self._button("✏️ Continue editing", f"m:{self._current_menu}")],
+                [self._button("🏠 Main menu", "m:home")],
             ],
         )
 
@@ -581,7 +754,7 @@ class TelegramControls:
         try:
             if len(text) > 64:
                 raise ValueError
-            value: int | float = float(text.strip())
+            value: int | float = parse_setting_number(key, text)
             if not math.isfinite(value):
                 raise ValueError
             if type(getattr(self.runtime.effective(), key)) is int:
@@ -591,24 +764,49 @@ class TelegramControls:
             await self._preview({key: value})
             self._input = None
         except (ValueError, SettingsChangeError):
-            await self._send("Invalid number or conflicting ranges. Try again, or use /cancel.")
+            await self._send(
+                "⚠️ <b>Invalid number or conflicting ranges</b>\n\n"
+                f"{html.escape(setting_hint(key))}\n"
+                "Minimum values must not exceed their maximum. Nothing was changed.\n"
+                "Try again, or use /cancel."
+            )
 
     async def _status(self) -> None:
         config = self.runtime.effective()
+        active = self.runtime.active_revision
+        application = (
+            "Waiting for the first scan"
+            if active is None
+            else (
+                "Latest settings loaded by the scanner"
+                if active == self.runtime.revision
+                else "Changes waiting for the next scan"
+            )
+        )
+        summary = (
+            f"{config.daily_summary_hour:02}:00 · {html.escape(config.report_timezone)}"
+            if config.daily_summary_enabled
+            else "Off"
+        )
         await self._send(
-            "<b>Radar status</b>\n"
-            f"Controls: {html.escape(self.status)}\nRevision: {self.runtime.revision}\n"
-            f"Chains: {html.escape(', '.join(config.chains))}\n"
-            f"Scan interval: {config.scan_interval_seconds:g}s\n"
-            f"Alerts: {'paused' if config.alerts_paused else 'running'}\n"
-            f"Dry-run alerts: {'on' if config.dry_run else 'off'}\n"
-            f"Alert score: {config.alert_score_threshold}/100\n"
-            f"Active scan revision: {self.runtime.active_revision}\n"
-            f"Daily summary: {'on' if config.daily_summary_enabled else 'off'} "
-            f"at {config.daily_summary_hour:02}:00 {html.escape(config.report_timezone)}\n"
-            "Strategy changes apply at the next scan.\n"
-            "Use /health for completed scans, filtering, and delivery results.",
-            [[self._button("Open menu", "m:home")]],
+            "📊 <b>Radar status</b>\n\n"
+            f"{self._delivery_label()}\n"
+            f"{html.escape(setting_value('enabled_chains', config.enabled_chains))}\n\n"
+            "<b>Strategy</b>\n"
+            f"{self._strategy_name()} · Alert score <b>{config.alert_score_threshold}+</b>\n"
+            f"{application}\n\n"
+            "<b>Timing</b>\n"
+            f"Scan target  {setting_value('scan_interval_seconds', config.scan_interval_seconds)}\n"
+            "API spacing  "
+            f"{setting_value('request_spacing_seconds', config.request_spacing_seconds)}\n"
+            f"Daily summary  {summary}\n\n"
+            f"Controls  {html.escape(self.status)}\n"
+            "Health shows actual scan times, filtering and delivery results.",
+            [
+                [self._button("🩺 View health", "health"), self._button("🔄 Refresh", "status")],
+                [self._button("🏠 Main menu", "m:home")],
+            ],
+            edit=True,
         )
 
     async def _health(self) -> None:
@@ -634,4 +832,11 @@ class TelegramControls:
             # Internal diagnostics can contain upstream failures: never echo their exceptions.
             await self._send("Scanner diagnostics could not be loaded. Try again later.")
             return
-        await self._send(text, [[self._button("Open menu", "m:home")]])
+        await self._send(
+            text,
+            [
+                [self._button("🔄 Refresh health", "health")],
+                [self._button("🏠 Main menu", "m:home")],
+            ],
+            edit=True,
+        )

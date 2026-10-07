@@ -19,7 +19,7 @@ def test_cli_offline_demo(tmp_path):
     env = os.environ | {"DRY_RUN": "false", "GMGN_API_KEY": "", "TELEGRAM_BOT_TOKEN": ""}
     run = subprocess.run(command, capture_output=True, text=True, env=env, cwd=tmp_path)
     assert run.returncode == 0, run.stderr
-    assert "HIGH_CONVICTION_REVIVAL" in run.stdout
+    assert "High conviction revival" in run.stdout
     assert "sent=0 errors=0" in run.stderr
     assert (tmp_path / "demo.db").exists()
 

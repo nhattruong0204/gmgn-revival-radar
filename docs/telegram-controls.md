@@ -32,8 +32,10 @@ private chat; other users and group messages cannot view or change settings.
 
 ## Menu actions
 
-- **Advanced configuration:** all 20 preset settings plus the scan interval, each with
-  its current value. Tap a setting, send a number, review the old/new values, then
+- **⚙️ Advanced configuration:** all 20 preset settings plus the scan interval, each with
+  its current value, across three short pages: Market & eligibility, Activity & chart
+  structure, and Delivery & discovery. Use **Next / Previous** to move between pages.
+  Tap a setting, send a number, review the old/new values, then
   **Confirm**. No code change, `.env` edit, or restart is needed for subsequent tuning.
   These edits customize the running configuration; they do not rewrite the named
   presets. Selecting a preset later replaces the values that preset controls.
@@ -47,11 +49,21 @@ private chat; other users and group messages cannot view or change settings.
 - **Status / Health:** current configuration, active scan revision, and recent diagnostics.
 - **Reset overrides:** preview restoring all runtime changes to startup `.env` values.
 
+The main menu puts delivery mode, strategy, score threshold and scan target above the
+buttons. Icons always have text labels; enabled chains use a checkmark. Navigation
+updates the existing menu where Telegram allows it, keeping the chat quieter. Value
+previews and saved confirmations are separate messages. After saving, **Continue editing**
+returns to the settings page you were using. **Reset custom settings** is on the final
+Advanced page and still requires confirmation.
+
 All mutations require a preview and **Confirm**. A changed revision or expired preview
 cannot overwrite newer settings. Custom number entry accepts full numbers such as
-`15000` and ratios such as `0.60`; it does not accept `15k` or `60%`. Base ranges and
-history intervals must remain consistent. Credentials, owners and filesystem paths
-are not editable through Telegram.
+`15000`, USD values such as `$15,000` or `15k`, percentages such as `60%`, multipliers
+such as `1.4×`, and durations such as `150s` or `24h`, where appropriate for that field.
+For ratio settings, `60%` and `0.60` are equivalent; a bare `60` is not silently converted
+to a ratio. Price-change settings accept `40` or `40%` for 40%. Each prompt explains
+its units. Base ranges and history intervals must remain consistent. Credentials,
+owners and filesystem paths are not editable through Telegram.
 
 Use `/start`, `/menu`, `/settings`, `/status`, `/health`, or `/cancel`. Menus sent before
 a restart expire: open `/menu` again. `DRY_RUN=true` suppresses scanner alerts and daily
@@ -114,6 +126,13 @@ handling updates so a crash cannot replay a settings mutation; an interrupted co
 or reply may need to be sent again.
 
 ## Health reports and classification limits
+
+Alerts lead with token, score and a readable status, followed by Market, Activity and
+Structure. Score and ranking detail uses an expandable section; known risks and missing
+security assessments remain visible. The contract stays copyable and links open GMGN
+or the verified chain explorer. Health reports similarly lead with delivery/scan totals
+and blockers, with technical source counts in expandable details. Telegram controls
+fonts, spacing and theme; these native layouts work without a web app or custom CSS.
 
 `/health` summarizes the past 24 hours: completed/unfinished scans, durations, source
 successes/failures, discovery counts, unique chain/address pairs, score buckets,

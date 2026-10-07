@@ -1,4 +1,5 @@
 import json
+from html.parser import HTMLParser
 from types import SimpleNamespace
 
 from revival_radar.analysis.scoring import score_token
@@ -197,13 +198,13 @@ def test_report_escapes_html_and_includes_near_miss_identifiers(repo, token, con
     assert "<script>" not in text
     assert unsafe.contract_address in text
     assert "60/100" in text
-    assert "score_below_threshold" in text
-    assert "baseline_history" in text
+    assert "Score below alert threshold" in text
+    assert "Not enough recent scan history" in text
     assert "unique tokens" in text
     assert "multiple reasons" in text
     report["evaluations"]["rejection_counts"] = {"<&" * 1000: 500}
     report["best_candidates"] *= 100
-    assert len(format_health(report)) < 4000
+    assert len(format_health(report).encode("utf-16-le")) // 2 <= 4096
 
 
 def test_empty_health_report_explains_no_candidates(repo):
@@ -217,10 +218,128 @@ def test_report_uses_configured_timezone_and_safely_falls_back(repo):
     report = repo.health(0, 200)
     report["timezone"] = "Europe/Moscow"
     formatted = format_health(report)
-    assert "01-01 03:00" in formatted
+    assert "01 Jan 03:00" in formatted
     assert "Europe/Moscow" in formatted
     report["timezone"] = "<invalid>"
     formatted = format_health(report)
-    assert "01-01 00:00" in formatted
+    assert "01 Jan 00:00" in formatted
     assert "UTC" in formatted
     assert "<invalid>" not in formatted
+
+
+class TelegramHTMLParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.stack = []
+        self.expandable = False
+
+    def handle_starttag(self, tag, attrs):
+        assert tag in {"b", "i", "code", "blockquote"}
+        if tag == "blockquote":
+            self.expandable |= ("expandable", None) in attrs
+        self.stack.append(tag)
+
+    def handle_endtag(self, tag):
+        assert self.stack.pop() == tag
+
+
+def test_health_keeps_delivery_problems_visible_ahead_of_details(repo):
+    report = repo.health(0, 200)
+    report["alerts"].update(sent=3, failed=2, pending=1, unknown=4)
+    report["scans"].update(started=3, completed=2, interrupted=1, errors=7)
+    report["scans"]["duration_seconds"].update(mean=90, max=150)
+    report["evaluations"].update(count=200, unique_tokens=80, eligible=10)
+    text = format_health(report)
+    assert "3 alerts sent" in text
+    assert "80 unique tokens evaluated" in text
+    assert "200 evaluations · 10 passed core checks" in text
+    assert "2 failed · 1 pending · 4 unconfirmed" in text
+    assert "7 scan errors; coverage may be reduced" in text
+    assert "1 unfinished — may be running or interrupted" in text
+    assert "Average 1m 30s · Longest 2m 30s" in text
+    assert text.index("Delivery needs attention") < text.index("Most common blockers")
+    assert text.index("scan errors") < text.index("<blockquote expandable>")
+    assert "Core checks alone do not send alerts" in text
+
+
+def test_health_formats_plain_language_blockers_without_changing_counts(repo):
+    report = repo.health(0, 200)
+    report["evaluations"]["rejection_counts"] = {
+        "asset_type: excluded tokenized_stock": 9,
+        "volume_1h: below minimum": 8,
+        "no_returning_activity": 7,
+        "market_cap: unavailable": 6,
+    }
+    report["evaluations"]["missing_field_counts"] = {"market_cap": 6}
+    report["discovery"]["observations_by_chain"] = {"sol": 20, "robinhood": 10}
+    text = format_health(report)
+    assert "Excluded asset: Tokenized stock — 9" in text
+    assert "Hourly volume: below minimum — 8" in text
+    assert "Activity has not returned — 7" in text
+    assert "+1 other categories" in text
+    assert "Market cap — 6" in text
+    assert "Solana — 20" in text
+    assert "Robinhood — 10" in text
+    assert "Counts are evaluations; multiple reasons can apply" in text
+
+
+def test_health_astral_and_html_content_stays_within_telegram_limit(repo, token, config):
+    scan_id = repo.begin_scan(100)
+    for index in range(10):
+        unsafe = changed(
+            token,
+            symbol="🚀<&" * 100,
+            contract_address="ABCDEFGHJK"[index] * 44,
+            chain="sol",
+        )
+        repo.record_evaluation(scan_id, unsafe, candidate(65), config)
+    report = repo.health(0, 200)
+    report["alerts"].update(failed=3, pending=4, unknown=5)
+    report["evaluations"]["rejection_counts"] = {
+        ("🚀<&" * 100) + str(index): index for index in range(100)
+    }
+    for item in report["best_candidates"]:
+        item["rejection_reasons"] = ["🚀<&" * 100] * 10
+        item["missing_fields"] = ["🚀<&" * 100] * 10
+    report["discovery"]["source_errors"] = {
+        "sol": {"🚀<&" * 100: 100},
+        "robinhood": {"🚀<&" * 100: 90},
+    }
+    text = format_health(report)
+    assert len(text.encode("utf-16-le")) // 2 <= 4096
+    assert "3 failed · 4 pending · 5 unconfirmed" in text
+    assert "multiple reasons can apply" in text
+    assert "&lt;&amp;" in text
+    assert "+97 other categories" in text
+    parser = TelegramHTMLParser()
+    parser.feed(text)
+    assert not parser.stack
+    assert parser.expandable or "Some details omitted to fit Telegram" in text
+
+
+def test_health_candidate_is_historical_and_core_checks_do_not_imply_delivery(repo, token, config):
+    scan_id = repo.begin_scan(100)
+    config.alert_score_threshold = 60
+    result = candidate(65).model_copy(update={"eligible": True})
+    repo.record_evaluation(scan_id, token, result, config)
+    report = repo.health(0, 200)
+    report["best_candidates"][0]["rejection_reasons"] = []
+    text = format_health(report)
+    assert "Best observed · score ≥50" in text
+    assert "Core checks passed; alert rules still apply" in text
+    assert f"<code>{token.contract_address}</code>" in text
+    assert "0 alerts sent" in text
+
+
+def test_health_reports_omitted_details_and_keeps_sections_balanced(repo):
+    report = repo.health(0, 200)
+    report["alerts"].update(sent=20, failed=3, unknown=2)
+    report["evaluations"]["score_buckets"] = {str(index): index for index in range(1000)}
+    text = format_health(report)
+    assert "Some details omitted to fit Telegram" in text
+    assert "20 alerts sent" in text
+    assert "3 failed · 0 pending · 2 unconfirmed" in text
+    assert len(text.encode("utf-16-le")) // 2 <= 4096
+    parser = TelegramHTMLParser()
+    parser.feed(text)
+    assert not parser.stack
