@@ -4,6 +4,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from revival_radar.analysis.asset_classification import classify_asset
+
 Nonnegative = Annotated[float, Field(ge=0, allow_inf_nan=False)]
 Finite = Annotated[float, Field(allow_inf_nan=False)]
 Fraction = Annotated[float, Field(ge=0, le=1, allow_inf_nan=False)]
@@ -33,6 +35,8 @@ class TokenSnapshot(BaseModel):
     contract_address: str
     symbol: str = "?"
     name: str = ""
+    asset_type: str | None = None
+    asset_classification_reason: str | None = None
     discovery_source: set[Source] = Field(default_factory=set)
     hot_search_rank: Annotated[int, Field(ge=1)] | None = None
     trending_rank: Annotated[int, Field(ge=1)] | None = None
@@ -71,6 +75,15 @@ class TokenSnapshot(BaseModel):
             raise ValueError("Invalid contract address for chain")
         if self.chain != "sol":
             self.contract_address = self.contract_address.lower()
+        classification = classify_asset(
+            chain=self.chain,
+            contract_address=self.contract_address,
+            name=self.name,
+            asset_type=self.asset_type,
+            asset_classification_reason=self.asset_classification_reason,
+        )
+        self.asset_type = classification.asset_type
+        self.asset_classification_reason = classification.reason
         self.drawdown_from_ath = (
             1 - self.market_cap / self.ath_market_cap
             if self.market_cap is not None and self.ath_market_cap and self.ath_market_cap > 0

@@ -81,7 +81,7 @@ class GMGNClient:
                         json=body,
                         headers={
                             "X-APIKEY": self.config.gmgn_api_key.get_secret_value(),
-                            "User-Agent": "gmgn-revival-radar/0.1.0",
+                            "User-Agent": "gmgn-revival-radar/0.2.0",
                         },
                         timeout=self.config.http_timeout_seconds,
                     )

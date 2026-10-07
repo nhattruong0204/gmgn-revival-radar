@@ -104,7 +104,7 @@ Personal GMGN credentials and a real Telegram destination remain user configurat
 ## Rate limits and future adapters
 
 The official free-tier bucket is documented as rate/capacity 5/5; token info/security
-weight 1, standard candles 2, and rankings 3. A shared 0.7-second request gate limits
+weight 1, standard candles 2, and rankings 3. A shared 1.5-second request gate limits
 bursts across all chains. Retries use fresh authentication, bounded backoff, and shared
 cooldowns from `Retry-After`, `X-RateLimit-Reset`, or `reset_at`. Long cooldowns defer
 work rather than sleeping through the entire scan or repeatedly extending a ban.

@@ -14,9 +14,12 @@ from revival_radar.clients.gmgn import DataSourceError, GMGNClient
 from revival_radar.clients.telegram import TelegramClient, format_alert
 from revival_radar.config import Settings
 from revival_radar.demo import DemoSource
+from revival_radar.diagnostics import format_health
 from revival_radar.logging_config import configure_logging
 from revival_radar.models.token import TokenSnapshot
+from revival_radar.runtime_settings import RuntimeSettings, SettingsChangeError
 from revival_radar.scanner import Scanner
+from revival_radar.service import run_service
 from revival_radar.storage.database import connect
 from revival_radar.storage.repository import Repository
 
@@ -38,6 +41,13 @@ def scanner_lock(database: Path):
 
 
 async def execute(args: argparse.Namespace, config: Settings) -> int:
+    runtime = None
+    if args.command in {"run", "scan-once", "inspect", "settings"}:
+        runtime = RuntimeSettings(config)
+        config = runtime.effective()
+    if args.command == "settings":
+        print(json.dumps(runtime.public_values(), indent=2))
+        return 0
     if args.command == "demo":
         config = config.model_copy(
             update={"dry_run": True, "enabled_chains": "sol", "database_path": args.database}
@@ -64,6 +74,17 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
         db = connect(config.database_path, config.sqlite_busy_timeout_ms)
         try:
             repo = Repository(db)
+            if args.command == "health":
+                if not 0 < args.hours <= 168:
+                    raise RuntimeError("Health window must be greater than 0 and at most 168 hours")
+                health = repo.health(time.time() - args.hours * 3600)
+                health["timezone"] = config.report_timezone
+                print(json.dumps(health, indent=2) if args.json else format_health(health))
+                return 0
+            if args.command == "run":
+                with scanner_lock(config.database_path):
+                    await run_service(runtime, repo, http)
+                return 0
             source = DemoSource() if args.command == "demo" else GMGNClient(config, http)
             scanner = Scanner(config, source, repo, telegram)
             if args.command == "demo":
@@ -90,18 +111,12 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
                 )
                 return 0
             with scanner_lock(config.database_path):
-                while True:
-                    started = time.monotonic()
-                    report = await scanner.scan_once()
-                    if args.command == "demo":
-                        for token, result in report.signals:
-                            if result.eligible:
-                                print(format_alert(token, result))
-                    if args.command != "run":
-                        return 1 if report.errors else 0
-                    await asyncio.sleep(
-                        max(0, config.scan_interval_seconds - (time.monotonic() - started))
-                    )
+                report = await scanner.scan_once()
+                if args.command == "demo":
+                    for token, result in report.signals:
+                        if result.eligible:
+                            print(format_alert(token, result))
+                return 1 if report.errors else 0
         finally:
             db.close()
 
@@ -112,6 +127,12 @@ def main() -> None:
     sub.add_parser("run", help="Scan continuously (default)")
     sub.add_parser("scan-once", help="One live scan; nonzero exit on partial failures")
     sub.add_parser("test-telegram", help="Send one test message when DRY_RUN=false")
+    sub.add_parser(
+        "settings", help="Print effective nonsecret settings, including Telegram overrides"
+    )
+    health = sub.add_parser("health", help="Report persisted scan diagnostics; no network required")
+    health.add_argument("--hours", type=float, default=24)
+    health.add_argument("--json", action="store_true")
     inspect = sub.add_parser("inspect", help="Fetch and explain one token without alerting")
     inspect.add_argument("chain", choices=["sol", "bsc", "base", "robinhood", "arc"])
     inspect.add_argument("contract")
@@ -129,7 +150,7 @@ def main() -> None:
         # Pydantic's default str(exc) includes invalid inputs, possibly secrets.
         fields = [".".join(str(x) for x in e["loc"]) or "configuration" for e in exc.errors()]
         parser.exit(2, f"Invalid configuration/token fields: {', '.join(fields)}\n")
-    except (DataSourceError, RuntimeError) as exc:
+    except (DataSourceError, RuntimeError, SettingsChangeError) as exc:
         parser.exit(2, f"{exc}\n")
 
 

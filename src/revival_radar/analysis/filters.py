@@ -23,6 +23,13 @@ def first_pass(token: TokenSnapshot, config: Settings) -> FilterResult:
         "price_change_1h": (None, config.max_price_change_1h),
     }
     reasons = []
+    exclusions = {
+        "tokenized_stock": config.exclude_tokenized_stocks,
+        "stablecoin": config.exclude_stablecoins,
+        "wrapped_asset": config.exclude_wrapped_assets,
+    }
+    if exclusions.get(token.asset_type, False):
+        reasons.append(f"asset_type: excluded {token.asset_type}")
     for field, (minimum, maximum) in checks.items():
         value = getattr(token, field)
         if value is None:

@@ -76,6 +76,12 @@ GMGN also documents finer candle resolutions, but those are outside this small V
 
 ## Telegram setup
 
+Version 0.2 supports owner-only inline buttons. Send **/menu** in your private chat
+with the bot to change presets, filters, chains, exclusions, and alert settings.
+Changes require a preview/confirmation and persist across restarts. **/health** reports
+rejections, missing data, actual scan durations, and delivery outcomes. See
+[Telegram controls and the VPS upgrade guide](docs/telegram-controls.md).
+
 1. Create a bot through Telegram **@BotFather**; put its token in `TELEGRAM_BOT_TOKEN`.
 2. Add it to your channel as an administrator with permission to post.
 3. Set `TELEGRAM_CHAT_ID` to the channel's `@username` or numeric `-100…` ID.
@@ -138,7 +144,7 @@ Environment variables override `.env`. Invalid ranges fail at startup without du
 | `BASE_MIN_HOURS`, `BASE_SUFFICIENT_HOURS` | 24 / 72 | Base and duration bonus |
 | `BASE_MAX_RANGE_RATIO`, `KLINE_LOOKBACK_HOURS` | 0.25 / 168 | Base width and candle window |
 | `HTTP_TIMEOUT_SECONDS`, `HTTP_ATTEMPTS` | 20 / 3 | Bounded read retries |
-| `REQUEST_SPACING_SECONDS`, `RETRY_MAX_WAIT_SECONDS` | 0.7 / 10 | Shared quota pacing |
+| `REQUEST_SPACING_SECONDS`, `RETRY_MAX_WAIT_SECONDS` | 1.5 / 10 | Shared quota pacing |
 
 Advanced knobs are in `config.py`: holder retention (0.9), new-low tolerance (0.03),
 breakout margin (0.01), retest tolerance (0.02), concentration (0.5), insider/dev
@@ -207,8 +213,11 @@ score clamps to 0–100. Failed first-pass filters cap it at 39. Holding-ratio d
 are distribution proxies, not proof of selling. Retest/compression are informational in V1.
 Override any weight using `WEIGHTS__BASE=20`, `WEIGHTS__DEV_PENALTY=30`, etc.
 
-Statuses: 0–39 `IGNORE`, 40–59 `WATCH`, 60–74 `BASE_FORMING`, 75–84 `REVIVING`,
-85–100 `HIGH_CONVICTION_REVIVAL`. The latter is a heuristic label, not certainty.
+Statuses: 0–39 `IGNORE`, 40–59 `WATCH`, 60–69 `EARLY_WATCH`, 70–79 `REVIVING`,
+80–89 `STRONG_REVIVAL`, 90–100 `HIGH_CONVICTION_REVIVAL`. These are heuristic labels,
+not certainty. The default alert threshold remains 75; choose Balanced in Telegram to
+apply a 65 threshold and moderately looser survivor/base filters. All presets retain
+essential data, a detected base, returning activity, and dangerous-flag gates.
 
 ## Commands
 
@@ -216,6 +225,8 @@ Statuses: 0–39 `IGNORE`, 40–59 `WATCH`, 60–74 `BASE_FORMING`, 75–84 `REV
 revival-radar run
 revival-radar scan-once
 revival-radar test-telegram
+revival-radar settings
+revival-radar health --hours 24
 revival-radar inspect sol <contract-address>
 revival-radar demo --database data/demo.db
 ```
@@ -296,7 +307,11 @@ uv pip compile requirements-build.in --generate-hashes -o requirements-build.loc
 `clients/gmgn.py` exposes a small `MarketDataSource` protocol so another documented
 provider can supply discovery/enrichment/candles later without replacing scoring or storage.
 SQLite initializes schema version 1 automatically, enables WAL and busy timeout,
-and refuses a newer unknown schema. Keep database/WAL files together when backing up
+and refuses a newer unknown schema. Version 0.2 migrates to schema 2 while preserving
+snapshots and cooldowns; back up with `scripts/backup_database.py` inside the existing
+container before upgrading (see the upgrade guide). Diagnostic evaluations are retained
+for seven days, while `data/radar-controls.json` stores nonsecret Telegram overrides.
+Keep database/WAL files together when backing up
 an active database, or use SQLite's backup API. Snapshot history currently has no automatic purge.
 
 ## Limitations and troubleshooting

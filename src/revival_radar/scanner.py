@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from revival_radar.analysis.filters import first_pass
@@ -55,6 +56,14 @@ class ScanReport:
     potential_alerts: int = 0
     sources_ok: int = 0
     signals: list[tuple[TokenSnapshot, RevivalResult]] = field(default_factory=list)
+    scan_id: int | None = None
+    started_at: float = 0
+    finished_at: float = 0
+    duration_seconds: float = 0
+    discovered_by_chain: dict[str, int] = field(default_factory=dict)
+    discovered_by_source: dict[str, dict[str, int]] = field(default_factory=dict)
+    source_errors: dict[str, dict[str, int]] = field(default_factory=dict)
+    discovered_keys: set[tuple[str, str]] = field(default_factory=set)
 
 
 class Scanner:
@@ -64,9 +73,11 @@ class Scanner:
         source: MarketDataSource,
         repository: Repository,
         telegram: TelegramClient,
+        delivery_muted: Callable[[], bool] | None = None,
     ):
         self.config, self.source = config, source
         self.repository, self.telegram = repository, telegram
+        self.delivery_muted = delivery_muted
 
     async def inspect(self, token: TokenSnapshot) -> tuple[TokenSnapshot, RevivalResult]:
         token = await self.source.enrich(token)
@@ -92,6 +103,8 @@ class Scanner:
         self.repository.save_snapshot(token)
         report.processed += 1
         report.signals.append((token, result))
+        if report.scan_id is not None:
+            self.repository.record_evaluation(report.scan_id, token, result, self.config)
         log.info(
             "signal symbol=%s chain=%s score=%d status=%s eligible=%s",
             token.symbol,
@@ -111,6 +124,9 @@ class Scanner:
                 result.score,
             )
             return
+        if self.config.alerts_paused or (self.delivery_muted and self.delivery_muted()):
+            log.info("alerts paused chain=%s symbol=%s", token.chain, token.symbol)
+            return
         alert_id = self.repository.reserve_alert(token, result, self.config)
         if alert_id is None:
             log.info("alert cooldown chain=%s symbol=%s", token.chain, token.symbol)
@@ -125,12 +141,17 @@ class Scanner:
 
     async def scan_chain(self, chain: str, report: ScanReport) -> None:
         found = []
+        report.discovered_by_source[chain] = {}
+        report.source_errors[chain] = {}
         for source in ("hot_search", "trending"):
             try:
-                found.extend(await self.source.discover(chain, source))
+                discovered = await self.source.discover(chain, source)
+                found.extend(discovered)
+                report.discovered_by_source[chain][source] = len(discovered)
                 report.sources_ok += 1
             except Exception as exc:
                 report.errors += 1
+                report.source_errors[chain][source] = 1
                 log.warning(
                     "discovery failed chain=%s source=%s error=%s",
                     chain,
@@ -139,6 +160,8 @@ class Scanner:
                 )
         candidates = merge_tokens(found)
         keys = {t.key for t in candidates}
+        report.discovered_by_chain[chain] = len(keys)
+        report.discovered_keys.update(keys)
         now = time.time()
         watched = self.repository.watchlist(
             chain, now - self.config.watchlist_hours * 3600, self.config.watchlist_limit
@@ -152,6 +175,8 @@ class Scanner:
                         contract_address=old.contract_address,
                         symbol=old.symbol,
                         name=old.name,
+                        asset_type=old.asset_type,
+                        asset_classification_reason=old.asset_classification_reason,
                         ath_market_cap=old.ath_market_cap,
                         data_warnings=["Off rankings; ATH cap from last discovery observation"],
                     )
@@ -169,7 +194,9 @@ class Scanner:
                 )
 
     async def scan_once(self) -> ScanReport:
-        report = ScanReport()
+        report = ScanReport(started_at=time.time())
+        started = time.monotonic()
+        report.scan_id = self.repository.begin_scan(report.started_at)
         outcomes = await asyncio.gather(
             *(self.scan_chain(chain, report) for chain in self.config.chains),
             return_exceptions=True,
@@ -178,12 +205,24 @@ class Scanner:
             if isinstance(outcome, BaseException):
                 report.errors += 1
                 log.warning("chain failed chain=%s error=%s", chain, type(outcome).__name__)
+        report.finished_at = time.time()
+        report.duration_seconds = time.monotonic() - started
+        self.repository.finish_scan(report.scan_id, report, report.finished_at)
         log.info(
-            "scan complete processed=%d potential_alerts=%d sent=%d errors=%d sources_ok=%d",
+            "scan complete processed=%d potential_alerts=%d sent=%d errors=%d sources_ok=%d "
+            "duration_seconds=%.1f",
             report.processed,
             report.potential_alerts,
             report.sent,
             report.errors,
             report.sources_ok,
+            report.duration_seconds,
         )
+        if report.duration_seconds > self.config.scan_interval_seconds:
+            log.warning(
+                "scan exceeded target interval duration_seconds=%.1f target_seconds=%.1f; "
+                "reduce discovery/watchlist limits if history becomes stale",
+                report.duration_seconds,
+                self.config.scan_interval_seconds,
+            )
         return report

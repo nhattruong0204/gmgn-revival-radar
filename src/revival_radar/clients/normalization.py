@@ -1,13 +1,40 @@
-"""Only mappings documented by GMGNAI/gmgn-skills; unknown values stay nullable."""
+"""Documented GMGN mappings plus explicit asset labels; unknown values stay nullable."""
 
 import math
 from typing import Any
 
 from pydantic import ValidationError
 
+from revival_radar.analysis.asset_classification import classify_asset, explicit_asset_type
 from revival_radar.models.token import Candle, Security, TokenSnapshot
 
 WINDOWS = ("1m", "5m", "1h", "6h", "24h")
+
+
+def asset_fields(raw: dict, values: dict) -> dict:
+    """Retain explicit labels if present; GMGN does not guarantee this field.
+
+    launchpad_platform is documented for both rank and token-info responses.
+    Generic type/category/tags, pool quote symbols, and arbitrary booleans are
+    deliberately not treated as asset-class metadata.
+    """
+    explicit = explicit_asset_type(raw.get("asset_type"))
+    classification = classify_asset(
+        chain=values["chain"],
+        contract_address=values["contract_address"],
+        name=values["name"],
+        asset_type=explicit or values.get("asset_type"),
+        asset_classification_reason=(
+            f"metadata: asset_type={explicit}"
+            if explicit
+            else values.get("asset_classification_reason")
+        ),
+        launchpad_platform=raw.get("launchpad_platform"),
+    )
+    return {
+        "asset_type": classification.asset_type,
+        "asset_classification_reason": classification.reason,
+    }
 
 
 def number(value: Any, *, negative: bool = False) -> float | None:
@@ -119,11 +146,15 @@ def ranked_token(
         values[f"sells_{interval}"] = count(raw.get("sells"))
     # Rank change fields have ambiguous % vs ratio documentation. Obtain exact
     # percentage points from token-info start prices instead of guessing units.
+    values.update(asset_fields(raw, values))
     return TokenSnapshot(**values)
 
 
 def enriched_token(seed: TokenSnapshot, info: dict, raw_security: dict) -> TokenSnapshot:
     values = seed.model_dump()
+    for field in ("name", "symbol"):
+        if isinstance(info.get(field), str) and info[field].strip():
+            values[field] = info[field]
     prices = object_value(info.get("price"))
     current, supply = number(prices.get("price")), number(info.get("circulating_supply"))
     if current is not None:
@@ -154,6 +185,7 @@ def enriched_token(seed: TokenSnapshot, info: dict, raw_security: dict) -> Token
         if window != "1m" and before and current is not None:
             values[f"price_change_{window}"] = (current / before - 1) * 100
     values["security"] = security_from(info, raw_security, seed.chain, seed.security)
+    values.update(asset_fields(info, values))
     return TokenSnapshot(**values)
 
 

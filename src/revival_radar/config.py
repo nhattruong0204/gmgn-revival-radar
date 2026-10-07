@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Annotated, Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -40,6 +41,15 @@ class Settings(BaseSettings):
     gmgn_api_key: SecretStr = SecretStr("")
     telegram_bot_token: SecretStr = SecretStr("")
     telegram_chat_id: str = ""
+    telegram_owner_id: int = Field(default=0, ge=0)
+    telegram_controls_enabled: bool = True
+    alerts_paused: bool = False
+    exclude_tokenized_stocks: bool = True
+    exclude_stablecoins: bool = True
+    exclude_wrapped_assets: bool = True
+    daily_summary_enabled: bool = False
+    daily_summary_hour: int = Field(default=9, ge=0, le=23)
+    report_timezone: str = "Asia/Bangkok"
     enabled_chains: str = "sol,bsc,base,robinhood,arc"
     database_path: Path = Path("data/revival_radar.db")
     scan_interval_seconds: Positive = 300
@@ -85,7 +95,7 @@ class Settings(BaseSettings):
     bundler_max_ratio: Ratio = 0.3
     http_timeout_seconds: Positive = 20
     http_attempts: int = Field(default=3, ge=1, le=5)
-    request_spacing_seconds: Positive = 0.7
+    request_spacing_seconds: Positive = 1.5
     retry_max_wait_seconds: Positive = 10
     sqlite_busy_timeout_ms: int = Field(default=5000, ge=100, le=30000)
     weights: ScoreWeights = Field(default_factory=ScoreWeights)
@@ -108,4 +118,12 @@ class Settings(BaseSettings):
             raise ValueError("minimum_history_observations exceeds history_observations")
         if self.history_max_gap_seconds < self.scan_interval_seconds:
             raise ValueError("HISTORY_MAX_GAP_SECONDS must cover the scan interval")
+        if self.base_sufficient_hours < self.base_min_hours:
+            raise ValueError("BASE_SUFFICIENT_HOURS must cover BASE_MIN_HOURS")
+        if self.kline_lookback_hours < self.base_min_hours:
+            raise ValueError("KLINE_LOOKBACK_HOURS must cover BASE_MIN_HOURS")
+        try:
+            ZoneInfo(self.report_timezone)
+        except (ZoneInfoNotFoundError, ValueError):
+            raise ValueError("REPORT_TIMEZONE must be a valid IANA timezone") from None
         return self

@@ -1,6 +1,11 @@
 import json
 import sqlite3
+import time
+from collections import Counter
+from typing import Any
 
+from revival_radar.analysis.acceleration import fresh_history
+from revival_radar.analysis.filters import first_pass
 from revival_radar.config import Settings
 from revival_radar.models.signal import RevivalResult
 from revival_radar.models.token import TokenSnapshot
@@ -83,3 +88,277 @@ class Repository:
                 "UPDATE alerts SET delivery_status=?, telegram_message_id=? WHERE id=?",
                 (status, message_id, alert_id),
             )
+
+    def begin_scan(self, started: float) -> int:
+        with self.db:
+            cursor = self.db.execute("INSERT INTO scan_runs (started) VALUES (?)", (started,))
+        return cursor.lastrowid
+
+    def record_evaluation(
+        self, scan_id: int, token: TokenSnapshot, result: RevivalResult, config: Settings
+    ) -> None:
+        """Retain every scored token, including those capped by the initial filter."""
+        gate = first_pass(token, config)
+        blockers = list(gate.reasons)
+        if not result.structure.base_detected:
+            blockers.append("no_base")
+        if not any(
+            name in result.components for name in ("volume_5m", "volume_1h", "transactions")
+        ):
+            blockers.append("no_returning_activity")
+        if token.security.dangerous is True:
+            blockers.append("security_dangerous")
+        if result.score < config.alert_score_threshold:
+            blockers.append("score_below_threshold")
+        missing = [reason.split(":", 1)[0] for reason in gate.reasons if ": unavailable" in reason]
+        for field in ("ath_market_cap", "volume_5m", "tx_5m", "tx_1h"):
+            if getattr(token, field) is None:
+                missing.append(field)
+        for field in ("top10_ratio", "insider_ratio", "dangerous"):
+            if getattr(token.security, field) is None:
+                missing.append(f"security.{field}")
+        recent = fresh_history(token, self.history(token, config.history_observations * 3), config)
+        if len([entry for entry in recent if entry.volume_5m is not None]) < (
+            config.minimum_history_observations
+        ):
+            missing.append("baseline_history")
+        if token.volume_5m is not None and result.acceleration.volume_ratio_5m is None:
+            missing.append("volume_5m_baseline_unavailable_or_zero")
+        # A failed first pass skips candles; do not misreport that as an API/data failure.
+        if gate.passed and not result.structure.available:
+            missing.append("candles")
+        with self.db:
+            self.db.execute(
+                """INSERT INTO evaluations (
+                    scan_id,timestamp,chain,contract_address,symbol,score,status,eligible,
+                    rejection_reasons,missing_fields,warnings,asset_type,discovery_sources
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                ON CONFLICT(scan_id,chain,contract_address) DO UPDATE SET
+                    timestamp=excluded.timestamp,symbol=excluded.symbol,score=excluded.score,
+                    status=excluded.status,eligible=excluded.eligible,
+                    rejection_reasons=excluded.rejection_reasons,
+                    missing_fields=excluded.missing_fields,warnings=excluded.warnings,
+                    asset_type=excluded.asset_type,discovery_sources=excluded.discovery_sources""",
+                (
+                    scan_id,
+                    token.timestamp,
+                    *token.key,
+                    token.symbol,
+                    result.score,
+                    result.status,
+                    int(result.eligible),
+                    json.dumps(list(dict.fromkeys(blockers))),
+                    json.dumps(sorted(set(missing))),
+                    json.dumps(result.warnings),
+                    getattr(token, "asset_type", None) or "unknown",
+                    json.dumps(sorted(token.discovery_source)),
+                ),
+            )
+            self.db.execute(
+                """UPDATE scan_runs SET processed=(SELECT COUNT(*) FROM evaluations WHERE scan_id=?)
+                WHERE id=? AND finished IS NULL""",
+                (scan_id, scan_id),
+            )
+
+    def finish_scan(self, scan_id: int, report: object, finished: float) -> None:
+        metrics = [
+            int(getattr(report, name, 0))
+            for name in ("processed", "errors", "sent", "potential_alerts", "sources_ok")
+        ]
+        counts = [
+            json.dumps(getattr(report, name, {}) or {}, sort_keys=True)
+            for name in ("discovered_by_chain", "discovered_by_source", "source_errors")
+        ]
+        keys = json.dumps(sorted(getattr(report, "discovered_keys", ()) or ()))
+        with self.db:
+            self.db.execute(
+                """UPDATE scan_runs SET finished=?, duration_seconds=MAX(0,?-started),
+                processed=?,errors=?,sent=?,potential_alerts=?,sources_ok=?,
+                discovered_by_chain=?,discovered_by_source=?,source_errors=?,discovered_keys=?
+                WHERE id=? AND finished IS NULL""",
+                (finished, finished, *metrics, *counts, keys, scan_id),
+            )
+
+    def get_state(self, key: str) -> str | None:
+        row = self.db.execute("SELECT value FROM state WHERE key=?", (key,)).fetchone()
+        return row["value"] if row else None
+
+    def set_state(self, key: str, value: str, timestamp: float | None = None) -> None:
+        with self.db:
+            self.db.execute(
+                """INSERT INTO state (key,value,updated_at) VALUES (?,?,?)
+                ON CONFLICT(key) DO UPDATE SET
+                value=excluded.value,updated_at=excluded.updated_at""",
+                (key, value, time.time() if timestamp is None else timestamp),
+            )
+
+    def claim_daily_summary(self, day_key: str, timestamp: float) -> bool:
+        """Claim an attempt durably before sending; a crash cannot cause a duplicate attempt."""
+        with self.db:
+            cursor = self.db.execute(
+                "INSERT OR IGNORE INTO state (key,value,updated_at) VALUES (?,?,?)",
+                (f"daily_summary:{day_key}", "attempted", timestamp),
+            )
+        return cursor.rowcount == 1
+
+    def prune_diagnostics(self, before: float) -> None:
+        with self.db:
+            self.db.execute(
+                "DELETE FROM evaluations WHERE scan_id IN "
+                "(SELECT id FROM scan_runs WHERE started<?)",
+                (before,),
+            )
+            self.db.execute("DELETE FROM scan_runs WHERE started<?", (before,))
+            self.db.execute(
+                "DELETE FROM state WHERE key LIKE 'daily_summary:%' AND updated_at<?", (before,)
+            )
+
+    def health(self, since: float, now: float | None = None) -> dict[str, Any]:
+        """Aggregate scans that started in the window; token identity always includes chain."""
+        until = time.time() if now is None else now
+        runs = self.db.execute(
+            "SELECT * FROM scan_runs WHERE started>=? AND started<=? ORDER BY started",
+            (since, until),
+        ).fetchall()
+        completed = [run for run in runs if run["finished"] is not None]
+        durations = [run["duration_seconds"] for run in completed]
+        scans = {
+            "started": len(runs),
+            "completed": len(completed),
+            "interrupted": len(runs) - len(completed),
+            **{
+                name: sum(run[name] for run in runs)
+                for name in ("processed", "errors", "sent", "potential_alerts", "sources_ok")
+            },
+            "duration_seconds": {
+                "total": sum(durations),
+                "min": min(durations, default=0),
+                "max": max(durations, default=0),
+                "mean": sum(durations) / len(durations) if durations else 0,
+            },
+            "last_started": runs[-1]["started"] if runs else None,
+            "last_finished": max((run["finished"] for run in completed), default=None),
+        }
+        discovered_by_chain: Counter = Counter()
+        sources: dict[str, Counter] = {}
+        source_errors: dict[str, Counter] = {}
+        discovered_keys: set[tuple[str, str]] = set()
+        for run in runs:
+            discovered_by_chain.update(json.loads(run["discovered_by_chain"]))
+            discovered_keys.update(tuple(key) for key in json.loads(run["discovered_keys"]))
+            for field, target in (
+                ("discovered_by_source", sources),
+                ("source_errors", source_errors),
+            ):
+                for chain, counts in json.loads(run[field]).items():
+                    target.setdefault(chain, Counter()).update(counts)
+        discovery = {
+            "observations_by_chain": dict(discovered_by_chain),
+            "snapshots_by_source": {chain: dict(counts) for chain, counts in sources.items()},
+            "source_errors": {chain: dict(counts) for chain, counts in source_errors.items()},
+            "unique_tokens": len(discovered_keys),
+            "unique_tokens_by_chain": dict(Counter(chain for chain, _ in discovered_keys)),
+            "counting_note": "Chain observations deduplicate within each scan; source snapshots "
+            "may overlap. Unique tokens deduplicate chain/address across scans. "
+            "Watchlist excluded.",
+        }
+        window = "FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id WHERE s.started>=? "
+        window += "AND s.started<=?"
+        params = (since, until)
+        totals = self.db.execute(
+            "SELECT COUNT(*) AS count,COALESCE(SUM(eligible),0) AS eligible " + window, params
+        ).fetchone()
+        unique = self.db.execute(
+            "SELECT COUNT(*) FROM (SELECT e.chain,e.contract_address "
+            + window
+            + " GROUP BY e.chain,e.contract_address)",
+            params,
+        ).fetchone()[0]
+        buckets = {"0-39": 0, "40-49": 0, "50-59": 0, "60-74": 0, "75-84": 0, "85-100": 0}
+        for row in self.db.execute(
+            "SELECT score,COUNT(*) AS n " + window + " GROUP BY score", params
+        ):
+            name = next(
+                label
+                for ceiling, label in (
+                    (39, "0-39"),
+                    (49, "40-49"),
+                    (59, "50-59"),
+                    (74, "60-74"),
+                    (84, "75-84"),
+                    (100, "85-100"),
+                )
+                if row["score"] <= ceiling
+            )
+            buckets[name] += row["n"]
+        counts = {}
+        for field in ("rejection_reasons", "missing_fields"):
+            counts[field] = {
+                row["value"]: row["n"]
+                for row in self.db.execute(
+                    f"SELECT j.value,COUNT(*) AS n FROM evaluations e "
+                    f"JOIN scan_runs s ON s.id=e.scan_id, json_each(e.{field}) j "
+                    "WHERE s.started>=? AND s.started<=? GROUP BY j.value ORDER BY n DESC,j.value",
+                    params,
+                )
+            }
+        assets = {
+            row["asset_type"]: row["n"]
+            for row in self.db.execute(
+                "SELECT asset_type,COUNT(*) AS n " + window + " GROUP BY asset_type", params
+            )
+        }
+        evaluations = {
+            **dict(totals),
+            "unique_tokens": unique,
+            "score_buckets": buckets,
+            "rejection_counts": counts["rejection_reasons"],
+            "missing_field_counts": counts["missing_fields"],
+            "asset_type_counts": assets,
+            "counting_note": "Counts describe evaluations, not unique tokens. Each evaluation "
+            "can have multiple rejection reasons and missing fields; counts are not exclusive.",
+        }
+        candidates = []
+        # Bound the report to ten distinct chain/address pairs, including low-score near misses.
+        query = (
+            """SELECT * FROM (
+            SELECT e.*,ROW_NUMBER() OVER (
+                PARTITION BY e.chain,e.contract_address ORDER BY e.score DESC,e.timestamp DESC
+            ) AS position """
+            + window
+        )
+        query += " AND e.score>=50) WHERE position=1 ORDER BY score DESC LIMIT 10"
+        for row in self.db.execute(query, params):
+            item = {
+                name: row[name]
+                for name in (
+                    "timestamp",
+                    "chain",
+                    "contract_address",
+                    "symbol",
+                    "score",
+                    "status",
+                    "asset_type",
+                )
+            }
+            item["eligible"] = bool(row["eligible"])
+            for field in ("rejection_reasons", "missing_fields", "warnings"):
+                item[field] = json.loads(row[field])
+            candidates.append(item)
+        alerts = {"sent": 0, "failed": 0, "pending": 0, "unknown": 0}
+        for row in self.db.execute(
+            "SELECT delivery_status,COUNT(*) AS n FROM alerts WHERE timestamp>=? AND timestamp<=? "
+            "GROUP BY delivery_status",
+            params,
+        ):
+            alerts[row["delivery_status"]] = row["n"]
+        alerts["total"] = sum(alerts.values())
+        return {
+            "since": since,
+            "until": until,
+            "scans": scans,
+            "discovery": discovery,
+            "evaluations": evaluations,
+            "alerts": alerts,
+            "best_candidates": candidates,
+        }

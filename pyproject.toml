@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gmgn-revival-radar"
-version = "0.1.0"
+version = "0.2.0"
 description = "Small, read-only GMGN revival scanner with SQLite and Telegram alerts"
 requires-python = ">=3.12"
 dependencies = ["httpx>=0.28,<0.29", "pydantic-settings>=2.8,<3"]

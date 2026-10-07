@@ -6,12 +6,14 @@ from revival_radar.models.token import TokenSnapshot
 
 
 def status_for(score: int) -> str:
-    if score >= 85:
+    if score >= 90:
         return "HIGH_CONVICTION_REVIVAL"
-    if score >= 75:
+    if score >= 80:
+        return "STRONG_REVIVAL"
+    if score >= 70:
         return "REVIVING"
     if score >= 60:
-        return "BASE_FORMING"
+        return "EARLY_WATCH"
     if score >= 40:
         return "WATCH"
     return "IGNORE"
