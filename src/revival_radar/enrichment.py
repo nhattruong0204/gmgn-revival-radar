@@ -26,6 +26,7 @@ class Enrichment:
         if self.used[stage] >= limit:
             self.metrics.deferred[stage] += 1
             self.deferred_tokens.add(token.key)
+            self.metrics.candidate(token, **{f"{stage}_deferred": True})
             raise EnrichmentDeferred(stage)
         self.used[stage] += 1  # Failed operations consume budget too; retries remain HTTP-paced.
         self.metrics.cache[f"{stage}_fetch"] += 1

@@ -17,6 +17,42 @@ ENDPOINTS = (
 )
 
 
+def error_category(error: BaseException, stage: str = "") -> str:
+    """Classify locally; only a fixed label is retained, never exception text."""
+    import sqlite3
+
+    import httpx
+    from pydantic import ValidationError
+
+    if isinstance(error, sqlite3.Error):
+        return "sqlite"
+    if isinstance(error, httpx.TimeoutException):
+        return "gmgn_timeout"
+    if isinstance(error, httpx.TransportError):
+        return "gmgn_transport"
+    if isinstance(error, ValidationError):
+        return "token_normalization"
+    if (
+        isinstance(error, (KeyboardInterrupt, SystemExit))
+        or type(error).__name__ == "CancelledError"
+    ):
+        return "interrupted_scan"
+    message = str(error).lower()
+    if "token normalization" in message:
+        return "token_normalization"
+    if "rate limited" in message or "http=429" in message:
+        return "gmgn_429"
+    if "cooldown" in message:
+        return "gmgn_cooldown"
+    if "timeout" in message:
+        return "gmgn_timeout"
+    if any(f"http={code}" in message for code in (500, 502, 503, 504)):
+        return "gmgn_5xx"
+    if "response shape" in message or "token list" in message or "address mismatch" in message:
+        return "malformed_response"
+    return stage if stage in {"telegram", "security", "kline", "configuration"} else "other"
+
+
 @dataclass
 class ScanMetrics:
     seconds: Counter = field(default_factory=Counter)
@@ -24,6 +60,30 @@ class ScanMetrics:
     failures: Counter = field(default_factory=Counter)
     cache: Counter = field(default_factory=Counter)
     deferred: Counter = field(default_factory=Counter)
+    http_errors: Counter = field(default_factory=Counter)
+    http_statuses: Counter = field(default_factory=Counter)
+    recovered_requests: Counter = field(default_factory=Counter)
+    errors: list[dict] = field(default_factory=list)
+    candidates: dict = field(default_factory=dict)
+
+    def error(self, stage: str, error: BaseException, token=None) -> None:
+        self.errors.append(
+            {
+                "timestamp": time.time(),
+                "stage": stage,
+                "category": error_category(error, stage),
+                "chain": token.chain if token else None,
+                "contract_address": token.contract_address if token else None,
+            }
+        )
+
+    def candidate(self, token, **values) -> dict:
+        trace = self.candidates.setdefault(
+            token.key,
+            {"chain": token.chain, "contract_address": token.contract_address},
+        )
+        trace.update(values)
+        return trace
 
     @contextmanager
     def measure(self, stage: str):
@@ -43,6 +103,12 @@ class ScanMetrics:
             "failures": dict(self.failures),
             "cache": dict(self.cache),
             "deferred": dict(self.deferred),
+            "http_statuses": dict(self.http_statuses),
+            "http_errors": dict(self.http_errors),
+            "recovered_requests": dict(self.recovered_requests),
+            "error_events": list(self.errors),
+            "candidate_traces": list(self.candidates.values()),
+            "telemetry_version": 2,
         }
 
 

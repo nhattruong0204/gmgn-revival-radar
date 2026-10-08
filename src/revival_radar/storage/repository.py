@@ -170,7 +170,10 @@ class Repository:
         blockers = list(gate.reasons)
         if not result.structure.available or not result.structure.base_detected:
             blockers.append("no_base")
-        elif result.structure.base_duration_hours < config.base_min_hours:
+        if (
+            result.structure.available
+            and 0 < result.structure.base_duration_hours < config.base_min_hours
+        ):
             blockers.append("base_too_short")
         if not result.eligible and any("deferred" in w.lower() for w in result.warnings):
             blockers.append("enrichment_deferred")
@@ -275,13 +278,14 @@ class Repository:
         """Final metric persistence is excluded from the measured scan's operations."""
         payload = json.dumps({"performance": report.performance, "funnel": report.funnel})
         with self.db:
-            self.db.execute(
-                "UPDATE scan_runs SET finished=?,duration_seconds=? WHERE id=?",
-                (report.finished_at, report.duration_seconds, scan_id),
-            )
+            if report.finished_at:
+                self.db.execute(
+                    "UPDATE scan_runs SET finished=?,duration_seconds=? WHERE id=?",
+                    (report.finished_at, report.duration_seconds, scan_id),
+                )
             self.db.execute(
                 "INSERT INTO state (key,value,updated_at) VALUES (?,?,?)",
-                (f"scan:metrics:{scan_id}", payload, report.finished_at),
+                (f"scan:metrics:{scan_id}", payload, report.finished_at or time.time()),
             )
 
     def get_state(self, key: str) -> str | None:
@@ -696,6 +700,15 @@ class Repository:
         return inserted
 
     @sqlite_timed
+    def watch_measurement(self, token: TokenSnapshot) -> dict:
+        row = self.db.execute(
+            "SELECT first_seen,last_seen,last_polled,deferred,tier FROM watch_state "
+            "WHERE chain=? AND contract_address=?",
+            token.key,
+        ).fetchone()
+        return dict(row) if row else {}
+
+    @sqlite_timed
     def due_outcome_tokens(self, now: float, chains: list[str], limit: int) -> list[TokenSnapshot]:
         """Poll sent alerts independently of watchlist expiry; share the market budget."""
         if not chains or limit <= 0:
@@ -728,8 +741,9 @@ class Repository:
             rows = self.db.execute(
                 """SELECT a.timestamp,o.observed_at,o.return_pct FROM alerts a
                 LEFT JOIN signal_outcomes o ON o.alert_id=a.id AND o.horizon_hours=?
+                    AND o.observed_at<=?
                 WHERE a.delivery_status='sent' AND a.timestamp BETWEEN ? AND ?""",
-                (hours, since, until),
+                (hours, until, since, until),
             ).fetchall()
             values = [row["return_pct"] for row in rows if row["return_pct"] is not None]
             result[str(hours)] = {
