@@ -1,73 +1,96 @@
-# Database integrity and measurement audit
+# Production database audit
 
-Status: **PRODUCTION EVIDENCE PENDING**. The production file has not been copied or
-queried. No database row count or integrity claim below refers to the VPS.
+Final cutoff: **2026-10-08 14:48:34 UTC**. Source: consistent online backup of
+`/app/data/revival_radar.db`, mounted from `/opt/gmgn-revival-radar/data`.
+Backup SHA-256: `16929eb4641ba9e4e2ed7ca2a8597b6c9f559fe5760998aae2cef67e8603a91c`.
+Integrity **ok**, schema **4**, WAL enabled; no migration, VACUUM or history reset.
+Final private backup size: 220,237,824 bytes (210.04 MiB).
+Live source DB/WAL sizes at export: 220,114,944 /
+4,169,472 bytes. All analysis used read-only copies.
 
-The current implementation uses schema version 4 and nine tables. `connect()` enables
-WAL, serializes additive migrations in a transaction, and rejects newer schemas.
-SQLite foreign-key declarations exist on research relationships, but the production
-connector does not enable `PRAGMA foreign_keys=ON`. Orphan freedom therefore requires
-explicit validation rather than relying on declarations. The audit tool never calls
-that connector: it opens the supplied copy with `mode=ro` and `query_only=ON`.
+| Table | Rows | Time field | Oldest UTC | Newest UTC | Table MiB | Duplicate excess |
+|---|---|---|---|---|---|---|
+| token_snapshots | 36,059 | timestamp | 2026-10-06 17:29:53 UTC | 2026-10-08 14:43:34 UTC | 61.85 | 0 |
+| alerts | 9 | timestamp | 2026-10-06 18:19:13 UTC | 2026-10-08 09:12:24 UTC | 0.00 | 0 |
+| scan_runs | 395 | started | 2026-10-07 04:03:42 UTC | 2026-10-08 14:48:32 UTC | 1.51 | 0 |
+| evaluations | 31,749 | timestamp | 2026-10-07 04:03:43 UTC | 2026-10-08 14:43:34 UTC | 22.78 | 0 |
+| state | 20,762 | updated_at | 2026-10-07 14:20:09 UTC | 2026-10-08 14:48:32 UTC | 112.90 | 0 |
+| enrichment_cache | 40 | fetched_at | 2026-10-07 15:30:47 UTC | 2026-10-08 14:43:33 UTC | 0.39 | 0 |
+| watch_state | 1,592 | first_seen | 2026-10-06 17:30:00 UTC | 2026-10-08 14:43:34 UTC | 2.09 | 0 |
+| alert_signals | 9 | none | not stored | not stored | 0.00 | 0 |
+| signal_outcomes | 11 | observed_at | 2026-10-07 16:12:22 UTC | 2026-10-08 14:22:25 UTC | 0.00 | 0 |
 
-| Table | Intended grain | Persistence/measurement issue |
-|---|---|---|
-| token_snapshots | chain/address/client observation timestamp | Only market-enriched candidates persist; source fallback/provenance need care; no pruning |
-| evaluations | scan/chain/address | Includes prefilter rejects, excludes market-budget deferrals; seven-day pruning |
-| scan_runs | scan ID | Null finish can be current/interrupted; final counters absent on older interrupted runs |
-| alerts | reservation ID | Delivery states distinguish sent/failed/pending/unknown; no pruning |
-| alert_signals | alert ID | Alert-time values; no score-version column, recover version only from saved presentation |
-| signal_outcomes | alert/horizon | First checkpoint within one-hour grace; missing prices stay NULL |
-| enrichment_cache | kind/chain/address | Overwritten; a cache is not immutable historical security/candles |
-| watch_state | chain/address | Last state only; deferral counter mixes stages/errors; last_polled can mean prefilter evaluation |
-| state | key | Config/presentation/metric values; scan/evaluation states pruned with diagnostics |
+Table pages exclude index/shared overhead. Full column schema/null counts/rates,
+JSON validity and scheduled versus observed timestamp checks are in private
+`data/audit/latest_audit.json`. Every profiled natural key was unique; no invalid
+market-number/score/eligibility domains were found. JSON was valid in all explicitly
+profiled JSON columns. There were no unexpected future observed timestamps, declared
+FK violations or explicit evaluation/alert-signal/outcome orphan joins.
+Scheduled cache expiry and next_due values may legitimately be in the future.
+The application does not enable foreign-key enforcement, so observed orphan freedom
+is a measurement, not a guarantee about future writes.
 
-## Reproducible checks
+Important missingness and interpretation:
 
-`python3 scripts/audit_database.py` profiles every available table, not only this list:
-row/column counts; natural-key duplicate excess; null counts/rates; min/max relevant
-times and scheduled versus unexpected future times; invalid JSON; table page bytes
-where `dbstat` exists; declared FK violations and explicit orphan joins; invalid
-market numbers and evaluation domains; timestamp-gap and snapshots/token distributions;
-schema/journal/integrity; scan duration percentiles; cohort field/dimension availability.
-Tables not present in legacy copies are left absent. Analysis of a schema-1 test file
-preserves its bytes and user_version. No migration is run by the audit CLI.
+- Six of nine original alert prices/caps are missing, eight of nine dimensional
+  score triples are missing, and six of eleven stored checkpoint returns are NULL.
+  Later prices cannot repair missing entry information without an explicit defensible
+  historical source. No price or return was invented.
+- 11,575 legacy evaluations lack retained presentations; that limits feature/cohort
+  reconstruction. The complete known-presentation denominator is recorded separately.
+- Initial snapshot columns had absent drawdown in 71 rows; most source ranks and
+  optional asset classifications are NULL by design. Snapshot numeric defaults can
+  conceal missing upstream fields; inspect payload/presentation availability rather
+  than treating every zero as measured activity.
+- Four scan finish/duration pairs are NULL: old IDs 2/99/106 and the current scan 395.
+  The active pre-deployment scan completed. Historical interruptions remain untouched.
+- Watch `last_polled=0` means never processed and cannot be treated as a billions-of-
+  seconds latency. Last_polled also includes prefilter work; deferral counts combine
+  stages/failures. Mutable watch/cache rows are not full lifecycle histories.
 
-A point-in-time backup alone cannot establish bytes/day: compare repeated dated
-DB+WAL+freelist/page measurements. Table page bytes exclude shared/index overhead
-unless separately attributed. A finite filtered research window does not turn total
-file size into storage growth. `growth_bytes_per_day` remains NULL until measured.
+At the pre-deployment cutoff, snapshots spanned 2026-10-06 17:29 UTC onward, while
+retained scan/evaluation rows began 2026-10-07 04:03 UTC. Historical alert timestamps
+can precede retained scan metadata; no missing past scan was invented or repaired.
+Historical chain rows included Solana, Robinhood, BSC, Base and Arc. Current runtime
+is Solana only. Mixed historical populations are separated from current conclusions.
 
-## UI reconciliation contract
+## Persistence and growth
 
-The current `Repository.health()` selects scans by **start time** in `[since, until]`;
-evaluations join those scans. Discoveries deduplicate chain/address from completed
-scan metadata and exclude watchlist. Evaluation counts include repeated token
-observations; blocker counts overlap. Alerts select observation/reservation timestamp,
-not delivery time. Main health covers 24h; outcome summary covers seven days.
-Coverage uses saved presentations as its known denominator, not successful endpoint
-requests. Interrupted legacy scan discovery/metrics may never have been finalized.
+Before service replacement there were 391 scans, 31,558 evaluations, nine alerts and
+35,939 snapshots. The first post-deployment backup had 392 scans, 31,622 evaluations,
+nine alerts and 35,979 snapshots. Every original ID row in scans/evaluations/alerts
+was verified still present; snapshot count increased. Both protected configuration
+files retained identical hashes, and schema stayed at 4.
 
-Reconcile the UI and analyzer with the same UTC epoch cutoff and 24h start-window,
-then segment revisions and identify active scans and missing presentation records.
-The request's approximate counters have no exact snapshot timestamp, so discrepancies
-cannot be attributed to a UI bug merely by comparing today's later export.
-The local P0 fix filters historical outcomes by their actual observation cutoff.
+Multiple backup sizes provide a short physical-growth observation, not a reliable
+steady-state daily growth rate. The pre/first-post source DB+WAL increased by about
+1.27 MB in 8.24 minutes; simple extrapolation is roughly 222 MB/day. New candidate
+telemetry changes storage demand, WAL checkpoints/page reuse affect sizes, and
+seven-day pruning has not reached steady state. The durable growth metric remains
+NULL pending a longer measurement period. State/presentations account for over half
+the initial table pages; token snapshots about 61.5 MiB and evaluations about 22.6 MiB.
 
-## Synthetic validation only
+Evaluations, scan/config/presentation/metric diagnostics prune after seven days;
+snapshots and alerts/outcomes do not. Caches overwrite candle/security history;
+expired watch records are pruned. This cannot support exact full-universe replay.
+No pruning schedule or retention setting was changed by this audit. Archive before
+pruning, measure DB+WAL+freelist/page sizes across days, then set an explicit disk budget.
 
-The isolated demo created 13 snapshots (including fixture history), 3 evaluations,
-1 scan, 0 alerts, 0 alert_signals, 0 outcomes, 2 cache entries, 3 watch entries and
-6 state rows. Integrity was `ok`. It processed three fixture scenarios with one
-potential alert, zero deliveries and zero errors. Fixture timestamps use an independent
-synthetic clock; the reproducible analysis explicitly uses `--since 0 --until 1800000001`.
-These numbers prove neither production coverage nor statistical performance.
+## Reproduction and UI contract
 
-## Next required evidence
+```bash
+python3 scripts/audit_database.py \
+  --database data/audit/final/production_snapshot.db \
+  --manifest data/audit/final/manifest.json \
+  --source production --since 0 --output-dir data/audit
+```
 
-Obtain the [consistent private export](production-access.md). Inspect all returned
-profiles and malformed JSON/domain defects before relying on outcomes. Compare
-stored checkpoints to snapshot paths, alert-time prices to saved presentations,
-scan counters to evaluation counts, logs to bounded scan intervals, and discovery
-identity sets to trace membership. Keep expired/starved/unobserved candidates marked
-missing rather than deleting them from the denominator.
+The CLI verifies the manifest checksum, defaults until to backup completion, and
+never imports the application's migration connector. Scan/evaluation windows use
+scan start; alert windows use reservation time; outcome values require observed_at
+at or before the cutoff. Discovery deduplicates chain/address and excludes watchlist;
+evaluation counts include repeated observations. UI core passes are full eligibility,
+market passes are a different narrower set of checks, and blocker counts overlap.
+VPS and local executions against the same final copy matched exactly before adding
+deployment metadata. See [FULL_AUDIT.md](FULL_AUDIT.md) for same-cutoff UI numbers,
+cohort isolation and limits on performance claims.

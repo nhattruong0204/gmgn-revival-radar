@@ -1,395 +1,376 @@
-# Executive summary
-
-Audit date: **2026-10-08, Asia/Saigon (UTC+7)**. Overall assessment: **NEEDS ATTENTION**
-for measurement correctness and unresolved production evidence. This is a completed
-local architecture/engineering review and a tested production-evidence collection
-workflow. **The quantitative production audit is NOT complete.** No VPS health,
-production signal performance, or strategy edge is certified by passing tests.
-
-**FACT:** Local checkout started clean at `dd146511c32c02227514660c51b42afe4c2d2520`.
-The GitHub connector independently returned that SHA for current `main` during this
-audit. `git log --oneline -20` returned the repository's 14 available commits.
-Production code/image revision remains unknown. SSH reached the explicitly confirmed
-target `root@130.94.7.127` with normal host-key checking and presented a password
-prompt; no new-key trust prompt or mismatch appeared. This runtime has no private
-user-entry channel for feeding that prompt without recording a tool argument.
-Authentication was cancelled; no password was collected or saved.
-
-**FACT:** The initially available `data/` contained only `.gitkeep`, not the production
-DB. Values in the request (approximately 287 scans, 20k evaluations, 86 core passes,
-4 alerts, 18% history coverage, 108 candidates/40 requests) are **unverified UI
-observations**, not recomputed evidence. No production DB integrity, time range,
-row counts, resource pressure, restart history, or log taxonomy has been measured.
-
-**RECOMMENDATION:** Keep the live Solana configuration, thresholds, weights, budgets,
-pacing, and enabled chains unchanged. Obtain the private export described in
-[production-access.md](production-access.md), then run the offline analysis. Do not
-upgrade the VPS or deploy these local changes based on the present evidence alone.
-
-# Data inspected
-
-| Evidence | Authority and scope | Limit |
-|---|---|---|
-| Current scanner, clients, scoring, service, repository, controls and tests | Actual local implementation at audited base SHA | Does not establish running VPS version |
-| Existing benchmark JSON and replay tape | Preserved individual live dry runs or explicitly synthetic replay | Not production history; collection policy/version differs between files |
-| GMGN official token/market docs retrieved on audit date | Provider definitions and field semantics | Does not establish actual returned field coverage |
-| Offline demo and new deterministic tests | Correctness fixtures and safe-export validation | Synthetic; no trading-performance evidence |
-| Production database/logs | **NOT AVAILABLE** | Required for all production quantitative conclusions |
-
-Reproducible implementations: [audit.py](../../src/revival_radar/audit.py),
-[audit_database.py](../../scripts/audit_database.py),
-[export_audit_bundle.py](../../scripts/export_audit_bundle.py),
-and [tests](../../tests/test_audit.py). Private outputs are under git-ignored
-`data/audit/`; there is no published production artifact.
-
-# Production health
-
-**FACT:** No authenticated VPS session was obtained. All production operational
-answers remain **UNKNOWN**, including container uptime/restarts, host resources,
-WAL bytes, DB growth, and production/main equality. A host checkout SHA alone would
-not prove image provenance, so the exporter also hashes ten installed source modules.
-
-**FACT (configuration review only):** Compose specifies `restart: unless-stopped`,
-`./data:/app/data`, a 30-second stop grace period, non-root application user, and
-JSON log rotation at `10m × 3`. Those declarations support persistent history across
-rebuild/restart/reboot when deployed as written. Actual production mounts, rotation,
-image, restart policy, OOM status and disk use require inventory verification.
-No restart, rebuild, deployment, config write, production migration, package
-installation or trade was performed.
-
-# Scanner performance
-
-**FACT:** [Preserved final live benchmark](../benchmarks/issue5-final-live.json),
-2026-10-07 15:57:12 UTC: **18.243793 seconds**, 38 unique discoveries/evaluations,
-5 market fetches, 7 HTTP attempts (all 200), 0 candle/security fetches, 0 returning
-activity, 0 alerts/errors. This cold-start sample does not measure steady-state
-watchlist load, tail latency, or recall.
-
-**FACT:** [Repeat benchmark](../benchmarks/issue5-final-repeat.json) explicitly uses
-synthetic history and mock network latency. Scan 1: 4 candles fetched; scan 2:
-0 candle fetches and 3 candle hits. It demonstrates cache reuse, not production
-latency or predictive signals.
-
-**FACT (code):** The service awaits each scan, then waits
-`max(0, interval - elapsed)`; it does not spawn overlapping scans on overrun. The
-150-second high-watchlist interval is a due-time target within a service whose
-default scan cadence is 300 seconds; it does not imply a 150-second sampler.
-The configured operation budgets are global across enabled chains; retries consume
-HTTP attempts beyond operation counts. Production cadence and percentiles are unknown.
-
-The offline analyzer reports mean/p50/p90/p95/p99/max duration, start spacing,
-unfinished scans (including a currently running scan), errors/scan, endpoint
-attempts, cache/deferred counts, and cohort-specific scan summaries. A null `finished`
-row alone cannot distinguish an active scan from an interrupted one. Future requests
-need exporter time and logs to distinguish them.
-
-# API / errors
-
-**FACT:** Two preserved dry-run artifacts each contain a Trending HTTP 429:
-[14:35:08 UTC](../benchmarks/issue2-after-live-rate-limited.json) and
-[14:36:44 UTC](../benchmarks/issue2-after-live-rate-limited-retry.json), 2026-10-07.
-Both stopped for authentication/rate-limit handling and each reports six scanner
-errors after one observed HTTP 429. This demonstrates that one upstream failure
-can fan out into several failed operations. It does **not** establish production
-429 frequency or six independent upstream incidents.
-
-**FACT (code):** `scan_runs.errors` counts discovery, token-processing and delivery
-failures. Caught optional candle/security failures and malformed discovery rows may
-appear only in separate metrics or warnings. Existing logs often retain only
-`DataSourceError`, which cannot distinguish timeout/429/5xx. Existing per-stage
-failure totals are not an error taxonomy and cannot establish retry recovery.
-
-**Implemented P1:** New fixed-label error events retain timestamp, stage and validated
-chain/address, with no exception message. HTTP counters separately retain response
-status, transport/429/5xx/cooldown counts, and successfully retried envelopes. A
-recovered envelope is not necessarily a successfully normalized token. Interrupted
-scans preserve partial metrics while keeping `finished IS NULL`. Legacy log exports
-retain only recognized event/numeric/identity fields; arbitrary log bodies and raw
-Docker environment are excluded. Taxonomy counts from logs are lines, not incidents.
-
-# Request-budget starvation
-
-**FACT (code and regression test):** `priority()` sorts source tier before negative
-deferral count: Trending-only, Hot-only, both sources, then high/medium/low watchlist.
-Twenty deferrals do not let a lower source tier outrank a fresh Trending-only token.
-This is cross-tier starvation potential despite rotation within each tier. The
-actual frequency, loss rate, queue ages, and rejected future winners are unmeasured.
-
-**FACT:** Market-budget deferrals return before snapshot/evaluation persistence.
-`watch_state.deferred` also increments on candle/security budgets and token errors,
-and `last_polled` updates even for cheap prefilter rejection. Neither field is an
-exact history of market enrichment. Historical 108/40/68 UI values cannot be turned
-into per-token latency or expiration statistics.
-
-**FACT:** Outcome-only polling is last and uses the remaining market budget. A
-perpetually full candidate budget can miss horizon checkpoints, especially after a
-token leaves rankings or the watchlist. No budget is reserved for outcomes.
-
-**Implemented P1:** Per-scan candidate traces retain first/last seen, previous poll,
-prior deferral count/tier, source membership, stage flags and separate market/candle/
-security deferrals. Traces are stored in the existing metric state record, without
-schema change or altering scheduling. The offline analyzer reports observed streaks,
-30-minute starvation counts and lower-bound deferral ages. First-enrichment delay is
-reported only if telemetry captures discovery itself. Expired candidates without a
-complete event history remain unknown. These records have existing seven-day
-retention; archive them for longer research.
-
-**HYPOTHESIS:** Small fairness quotas or aging across source tiers could improve
-coverage. **EXPERIMENT ONLY:** Measure a prospective control with unchanged ranking
-limits, then compare latency/recall/cost. No source-priority/budget change was applied.
-
-# Data coverage
-
-**FACT (code):** Baseline readiness requires distinct, cadence-spaced contiguous
-prior observations with enough known 5m volume. The default gap limit is 900 seconds,
-minimum count 3, history cap 6. Low-score watchlist intervals can be 1800 seconds,
-longer than that gap limit. Discovery churn, market deferrals, source-tier priority,
-and intermittent coverage can prevent a valid baseline without an API mapping bug.
-One-step TX/hourly acceleration can trigger before the multi-observation 5m-volume
-baseline is ready. Missing history does not imply every activity pathway is absent.
-
-Production global 5m/TX and mature/watchlist baseline rates are **UNKNOWN**. The
-analyzer separates presentation availability from field availability, retained
-snapshot age from actual discovery age, watchlist versus discovery evaluations,
-score bands and cohorts. Mature-age segmentation from legacy snapshots is explicitly
-an approximation; it does not fabricate first discovery times.
-
-**P1 correction:** A short identified consolidation range now adds `base_too_short`
-even when `base_detected` is false. The broader `no_base` blocker remains; blockers
-are intentionally overlapping. Previously, the detector required the duration
-threshold before setting `base_detected`, making the specific short-base blocker
-unreachable for actual short ranges. Eligibility and scores are unchanged.
-
-# Sequential funnel
-
-The operational pipeline is:
-
-```text
-Discovery + due watchlist → known-field prefilter → fresh market → full market gate
-  → activity evidence (multi-observation baseline is one branch)
-  → closed candle analysis → optimistic score → security if serious → final score
-  → eligible → threshold → dry-run/pause/cooldown/delivery → sent
-```
-
-**FACT:** Existing marginal stage counters do not identify candidate intersections.
-Adding watchlist work can make later counts larger than discovery counts. Dividing
-all counters by discoveries would produce invalid funnel percentages. `no_base` in
-an unfetched evaluation is not evidence of failed consolidation detection.
-
-New candidate traces support an actual set-intersection funnel, separately for
-ranking discoveries, watchlist work, and cohorts. Each stage reports previous-stage
-and universe denominators. The baseline-ready research path also exposes the
-activity-without-baseline branch. Security coverage is conditional on serious
-candidates; it is not a mandatory stage for every eligible token. Raw blockers stay
-separate. Legacy rows without traces report the complete sequential path as unknown.
-Production rates await the export.
-
-# Configuration cohorts
-
-Every scored evaluation has a saved presentation with config context, score version,
-and dimensional scores when available. The analyzer groups by preset, revision,
-score version **and settings fingerprint**, preventing reused revision numbers from
-merging different weights. Missing dimensions/version remain **LEGACY**, not zeros.
-Cohort outputs contain counts, unique tokens, eligible observations, sent alerts,
-dimensional distributions, outcomes, near misses, calibration, budget/error metrics.
-Global summaries describe collection only; decisions must use cohort results.
-No production cohort results are available.
-
-# Signal outcomes
-
-**P0 fixed locally:** `outcome_summary(since, until)` previously selected alerts by
-window but did not constrain the joined checkpoint's `observed_at`. A report as of
-3900 seconds could include a return collected at 4000 seconds. The join now requires
-`observed_at <= until`; regression tests confirm no future observation leaks.
-
-**FACT (existing semantics):** Only `sent` alerts are tracked at 1h/6h/24h/72h. The
-first market observation within `[horizon, horizon+1h]` becomes the immutable
-checkpoint. Missing/zero starting price leaves return NULL; price/cap both absent
-allows a retry. A market-cap-only checkpoint is immutable and can prevent later
-price recovery at that horizon. This existing contract is documented and tested;
-changing it requires a separate outcome-policy design.
-
-No production alert/outcome rows have been inspected. If the UI's four alerts are
-confirmed, the sample is **INSUFFICIENT SAMPLE**. No profitability, expected return,
-reliable precision/win rate or statistical edge is claimed.
-
-The research tool uses durable stored checkpoints when present. Sampled MFE/MAE use
-only subsequent stored prices within the horizon and as-of cutoff. It reports N,
-sample times and gaps; sampled MFE is a lower bound on true MFE, and sampled MAE an
-upper bound on true MAE. Missing terminal prices never become zero returns. Partial
-future horizons have no finalized excursion statistic. These are price changes,
-not executable trading returns after costs.
-
-# Near-miss / missed winners
-
-Production missed winners are **NOT MEASURABLE YET**. No winner count is invented.
-The offline study uses the first rejected score≥50 observation per token/cohort,
-partitions anchors into 50–59/60–64/65–69/70–74/75–100, then measures horizon returns
-and sampled 24h MFE>50%. Attributions are overlapping, with unique token/cohort N.
-Historical tokens never enriched lack an independent future price path; absence
-of measured winners does not mean no winners were missed. Deferral-only candidates
-cannot be retrospectively assigned blocker/outcome data that was never collected.
-
-# False positives
-
-Production false positives are **UNKNOWN**. The research definition is a sent alert
-with a known negative +24h price return, explicitly separate from execution loss.
-Insufficient N, missing checkpoints, partial horizons and survivor-biased sampling
-must be displayed before comparing any characteristics. Trigger/Confirmation mix,
-base length, absolute TX/volume, liquidity decline, sniper/bundler measures and
-ranking context are plausible explanatory features, not proven predictors.
-
-# Score calibration
-
-Setup (30), Trigger (40) and Confirmation (30) are normalized dimension allocations
-under current defaults; penalties are applied to the weighted total. Overall
-40–49/50–59/60–69/70–79/80–89/90–100 and dimensional 0–20/21–40/41–60/61–80/81–100
-summaries use first token/cohort anchors. N and missingness accompany every statistic.
-
-**FACT:** No component is proven predictive from the available evidence. Absolute
-activity floors and nonzero baseline checks prevent mathematical false surges;
-that is correctness evidence, not predictive validation. Unfetched structure has
-unavailable Confirmation, so low scores in skipped candidates are censored by the
-collection policy. Reweighting from this selected dataset would be biased.
-
-**RECOMMENDATION:** Do not tune weights or thresholds now. Compare time-separated,
-cohort-isolated, token-clustered walk-forward samples with matched nonalerted controls.
-
-# Market regime
-
-Production today/3-day/7-day medians and score/discovery/activity changes are unknown.
-The tool computes local-day and rolling-window medians from stored enriched
-observations, explicitly labels the nested windows and selection bias, and assigns
-no unsupported regime label. Score-dependent enrichment mix must be adjusted before
-calling a change in collected liquidity a change in the whole Solana market.
-
-# Structure analysis
-
-**FACT (code):** Candles are fetched after returning activity and market gate pass;
-there is no proactive Setup maintenance. Closed hourly bars are deduplicated and
-gap-checked; a suffix after >5400-second gaps is used, and fewer than six contiguous
-bars gives unavailable structure. The base is a bounded range before the final two
-bars, with major-low stability; higher lows/highs use confirmed interior pivots.
-Future/incomplete bars are excluded. The latest-bar age check is 7200 seconds.
-
-Global and conditional coverage must differ. The tool reports available structure
-among evaluated presentations and among inferred expected recipients, bases among
-available structure, HL/HH/breakout among bases, and same-evaluation retest/breakout
-overlap. Retest can follow a prior-bar breakout without a same-bar breakout; this
-statistic must not be read as a longitudinal retest probability.
-
-**HYPOTHESIS:** Activity gating could discover a mature Setup late.
-**EXPERIMENT ONLY:** Maintain a small shadow candle allocation for liquid, mature,
-deep-drawdown watchlist tokens; measure earlier Setup knowledge versus opportunity
-cost to active candidates. No proactive K-line allocation was implemented.
-
-# Security coverage
-
-**FACT:** `suspected_insider_hold_rate` is the correctly mapped holdings field in
-[GMGN's official token reference](https://github.com/GMGNAI/gmgn-skills/blob/main/skills/gmgn-token/SKILL.md).
-`rat_trader_amount_rate` is trading volume and must not substitute for holdings.
-The official reference documents insider holdings; it does not establish universal
-availability or a Solana guarantee. Production 0% coverage would mean missing, not
-safe and not necessarily unsupported. Existing alert presentation already suppresses
-repeated missing-insider watchouts, while keeping known risk deductions.
-
-Coverage must distinguish ranking/token-info fields, cached security, and fresh
-security-endpoint results. Current security caching permits 30-minute-old fields
-under defaults; fresh token-info fields keep precedence. Known danger cannot be
-cleared by a cached safe result. Optional security endpoint failure may retain
-nullable eligibility; budget-deferred security suppresses alerts. Those existing
-policies are strategy/security-policy questions, not validated guarantees of safety.
-No live security policy was changed.
-
-# Backtest readiness
-
-**Assessment: PARTIAL / NOT research-grade for exact long-horizon replay.** Snapshots
-and saved evaluation presentations can explain retained past decisions, but candle
-cache overwrites, unobserved deferred tokens, incomplete outcome paths and seven-day
-diagnostic pruning prevent exact full-universe replay. Raw ranking/security response
-history and availability times are not durably recorded. See
-[backtest-readiness.md](backtest-readiness.md) for the point-in-time data contract,
-retention split, architecture and walk-forward design.
-
-# Risks / biases
-
-Top five technical risks, with evidence:
-
-1. Cross-tier starvation: tier precedes deferral count (`Scanner.priority`; regression).
-2. Outcome starvation: polls consume only remaining market budget (`track_outcomes`).
-3. History loss: seven-day evaluation/config/metrics pruning; candle cache overwrite
-   (`prune_diagnostics`, `cache_save`). Snapshots/alerts grow without separate policy.
-4. Error underclassification: exception-type-only legacy logs and optional failures
-   outside `scan_runs.errors`; new telemetry cannot recover already lost facts.
-5. Observation provenance: market price inherits seed observation time and can fall
-   back to ranking fields when fresh token-info metrics are missing. Client timestamp
-   is not a server event time. Separate field availability/fetch timestamps are needed.
-
-Top five quantitative risks:
-
-1. Few alerts cannot establish edge; confirmed sample N remains unavailable here.
-2. Score-dependent data collection biases near-miss outcomes and calibration.
-3. Sparse sampled paths understate favorable/worst adverse excursions; missingness
-   can reflect delisting, liquidity disappearance, or budget starvation.
-4. Same token/repeated/config-correlated observations inflate effective sample size.
-5. Market drift, selection changes, execution costs and liquidity constraints can
-   explain apparent returns without an incremental signal effect.
-
-# Recommendations
-
-**Safe local changes implemented:** as-of cutoff correction; specific short-range
-blocker alongside overlapping no-base; fixed-label operation-error and HTTP retry
-telemetry; per-candidate stage/deferral traces; partial interrupted-scan telemetry;
-standalone consistent-WAL private exporter; read-only cohort-isolated research CLI.
-No schema change, live migration, secret/config alteration, strategy change, enabled
-chain change, production deployment or trade occurred. The existing `.gitignore`
-already protects all `data/audit/` outputs, DB/WAL/SHM and log files.
-
-The optional Telegram Research page was intentionally deferred: the CLI/report gives
-a reviewable measurement surface without expanding production controls before the
-primary production dataset is inspected.
-
-# Priority roadmap
-
-| Priority | Work | Applied? | Evidence needed next |
-|---|---|---|---|
-| P0 | As-of cutoff correction | Local only | Read-only historical reconciliation on export |
-| P1 | Candidate/error telemetry and short-base attribution | Local only | Prospective cohort data after reviewed deployment |
-| P1 | Export production DB/log/config/inventory; reconcile UI at identical cutoff | Export tooling ready; actual export pending | Private VPS bundle |
-| P1 | Archive research facts before seven-day pruning | Documented, not scheduled | DB/WAL growth and desired storage budget |
-| P2 | Fairness quotas/aging; reserve outcome coverage | Experiment, not applied | Latency/streak/expiration/missing-checkpoint evidence |
-| P2 | Resource upgrade | Not recommended now | Sustained CPU/RSS/swap/I/O/restart pressure |
-| P3 | Proactive structure, weight/threshold comparison | Experiment, not applied | Time-travel data and walk-forward controls |
-
-# Validation and delivery status
-
-The original 446 tests passed after installing the project in the local virtual
-environment. New audit tests verify cohorts, denominators, delay/censoring, nullable
-outcomes and excursions, read-only legacy-schema analysis, live-WAL backup, export
-inventory/log allowlists, known-secret rejection, interruption persistence, and
-as-of cutoff. Exact final validation results are in
-[validation.md](validation.md). Passing tests establish implementation correctness
-within their fixtures, not production market measurement quality.
-
-## Required production answers
-
-| Requested conclusion | Current answer |
+# Production audit and deployment
+
+Audit date: 2026-10-08, UTC+7. Final database cutoff: **2026-10-08 14:48:34 UTC**.
+Overall assessment: **NEEDS ATTENTION for data coverage and research readiness**.
+Production scheduling, persistence and VPS resources are healthy in the measured
+window. Current scoring has **INSUFFICIENT SAMPLE** to establish predictive value.
+
+The authorized deployment is complete. The bot runs commit
+`5b0f6df4a4d7746e3ee6eb98f2d35312c39c3069` in image `sha256:72fdb27aa088eb27fe821080b11a4d61a643ff86f442358c6a891d44d8f121b9`.
+It restarted at `2026-10-08T14:33:29.900438933Z`. Three subsequent scans completed in
+61.95, 61.89 and 63.40 seconds, with zero scan errors and five-minute start spacing.
+All historical scan/evaluation/alert ID rows checked across the restart remain;
+both `.env` and `data/radar-controls.json` retain their original hashes.
+No thresholds, weights, enabled chains or secrets changed. No trades were executed.
+
+The full quantitative audit ran **on the VPS host**, against a consistent online
+SQLite backup, and again locally. All substantive results match. Corrected audit
+utilities are at commit `ae42599`; the live application remains the tested runtime
+release above. Reports and private audit tools do not require another bot restart.
+
+## Evidence and production provenance
+
+Production directory: `/opt/gmgn-revival-radar`. Initial checkout was clean at
+`dd146511c32c02227514660c51b42afe4c2d2520`; ten installed module SHA-256 hashes
+matched that revision. GitHub main was independently checked and remained at the
+same SHA. Production was equal to main before deployment; it is now one audit
+implementation commit ahead, on `deploy/audit-5b0f6df`. Nothing was pushed to GitHub.
+The original image is retained as `gmgn-revival-radar:rollback-dd14651-20261008`.
+
+Three consistent backups were collected, without stopping the bot for backup:
+pre-deployment, first post-deployment and final. Every backup passed integrity checks,
+has schema version 4, and has a manifest binding its SHA-256 to collection times.
+The authoritative final private copy is `data/audit/final/production_snapshot.db`.
+`data/audit/latest_audit.json` contains all table/column profiles, cohort studies,
+individual signal paths, calibration buckets and deployment verification.
+`data/audit/vps_latest_audit.json` is the independently executed VPS result.
+All private artifacts remain git-ignored; only aggregate documentation is committed.
+
+Repository architecture, tests and preserved benchmark fixtures were also examined.
+Benchmarks and the offline demo are validation fixtures, never production outcomes.
+Host/image provenance, actual Docker mounts and effective runtime configuration were
+verified directly, rather than inferred from README defaults.
+
+## Production resources and Docker
+
+The VPS has one CPU, 1.9 GiB RAM, 3.8 GiB swap and a 50 GiB root filesystem.
+Pre-deployment load averages were 0.08/0.02/0.01; vmstat samples showed 98–100% idle
+CPU, no sustained swap or I/O wait. About 1.4 GiB RAM and 41 GiB disk were available.
+The bot used approximately 108 MiB Docker-accounted memory and 1.39% CPU at the
+inventory sample. The old container had zero restarts, no OOM flag and 22h uptime.
+The new container also had zero restarts and no OOM flag. Bounded kernel-journal
+checks found no OOM evidence. These short measurements support the current VPS;
+they do not establish every historical peak. **No upgrade is justified now.**
+
+Actual persistence is `/opt/gmgn-revival-radar/data:/app/data`, restart policy
+`unless-stopped`, application UID/GID 10001, and JSON logs rotated at 10 MiB × 3.
+History survived this authorized image replacement. Reboot behavior was inferred
+from restart policy and the persistent mount; the VPS was not rebooted.
+The old log file was approximately 3.18 MB. No Docker pruning was performed.
+
+## Effective live configuration
+
+Preset **Custom**, revision **7**, Solana only, alert threshold **60**, five-minute
+cadence, discovery limit 20/source, watchlist limit 100, watch lifetime 24h.
+Market/security/candle budgets are **40/8/12** operations per scan; retries can use
+more HTTP attempts. Request spacing is 1.5s, timeout 20s, three attempts and maximum
+retry wait 10s. History requires three observations, keeps up to six, and accepts
+maximum 900s gaps. High/normal/low watch targets are 150/600/1800s.
+Effective base minimum is **8h**, sufficient base **48h**; those differ from defaults
+and were preserved. Setup/Trigger/Confirmation allocations remain **30/40/30**.
+Current score version is `setup-trigger-confirmation-v1`. Alerts remain enabled,
+dry-run false, and daily summaries disabled, matching original production settings.
+
+## Scanner performance and historical errors
+
+| Population | Completed scans | Mean / p50 seconds | p90 / p95 / p99 seconds | Max seconds |
+|---|---|---|---|---|
+| All retained history | 391 | 144.97 / 63.39 | 330.69 / 335.69 / 654.99 | 1,367.05 |
+| Old container, after 2026-10-07 16:07 UTC | 268 | 63.17 / approximately 63 | No 300s overruns | 72.43 |
+| First three deployed scans | 3 | 62.41 / 61.95 | Short validation window | 63.4 |
+
+There are four unfinished rows at the final cutoff: three old interruptions (IDs
+2, 99, 106) and one scan active at backup time (395). The earlier active scan 390
+finished normally before deployment. The full retained history contains 100 scans
+longer than 300s, all preceding the stable old-container window. Mixing those with
+current scans would falsely suggest current scheduling still averages over two minutes.
+The service awaits one scan at a time; overruns do not create overlapping scans.
+
+The 219 retained scan errors occurred in exactly three older scans: ID 43 (96),
+102 (31), 103 (92). Both discovery sources succeeded in those scans. The pre-deployment
+24h window contained 123 of those errors, all in IDs 102/103. They reduced processed
+candidate coverage and cannot simply be called harmless. Their actual causes and
+individual token identities cannot be recovered from the surviving container logs.
+They predate that container's creation; CPU or GMGN blame would be speculation.
+
+All 268 completed scans in the retained old-container log window had zero errors.
+All 268 log completion records matched database counters at corresponding finish
+times; no counter disagreement was found. Four normal alert cooldown records were
+present. No 429, timeout, 5xx, malformed-token, SQLite-lock, Telegram-failure or
+traceback evidence occurred in these bounded surviving logs. This is evidence of
+absence in that retained window, not proof none occurred in removed containers.
+
+The original exporter incorrectly classified `errors=0` completion counters as
+error text and alert cooldown as GMGN cooldown. This was corrected, covered by
+regressions and applied to extracted summaries using known application log grammar;
+original archives remain unchanged. Final export uses the corrected parser directly.
+New structured telemetry distinguishes HTTP status/retry recovery from failed
+operations, optional enrichment failures and normalization problems. Legacy
+`DataSourceError` alone cannot identify a cause; unknown values remain unknown.
+
+Endpoint attempt totals over retained telemetry (288 measured scans, not all
+395 scan rows) are shown below. These may include retries and are not counts of
+unique enriched tokens. Legacy status/recovery metadata is unavailable; new HTTP
+status metrics cover only the prospective deployment window.
+
+| Endpoint | HTTP attempts |
 |---|---|
-| Overall bot health | NEEDS ATTENTION (measurement gaps; production operational state unknown) |
-| Scanner performance adequate | Scheduling implementation sound; production duration/cadence unknown |
-| API budget misses coverage | Starvation mechanism proven in code/tests; production frequency unknown |
-| History coverage adequate | Unknown; global UI percentage cannot answer mature/watchlist coverage |
-| Statistical meaning/current returns | Production N/returns unknown; four alerts, if confirmed, INSUFFICIENT SAMPLE |
-| Missed winners / false positives | Unknown; no production outcome attribution performed |
-| Useful score components | Mathematical guards validated; predictive components all unproven |
-| Change live configuration now | No evidence supports tuning now |
-| Safe changes / experiments / readiness | Listed above; backtest readiness PARTIAL |
-| Files, tests and commit SHA | See validation and final handoff; audited base `dd146511c32c02227514660c51b42afe4c2d2520` |
-| VPS audited | NO (reachable; no secure authentication channel) |
-| Production SHA vs current GitHub main | UNKNOWN; current main verified as audited base during run |
-| Container uptime/restarts | UNKNOWN |
-| Production DB time range/row counts/integrity/size/growth | UNKNOWN; only demo fixture integrity checked |
-| VPS CPU/memory/disk / LightNode adequacy | UNKNOWN; no upgrade recommended without pressure evidence |
-| Production errors/429/candidate latency | UNKNOWN; historical dry-run 429 evidence is separate |
-| Logs ↔ DB consistency/UI correctness | UNKNOWN pending same-cutoff snapshot and logs |
-| Production changes recommended | Obtain export first; deployment/strategy/resource changes require subsequent review and approval |
+| /v1/market/hot_searches | 288 |
+| /v1/market/rank | 288 |
+| /v1/token/info | 11702 |
+| /v1/token/security | 4 |
+| /v1/market/token_kline | 254 |
+
+Kline cache: 488 hits / 244 fetches, 66.67% hits among hits plus fetches. Security cache: 3 hits / 3 fetches, 50.00% hits among hits plus fetches. Cache accounting differs from total endpoint attempts; incremental candle calls
+and retries must not be mistaken for additional independent recipients. Stage-time
+sums include API wait, and market waiting dominates measured scan time.
+
+## UI reconciliation
+
+| 24h metric | Pre-deployment cutoff 14:27:29 UTC | Final cutoff 14:48:34 UTC |
+|---|---|---|
+| Scans started / completed | 289 / 287 | 290 / 288 |
+| Mean completed scan seconds | 66.59 | 64.22 |
+| Unique ranking discoveries | 938 | 933 |
+| Evaluation observations | 19,664 | 19,670 |
+| Core checks passed: full eligibility | 82 | 80 |
+| Market filters only | 3,097 | 3139 |
+| Sent alerts | 3 | 3 |
+
+These counters follow the UI's scan-start window and separate alerts by reservation
+time. Ranking discoveries exclude watchlist work; evaluations include repeated
+watchlist observations and prefilter rejections. Market-budget-deferred candidates
+are not evaluated. The UI label “Core checks passed” counts `eligible`, which also
+requires base/activity checks; it is not the market-only pass count.
+The request's approximate 287 scans/20k evaluations/86 passes/4 alerts had no exact
+snapshot time. The measured later sliding windows are consistent with changing
+window membership; no UI arithmetic defect is established by those differences.
+The historical outcome as-of join did have a verified look-ahead defect and is fixed.
+
+## Request budgets, fairness and baseline history
+
+Every one of the old container's 268 completed scans reached 40 market operations.
+Of 28,330 prefilter survivors, 10,720 were enriched and **17,610 were deferred**:
+62.16% of survivors. Mean deferrals were 65.71 per scan. Outcome-only polls were
+zero in retained telemetry; discovery/watchlist processing consistently exhausted
+the shared budget before an independent outcome poll could run. Naturally evaluated
+alert tokens still supplied some checkpoints. Zero polls alone does not mean every
+checkpoint was missed, but off-ranking follow-up has no reserved coverage.
+
+Priority sorts source tiers ahead of accumulated deferral counts. Aging helps within
+a tier and cannot guarantee service to lower tiers. The first deployed scan had
+111 survivors, 40 enriched and 71 deferred. All 71 deferred identities were watchlist
+only; the 40 enrichments included 12 current ranking candidates and 28 watchlist tokens.
+This establishes real coverage loss; it does not establish how many profitable
+opportunities were lost.
+
+The final artifact contains 404 prospective candidate traces across three completed
+scans: 213 deferral observations, last-observed backlog 70, maximum observed streak
+three. The oldest lower-bound defer age is about 900s as of export; candidate absence
+and the short trace window limit interpretation. There is no uncensored first-
+enrichment latency sample yet: p50/p90/p95/max are unknown. Expired-without-enrichment
+count is unknown. No observed 30-minute starvation is certified from 15 minutes of
+telemetry. `watch_state.deferred` mixes stages and failures and cannot recover legacy
+consecutive market deferrals or expired lifetimes.
+
+Pre-deployment snapshot coverage spans 1,780 tokens, median 13 snapshots/token.
+Across all chains, median sampling gap was 981s and 18,591/34,080 gaps exceeded 900s.
+For Solana alone, median gap was 649s, but **10,995/24,214 gaps (45.4%)** exceeded
+900s; p95 was 4,200s. A 1,800s low-watch target itself exceeds the history gap limit.
+The 150s high-watch target is also bounded by the 300s main scan cadence.
+
+Among 19,873 evaluations with saved presentations, baseline readiness was 15.52%.
+Mature discovery candidates were 53.20% ready (2,376/4,466), new candidates 1.21%
+(74/6,094), and watchlist-only candidates 6.82% (635/9,313). Current Custom r7 was
+16.37% ready (1,141/6,972). Maturity uses first retained snapshot as an explicitly
+imperfect proxy for first discovery. Global 5m volume/TX availability was 60.81%,
+substantially higher than readiness: valid contiguous history, not merely one known
+5m field, is the stronger requirement. The evidence implicates pacing, scheduling,
+churn and budget selection; it does not justify changing history rules blindly.
+
+## Sequential funnel and conditional structure
+
+A complete legacy intersection funnel cannot be reconstructed from marginal counts.
+The new traces produce the following **baseline-ready path**, pooled only over three
+completed scans with the same current configuration. Ranking and watchlist funnels
+are also emitted separately in the private JSON.
+
+| Stage | Count | From previous stage | From candidate universe |
+|---|---|---|---|
+| candidate | 404 | 100.00% | 100.00% |
+| prefilter_pass | 333 | 82.43% | 82.43% |
+| market_enriched | 120 | 36.04% | 29.70% |
+| market_pass | 38 | 31.67% | 9.41% |
+| baseline_ready | 27 | 71.05% | 6.68% |
+| activity_trigger | 5 | 18.52% | 1.24% |
+| structure_available | 5 | 100.00% | 1.24% |
+| base_detected | 0 | 0.00% | 0.00% |
+| eligible | 0 | unknown | 0.00% |
+| potential_alert | 0 | unknown | 0.00% |
+| alerted | 0 | unknown | 0.00% |
+
+Security is a conditional branch after the optimistic score reaches seriousness;
+it was 0/0 expected recipients in these three scans, not 0% coverage. Activity can
+also arise without a multi-observation baseline; the artifact records that branch
+separately. This small prospective path does not reconstruct older unobserved tokens.
+
+Pre-deployment structure was available for 761/19,873 presentations (3.83%) globally,
+but for **731/750 inferred eligible recipients (97.47%)**. Global low coverage mostly
+reflects deliberate activity/market gating. Bases existed in 92/761 available structures;
+HL/HH/breakout appeared in 27/17/14 of those 92, respectively. Same-evaluation
+breakout+retest count was zero; retest can follow a prior-bar breakout, so this is not
+a longitudinal failure rate. Nineteen expected recipients lacked structure; API versus
+empty-cache/data reasons are not recoverable individually from legacy marginals.
+
+Closed hourly candles are deduplicated, gap-checked and evaluated only after market
+and activity gates. Fewer than six contiguous closed bars gives unavailable structure;
+latest-bar age limit is 7,200s and suffix gap limit 5,400s. Future/incomplete bars are
+excluded. Activity-first gating may recognize an already mature Setup late, but the
+existing data cannot prove this causes missed winners. Shadow proactive structure
+sampling is an experiment, not an applied change.
+
+## Configuration cohorts and signal quality
+
+Cohorts separate preset, revision, score version and a settings fingerprint. Two
+Broad r5 legacy fingerprints differ, so revision alone would merge incompatible
+configurations. Missing dimensions/version stay LEGACY and are never zero-filled.
+
+| Preset / revision / score version / fingerprint | Evaluations | Eligible observations | Sent alerts |
+|---|---|---|---|
+| UNKNOWN / None / LEGACY / 44136fa355b3678a | 11,575 | 15 | 6 |
+| Broad / 5 / LEGACY / ef52ce23a787e9c2 | 1,109 | 6 | 1 |
+| Broad / 5 / LEGACY / d996d03cec74a8c7 | 344 | 3 | 1 |
+| Broad / 5 / setup-trigger-confirmation-v1 / dd954079fdb66dbb | 11,448 | 34 | 0 |
+| Custom / 7 / setup-trigger-confirmation-v1 / 16e5c72dff197b91 | 7,273 | 40 | 1 |
+
+All nine sent alerts are listed below. Contract addresses, checkpoint timestamps,
+stored prices, sparse paths and sample gaps are in the private JSON. The first six
+have no retained original price, so even collected later prices cannot establish
+returns. Historical non-Solana alerts remain historical; no additional chain was enabled.
+
+| Alert | Time UTC | Score | Setup/Trigger/Confirm | Stage | +1h | +6h | +24h | +72h |
+|---|---|---|---|---|---|---|---|---|
+| 1: Legacy Robinhood #1 | 10-06 18:19:13 UTC | 75 | unknown/unknown/unknown | LEGACY | unknown | unknown | unknown | unknown |
+| 2: Legacy Robinhood #2 | 10-07 05:22:36 UTC | 70 | unknown/unknown/unknown | LEGACY | unknown | unknown | unknown | unknown |
+| 3: Legacy Robinhood #3 | 10-07 05:33:24 UTC | 80 | unknown/unknown/unknown | LEGACY | unknown | unknown | unknown | unknown |
+| 4: Legacy Solana #4 | 10-07 10:04:00 UTC | 60 | unknown/unknown/unknown | LEGACY | unknown | unknown | unknown | unknown |
+| 5: Legacy Solana #5 | 10-07 11:46:47 UTC | 80 | unknown/unknown/unknown | LEGACY | unknown | unknown | unknown | unknown |
+| 6: Legacy Solana #6 | 10-07 14:19:22 UTC | 60 | unknown/unknown/unknown | LEGACY | unknown | unknown | unknown | unknown |
+| 7: PAID | 10-07 15:11:11 UTC | 75 | unknown/unknown/unknown | REVIVING | 0.87% | -6.27% | unknown | unknown |
+| 8: e/acc | 10-07 15:30:47 UTC | 70 | unknown/unknown/unknown | REVIVING | -1.97% | 2.98% | unknown | unknown |
+| 9: EMBER | 10-08 09:12:24 UTC | 60 | 76/50/75 | EARLY_REVIVAL | 15.97% | unknown | unknown | unknown |
+
+EMBER is the only sent alert with the current dimensional score version: Custom r7,
+score 60, dimensions 76/50/75, 12h base, HL/HH/breakout true, retest false, $419k
+liquidity, $13.9k 5m volume and 109 5m transactions at alert time. Its +1h price return
+was +15.97%. Sampled 1h MFE was +28.91%, MAE 0% including entry price, and the first
+sample at +25% occurred after 1,800s. Its +6h was not due at the final cutoff.
+Neither absolute activity nor one favorable return validates a trading strategy.
+
+PAID's sampled 6h MFE/MAE were +1.65%/−6.55%; e/acc's were +3.24%/−5.27%.
+PAID had a 9h base with no confirmed HL/HH/breakout/retest, but legacy dimensional
+scores are unknown. Comparing these two legacy alerts with EMBER cannot validate
+Confirmation weights or explain winners versus losers statistically.
+
+**INSUFFICIENT SAMPLE.** No current-version alert has a mature 24h price return.
+Legacy matured 24h checkpoints with missing entry prices remain unknown. The
++24h false-positive study therefore has no usable positive/negative classification;
+a returned count of zero is not a 0% false-positive rate. No precision, win rate,
+expected return, profitability or statistical edge is claimed.
+
+Outcome checkpoints select the first usable price/cap in the one-hour grace window
+and are immutable. A cap-only checkpoint can prevent subsequent price recovery.
+Only enabled chains are polled; disabled historical chains are not silently revived.
+MFE includes zero return at entry, remains unknown without follow-up prices, and is
+a lower bound from sparse sampling. MAE is an upper bound. Entry/terminal sample gaps
+are recorded. These are observed price changes, not returns after fees/slippage/fills.
+
+## Near misses and calibration
+
+The near-miss anchor is the first rejected score ≥50 per token/config cohort.
+Of 34 anchors, 24 legacy-unidentified anchors lack price context. There are 30 anchors
+in 50–59, four in 60–64, and none in 65–69/70–74/75+. No sampled mature 24h MFE exceeded
++50%, but only two anchors had a usable mature 24h excursion path and no terminal
++24h returns were available. This cannot establish that no future winner was rejected.
+The two current Custom r7 near misses both scored 50–59: median +1h −9.97% (N=2),
++6h +9.52% (N=1), +24h unavailable. Blockers overlap; budget-only deferred candidates
+have neither counterfactual score nor reliable future price path.
+
+First-universe evaluation anchors mostly score 0–39. Using only those anchors would
+exclude later high-score observations. A second descriptive study uses first entry
+per token/cohort/dimension/band, allowing dependent appearances in multiple bands.
+The complete dimensional tables include outcome N, MFE/MAE, missingness and horizons
+in the artifact. Selected overall band results are:
+
+| Cohort | Band | Token entries | 1h N | 1h median | 6h N | 6h median | 24h N |
+|---|---|---|---|---|---|---|---|
+| Broad r5 | 40-49 | 5 | 5 | 8.38% | 5 | -10.37% | 0 |
+| Custom r7 | 40-49 | 7 | 6 | -7.66% | 2 | -21.15% | 0 |
+| Custom r7 | 50-59 | 2 | 2 | -9.97% | 1 | 9.52% | 0 |
+| Custom r7 | 60-69 | 1 | 1 | 15.97% | 0 | unknown | 0 |
+
+There are no current-version overall score 70+ band entries. Higher Setup/Trigger/
+Confirmation bins have very few independently sampled tokens. Low-score rows also
+include cheap rejects whose missing optional features were never fetched. Bucket
+entry times differ and collection is score-dependent; observed medians cannot isolate
+component effects. No weight or threshold optimization is supported.
+Absolute TX/volume floors and positive-baseline guards are useful for mathematical
+correctness. Their predictive value, and that of Hot Search, concentration, base,
+HL/HH/breakout or dimensional allocations, remain unproven.
+
+## On-chain/security data and market regime
+
+This is an audit of the bot's stored GMGN-provided market/on-chain measurements;
+it is not an independent historical RPC reconstruction of token holders or sellability.
+Among pre-deployment saved presentations: top10 and sniper ratios were 100% populated,
+dev ratio 60.81%, bundler ratio 53.14%, explicit dangerous flag 54.91%, insider
+holdings **0%**. Populated summary fields do not mean the security endpoint was called
+for every token or certify a token is safe. Optional API failures and 30-minute
+security caching can leave unknown/stale fields; known danger is not cleared by a
+cached safe result. Budget-deferred security suppresses alerts, while nullable
+security on optional request failure follows the existing policy.
+
+The provider's [official token field reference](https://github.com/GMGNAI/gmgn-skills/blob/main/skills/gmgn-token/SKILL.md)
+defines `suspected_insider_hold_rate` as holdings; `rat_trader_amount_rate` is trading
+volume and must not replace it. Missing insider holdings is unknown, not zero.
+An insider penalty that lacks input cannot be evaluated for predictive usefulness.
+The user-facing missing-field warning remains suppressed as designed; coverage is
+visible in research diagnostics. Current API responses cannot reconstruct past
+ownership/security or ATH availability for a faithful backtest.
+
+There is under 48h of retained market observation history, so 3-day and 7-day windows
+contain the same observations. The pre-deployment nested collected-universe medians
+for today were $0 5m volume, $638 1h volume, $7,324 liquidity, 0 5m TX and 17 1h TX;
+for both longer windows they were $65, $12,826, $11,235, 3 and 152. Those are selected,
+all-chain observation mixes with structural zero/default ambiguity, not an independent
+Solana market sample. No HIGH_ACTIVITY/LOW_LIQUIDITY/CHOPPY regime label is justified.
+Solana-only gaps were separately measured; future regime work must also hold chain,
+collection cohort, token survival and liquidity selection constant.
+
+## Changes applied and remaining work
+
+Deployed: historical outcome cutoff correction; reachable short-base blocker;
+per-candidate stage/deferral trace; fixed-label operation/HTTP/retry/normalization
+telemetry; partial interrupted-scan measurements. No schema migration was needed.
+Audit tools now also distinguish completion counters from errors, distinguish alert
+from GMGN cooldown, include entry in excursion bounds, record path-edge gaps and
+measure later score-band entries. The corrected tools ran directly on the VPS.
+
+| Priority | Next action | Evidence / constraint |
+|---|---|---|
+| P1 | Collect/archive candidate and outcome measurements before seven-day pruning | Legacy streaks/expired lifetimes irrecoverable; prospective window currently short |
+| P1 | Design research archive/storage budget | Snapshots grow without pruning; state/presentations dominate current file |
+| P2 | Shadow-test aging across source tiers and independent outcome reservation | Every observed stable scan exhausted market budget; do not tune live strategy from this alone |
+| P2 | Resolve late/cap-only outcome semantics with explicit missingness | Six missing entry prices and short/missing paths prevent performance validation |
+| P3 | Shadow proactive Setup sampling | 97.5% conditional structure availability; timing benefit unproven |
+| P3 | Walk-forward threshold/weight comparison with matched controls | One current-version alert, dependent bucket entries and endogenous collection |
+| No action | VPS upgrade or automatic threshold relaxation | Resource pressure absent; predictive evidence insufficient |
+
+Top technical risks: cross-tier starvation, shared outcome budget, diagnostic/candle
+history loss, legacy error underclassification, and per-field observation provenance.
+Top quantitative risks: tiny current signal N, endogenous selection, sparse path
+censoring, repeated-token/config dependence, and unmodeled execution/regime costs.
+Backtest readiness remains **PARTIAL**; see [backtest-readiness.md](backtest-readiness.md).
+Database findings and storage checks: [database-audit.md](database-audit.md).
+Checks and deployment rollback: [validation.md](validation.md).
+Access/backup method: [production-access.md](production-access.md).

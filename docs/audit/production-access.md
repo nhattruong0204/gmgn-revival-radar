@@ -2,9 +2,11 @@
 
 Target explicitly authorized: `root@130.94.7.127`. Normal SSH host-key verification
 stays enabled. Verify a first-use fingerprint yourself before accepting it; stop on
-any mismatch and do not delete known_hosts entries automatically. Passwords belong
-only in your local terminal's SSH prompt. This audit runtime could reach the host
-but cannot provide private password entry; no insecure workaround was used.
+any mismatch and do not delete known_hosts entries automatically. The user subsequently authorized reading the saved VPS credentials from the local
+`.env` and performing deployment. Authentication used OpenSSH's private askpass
+pipe with `StrictHostKeyChecking=yes`; the password remained in memory and was never
+passed in argv, printed, copied to the VPS, or stored in a new file. The initial
+read-only restriction was superseded for the explicitly requested deployment.
 
 The standalone exporter needs Python 3 on the VPS host and access to the existing
 Docker container. It imports the *installed* application configuration inside the
@@ -43,7 +45,7 @@ The archive contains **only**:
 - `container_inventory.json` (allowlisted image/state/mount/resource/log fields,
   environment-variable names only, no argument lists);
 - `vps_inventory.json` (bounded CPU/memory/disk/uptime/process executable/resource data);
-- `production_logs_summary.json` (up to 72h/100k lines/16MB, recognized event fields
+- `production_logs_summary.json` (up to the requested 1–168h/100k lines/16MB, recognized event fields
   only, with truncation and attribution limitations).
 
 The archive and generated analysis are mode 0600. Known Docker credential values
@@ -75,6 +77,9 @@ observation. Use `--until` and `--since` UTC epochs for exact UI window comparis
 The CLI uses standard-library Python only and does not read `.env` or modify source
 schema/history. All `data/audit/` files are already protected by `.gitignore`.
 
-Bring the private bundle into this workspace to complete production measurements.
+The audit was completed on the VPS and independently reproduced in this workspace.
+Final private evidence is under `data/audit/final/`; the final VPS-generated result is
+`data/audit/vps_latest_audit.json`. Deployment verification is described in
+[validation.md](validation.md). Future exports use the same read-only workflow.
 Do not upload it to GitHub, a public Site, or commit it. Only reviewed aggregate
 findings belong in `docs/audit/`.

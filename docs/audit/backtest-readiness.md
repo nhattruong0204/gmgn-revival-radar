@@ -2,8 +2,10 @@
 
 **Current assessment: PARTIAL.** The repo has offline fixtures and captured-response
 benchmarks, not an exact historical full-universe trading replay engine. The new
-read-only audit CLI is descriptive research, not a backtest. Production retention
-and actual historical data availability remain unverified.
+read-only audit CLI is descriptive research, not a backtest. Production retention and availability were verified against the VPS backups: about
+45h of market observations, 395 retained scans, 31,749 evaluations, nine sent alerts
+and eleven stored checkpoints. Six alert entry prices are absent; only one alert
+has current dimensional scores. This remains insufficient for exact historical replay.
 
 | Input | Can reconstruct now? | Limitation |
 |---|---|---|
@@ -68,7 +70,7 @@ Keep backfill origin and acquisition time separate from originally observed data
    fees/slippage assumptions and coverage losses. Precision requires a predeclared
    success label/horizon and denominator, not just positive-return counts.
 
-Four alerts cannot tune weights or certify edge. Thirty is only a descriptive
+One current-version alert, amid nine mixed historical alerts, cannot tune weights or certify edge. Thirty is only a descriptive
 sample-size flag in the audit tool, not a statistical sufficiency test. Effective N
 can be far lower than row count because horizons and repeated tokens overlap.
 
@@ -86,4 +88,4 @@ The current pruning deletes evaluations, scan config/presentation/metrics after 
 days; current snapshots and alerts/outcomes are not pruned. Cache rows overwrite
 historical candles/security; watch-state pruning removes expired diagnostic lifetimes.
 Do not silently extend SQLite forever or alter production retention now. Measure
-storage growth, choose an archive budget, then seek approval for production changes.
+storage growth, choose an archive budget, then review the concrete retention change within the authorized production scope.
