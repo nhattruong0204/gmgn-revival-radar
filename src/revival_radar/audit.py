@@ -136,7 +136,10 @@ def sequential_funnel(traces):
 
 
 def sampled_outcome(points, timestamp, initial, until):
-    """First post-horizon price in +1h grace; excursions over sampled prices only."""
+    """First price in +1h grace; sampled excursions include the entry's zero return.
+
+    A path with no follow-up points remains unknown, rather than zero excursion.
+    """
     points = sorted((t, p) for t, p in points if finite(t) and finite(p) and p >= 0 and t <= until)
     valid_initial = finite(initial) and initial > 0
     times = [t for t, _ in points]
@@ -165,8 +168,16 @@ def sampled_outcome(points, timestamp, initial, until):
             "max_sample_gap_seconds": max(
                 (b[0] - a[0] for a, b in zip(returns, returns[1:], strict=False)), default=None
             ),
-            "sampled_mfe_pct": max((v for _, v in returns), default=None) if completed else None,
-            "sampled_mae_pct": min((v for _, v in returns), default=None) if completed else None,
+            "entry_to_first_sample_seconds": returns[0][0] - timestamp if returns else None,
+            "last_sample_to_horizon_seconds": due - returns[-1][0]
+            if completed and returns
+            else None,
+            "sampled_mfe_pct": max(0.0, max(v for _, v in returns))
+            if completed and returns
+            else None,
+            "sampled_mae_pct": min(0.0, min(v for _, v in returns))
+            if completed and returns
+            else None,
             "time_to_25pct_seconds": next((t - timestamp for t, v in returns if v >= 25), None),
         }
     return result
@@ -687,6 +698,7 @@ def analyze(database, *, since=None, until=None, source="research", timezone="As
                 sent_signals.append(record)
         anchors = {}
         near_anchors = {}
+        band_entries = {}
         for e in evaluations:
             token, signal = payloads[e["id"]].get("token", {}), payloads[e["id"]].get("signal", {})
             identity = (e["cohort"], e["chain"], e["contract_address"])
@@ -713,6 +725,13 @@ def analyze(database, *, since=None, until=None, source="research", timezone="As
                 ),
             }
             anchors.setdefault(identity, record)
+            for dimension in DIMENSIONS:
+                value = record.get(dimension)
+                bands = OVERALL_BANDS if dimension == "score" else DIMENSION_BANDS
+                if finite(value):
+                    label = next((f"{lo}-{hi}" for lo, hi in bands if lo <= value <= hi), None)
+                    if label is not None:
+                        band_entries.setdefault((*identity, dimension, label), record)
             if e["score"] >= 50 and (
                 not e["eligible"] or "score_below_threshold" in record["blockers"]
             ):
@@ -890,6 +909,9 @@ def analyze(database, *, since=None, until=None, source="research", timezone="As
                 )["mean"],
                 "unique_discovered": len(keys24),
                 "evaluations": len(own24),
+                "core_checks_passed_evaluations": sum(bool(e["eligible"]) for e in own24),
+                "core_checks_note": "Telegram Core checks passed counts full eligibility; "
+                "market-only passes exclude neither no_base nor no_returning_activity.",
                 "market_core_pass_evaluations": sum(
                     not any(": " in str(r) for r in decoded(e["rejection_reasons"], []))
                     for e in own24
@@ -980,6 +1002,32 @@ def analyze(database, *, since=None, until=None, source="research", timezone="As
                 "records": bad_signals,
             },
             "score_calibration": calibration,
+            "score_band_entry_calibration": {
+                str(key): {
+                    dimension: {
+                        f"{lo}-{hi}": performance_summary(
+                            [
+                                record
+                                for (
+                                    *identity,
+                                    own_dimension,
+                                    label,
+                                ), record in band_entries.items()
+                                if identity[0] == key
+                                and own_dimension == dimension
+                                and label == f"{lo}-{hi}"
+                            ]
+                        )
+                        for lo, hi in (OVERALL_BANDS if dimension == "score" else DIMENSION_BANDS)
+                    }
+                    for dimension in DIMENSIONS
+                }
+                for key in groups
+            },
+            "score_band_entry_note": "First retained evaluation per token/cohort/dimension/band. "
+            "Tokens can appear in multiple bands; comparisons are dependent and descriptive. "
+            "Unlike first-universe anchors, this includes later high-score observations. "
+            "Collection and outcome coverage remain endogenous; no tuning or causal claims.",
             "baseline_universe": performance_summary(list(anchors.values())),
             "baseline_note": "First evaluation per token/cohort, includes selected and "
             "unselected tokens; "

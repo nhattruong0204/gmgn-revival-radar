@@ -97,6 +97,18 @@ def test_sampled_paths_horizons_censoring_and_asof():
     assert sampled_outcome([(3601, 2)], 0, 1, 3600)["1"]["return_pct"] is None
 
 
+def test_sampled_excursions_include_entry_and_reveal_edge_gaps():
+    falling = sampled_outcome([(1800, 0.8)], 0, 1, 3600)["1"]
+    assert falling["sampled_mfe_pct"] == 0
+    assert falling["sampled_mae_pct"] == pytest.approx(-20)
+    assert falling["entry_to_first_sample_seconds"] == 1800
+    assert falling["last_sample_to_horizon_seconds"] == 1800
+    rising = sampled_outcome([(3600, 1.2)], 0, 1, 3600)["1"]
+    assert rising["sampled_mae_pct"] == 0
+    empty = sampled_outcome([], 0, 1, 3600)["1"]
+    assert empty["sampled_mfe_pct"] is None and empty["sampled_mae_pct"] is None
+
+
 def test_empty_report_explicitly_insufficient():
     report = performance_summary([])
     assert report["evidence"] == "INSUFFICIENT SAMPLE"
@@ -265,6 +277,36 @@ def test_audit_readonly_integrity_cohort_isolation_and_no_secrets(config, repo, 
     assert report["signal_quality"]["evidence"] == "INSUFFICIENT SAMPLE"
 
 
+def test_score_band_entries_capture_later_signal_once_per_token(config, repo, token):
+    context = configuration_context(config, 7)
+    for offset, score in ((0, 10), (100, 65), (200, 66)):
+        observation = changed(token, timestamp=token.timestamp + offset)
+        scan = repo.begin_scan(observation.timestamp, context)
+        repo.record_evaluation(
+            scan,
+            observation,
+            RevivalResult(
+                score=score,
+                status="WATCH",
+                eligible=False,
+                setup_score=50,
+                trigger_score=50,
+                confirmation_score=50,
+                score_version="v1",
+            ),
+            config,
+            context,
+        )
+    path = Path(repo.db.execute("PRAGMA database_list").fetchone()["file"])
+    report = analyze(path, until=token.timestamp + 1000)
+    universe = next(iter(report["score_calibration"].values()))["score"]
+    bands = next(iter(report["score_band_entry_calibration"].values()))["score"]
+    assert universe["60-69"]["n"] == 0
+    assert bands["60-69"]["n"] == 1
+    assert bands["0-39"]["n"] == 1
+    assert report["ui_reconciliation_24h"]["core_checks_passed_evaluations"] == 0
+
+
 def test_audit_no_implicit_migration(tmp_path):
     path = tmp_path / "legacy.db"
     with sqlite3.connect(path) as db:
@@ -318,6 +360,20 @@ def test_export_log_allowlist_does_not_retain_tokens_or_urls():
     assert event["category"] == "other_unclassified"
     assert "SECRET" not in json.dumps(event)
     assert module.log_event("2026-10-08T10:00:00Z INFO SECRET TOKEN") is None
+    clean = module.log_event("2026-10-08T10:00:00Z INFO scan complete processed=40 errors=0 sent=0")
+    assert clean["category"] is None and clean["errors"] == 0
+    failure = module.log_event(
+        "2026-10-08T10:00:00Z WARNING discovery failed error=DataSourceError"
+    )
+    assert failure["category"] == "other_unclassified"
+    assert (
+        module.log_event("2026-10-08T10:00:00Z INFO alert cooldown chain=sol")["category"]
+        == "alert_cooldown"
+    )
+    assert (
+        module.log_event("2026-10-08T10:00:00Z WARNING GMGN cooldown")["category"]
+        == "gmgn_cooldown"
+    )
     done = module.log_event(
         "2026-10-08T10:00:00Z INFO scan complete processed=4 errors=2 duration_seconds=75.1"
     )

@@ -103,7 +103,8 @@ def log_event(line):
     for needle, label in (
         ("rate_limited", "gmgn_429"),
         ("http=429", "gmgn_429"),
-        ("cooldown", "gmgn_cooldown"),
+        ("alert cooldown", "alert_cooldown"),
+        ("gmgn cooldown", "gmgn_cooldown"),
         ("timeout", "gmgn_timeout"),
         ("database is locked", "sqlite_locked"),
         ("sqlite", "sqlite"),
@@ -119,7 +120,7 @@ def log_event(line):
         category = "gmgn_5xx"
     if category is None and "telegram" in text and any(x in text for x in ("failed", "error")):
         category = "telegram"
-    if category is None and any(x in text for x in (" failed", " error", "warning")):
+    if category is None and re.search(r"\b(?:failed|error|warning)\b", text):
         category = "other_unclassified"
     complete = "scan complete processed=" in line
     if not category and not complete and "scan configuration revision=" not in line:
