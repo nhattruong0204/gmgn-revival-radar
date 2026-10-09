@@ -17,7 +17,7 @@ from revival_radar.clients.normalization import (
     security_from,
 )
 from revival_radar.config import Settings
-from revival_radar.metrics import ScanMetrics
+from revival_radar.metrics import ScanMetrics, error_category
 from revival_radar.models.token import Candle, TokenSnapshot
 
 log = logging.getLogger(__name__)
@@ -67,6 +67,7 @@ class GMGNClient:
         async with self._lock:
             for attempt in range(self.config.http_attempts):
                 if time.time() < self._blocked_until:
+                    self.metrics.http_errors[f"{path}:gmgn_cooldown"] += 1
                     raise DataSourceError(
                         f"GMGN cooldown until {int(self._blocked_until)} UTC epoch"
                     )
@@ -91,12 +92,14 @@ class GMGNClient:
                         timeout=self.config.http_timeout_seconds,
                     )
                 except httpx.TransportError as exc:
+                    self.metrics.http_errors[f"{path}:{error_category(exc)}"] += 1
                     if attempt + 1 == self.config.http_attempts:
                         raise DataSourceError(
                             f"GMGN transport failure ({type(exc).__name__})"
                         ) from None
                     await asyncio.sleep(min(2**attempt, self.config.retry_max_wait_seconds))
                     continue
+                self.metrics.http_statuses[f"{path}:{response.status_code}"] += 1
                 try:
                     payload = response.json()
                 except ValueError:
@@ -105,6 +108,7 @@ class GMGNClient:
                     payload = {}
                 rate_limited = response.status_code == 429 or payload.get("code") in (429, "429")
                 if rate_limited:
+                    self.metrics.http_errors[f"{path}:gmgn_429"] += 1
                     delay = retry_delay(response, payload, time.time())
                     self._blocked_until = time.time() + delay
                     log.warning("gmgn rate_limited retry_in=%.1f", delay)
@@ -116,6 +120,7 @@ class GMGNClient:
                     await asyncio.sleep(delay)
                     continue
                 if response.status_code in (500, 502, 503, 504):
+                    self.metrics.http_errors[f"{path}:gmgn_5xx"] += 1
                     delay = max(2**attempt, retry_delay(response, payload, time.time()))
                     if delay > self.config.retry_max_wait_seconds:
                         self._blocked_until = time.time() + delay
@@ -131,6 +136,8 @@ class GMGNClient:
                         if data["code"] not in (0, "0"):
                             raise DataSourceError(f"GMGN upstream error route={path}")
                         data = data["data"]
+                    if attempt:
+                        self.metrics.recovered_requests[path] += 1
                     return data
                 raise DataSourceError(
                     f"GMGN request failed HTTP={response.status_code} route={path}"
@@ -170,6 +177,7 @@ class GMGNClient:
                     ranked_token(row, chain, source, rank, self.config.discovery_interval, now)
                 )
             except (ValidationError, ValueError, TypeError):
+                self.metrics.error("normalization", ValueError("token normalization"))
                 log.warning("malformed token chain=%s source=%s rank=%d", chain, source, rank)
         log.info("scanning chain=%s source=%s count=%d", chain, source, len(result))
         return result
