@@ -88,6 +88,33 @@ but does not guarantee freedom from GMGN rate limits. Set
 Alert weights and thresholds are preserved, so current Trending/both-source bonuses
 are no longer earned by live candidates.
 
+## Optional Helius Solana verification
+
+Set `HELIUS_API_TOKEN` in your private `.env` and restart to enable independent
+Solana mint checks. `HELIUS_ENABLED=false` disables them. The token is never shown
+in Telegram, saved configuration context, or logs. The offline demo disables Helius.
+
+For market-qualified Solana candidates, the bot reads a confirmed, parsed mint
+account from Helius RPC and stores its authorities, total supply, decimals, token
+program, extension names, observation time, and slot in the existing SQLite payload.
+An active mint or freeze authority blocks an alert. Revoked authorities preserve
+other known GMGN risk findings. Conflicting authority reports are labeled, and the
+on-chain authority values take priority. Total mint supply is retained as evidence;
+market cap continues to use GMGN circulating supply and fresh price data.
+
+Checks use a separate 15-minute persistent cache, up to 20 new mint checks per scan,
+and at most 15 seconds of cumulative Helius request time. Helius has independent
+pacing, bounded retries, and cooldowns for authentication, rate, and outage failures.
+Unavailable, malformed, or deferred checks remain explicitly unverified while the
+bot continues its existing GMGN alert rules and market-history collection. No Helius
+failure is treated as successful verification. Token-2022 extensions are recorded
+and flagged as unassessed; revoked mint/freeze authority is not a complete risk audit.
+
+`/health` → Performance shows Helius attempts, time, cache use and failures. Alert
+details retain the original mint evidence. See [Helius integration](docs/helius.md)
+for settings, data boundaries, and verification details. This addition does not
+replace GMGN volume, transaction windows, liquidity, prices, rankings, or candles.
+
 ## Telegram setup
 
 The owner-only **/menu** opens Status, Strategy, Health, Settings, Near Misses,

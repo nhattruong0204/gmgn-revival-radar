@@ -6,6 +6,14 @@ from revival_radar.runtime_settings import ALLOWED_SETTINGS, PRESETS
 PERFORMANCE_SETTINGS = frozenset(
     {
         "trending_discovery_enabled",
+        "helius_enabled",
+        "helius_cache_ttl_seconds",
+        "max_helius_verify_per_scan",
+        "helius_scan_budget_seconds",
+        "helius_request_spacing_seconds",
+        "helius_http_timeout_seconds",
+        "helius_http_attempts",
+        "helius_retry_max_wait_seconds",
         "security_cache_ttl_seconds",
         "kline_cache_ttl_seconds",
         "max_market_enrich_per_scan",
@@ -53,6 +61,14 @@ def configuration_context(config: Settings, revision: int = 0, overrides: int = 
         "preset": preset,
         "revision": revision,
         "overrides": overrides,
+        "providers": {
+            "market": "gmgn",
+            "solana_mint": (
+                "helius"
+                if config.helius_enabled and config.helius_api_token.get_secret_value()
+                else "disabled"
+            ),
+        },
         "settings": {
             key: values[key]
             for key in sorted(ALLOWED_SETTINGS | PERFORMANCE_SETTINGS | SCORING_SETTINGS)

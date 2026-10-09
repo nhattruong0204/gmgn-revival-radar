@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
-from revival_radar.clients.gmgn import GMGNClient
+from revival_radar.clients.providers import HybridDataSource
 from revival_radar.clients.telegram import TelegramClient
 from revival_radar.config import Settings
 from revival_radar.config_context import configuration_context
@@ -75,7 +75,7 @@ async def run_service(runtime: RuntimeSettings, repo: Repository, http: httpx.As
         schedule_provider=lambda: dict(schedule),
     )
     tasks: list[asyncio.Task] = []
-    source = GMGNClient(runtime.effective(), http)
+    source = HybridDataSource(runtime.effective(), http)
 
     async def summaries() -> None:
         while True:

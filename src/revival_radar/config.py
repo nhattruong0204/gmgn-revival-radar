@@ -45,6 +45,15 @@ class Settings(BaseSettings):
         env_file=".env", env_nested_delimiter="__", extra="ignore", allow_inf_nan=False
     )
     gmgn_api_key: SecretStr = SecretStr("")
+    helius_api_token: SecretStr = SecretStr("")
+    helius_enabled: bool = True
+    helius_cache_ttl_seconds: float = Field(default=900, ge=0, allow_inf_nan=False)
+    max_helius_verify_per_scan: int = Field(default=20, ge=0, le=100)
+    helius_scan_budget_seconds: Positive = 15
+    helius_request_spacing_seconds: Positive = 0.12
+    helius_http_timeout_seconds: Positive = 10
+    helius_http_attempts: int = Field(default=2, ge=1, le=3)
+    helius_retry_max_wait_seconds: Positive = 2
     telegram_bot_token: SecretStr = SecretStr("")
     telegram_chat_id: str = ""
     telegram_owner_id: int = Field(default=0, ge=0)
