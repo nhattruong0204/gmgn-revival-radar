@@ -1,6 +1,6 @@
 # GMGN Revival Radar
 
-A small Python 3.12 scanner that watches **GMGN Hot Searches and Trending**, stores
+A small Python 3.12 scanner that watches **GMGN Hot Searches**, stores
 SQLite snapshots, and alerts on previously dumped tokens showing a base and returning
 volume/transactions. No frontend, broker, wallet, or trading system.
 
@@ -23,6 +23,7 @@ The demo needs no credentials or Internet. It runs three synthetic scenarios thr
 the real analysis, scanner, SQLite, and alert formatting code. Expected results:
 REVIVE **90**, DEAD **0**, PUMPED **39**; one potential alert, **zero messages sent**.
 Demo always forces dry-run and uses `data/demo.db`, separate from the live database.
+The synthetic demo includes both discovery sources to preserve its reference scores.
 Fixture addresses are illustrative; the synthetic numbers are not real market claims.
 
 Fill in `.env` securely, then:
@@ -53,7 +54,7 @@ The async `httpx` adapter calls the official Agent OpenAPI host
 | Purpose | Method and path | Official CLI equivalent |
 |---|---|---|
 | Hot Searches | `POST /v1/market/hot_searches` | `gmgn-cli market hot-searches` |
-| Trending | `GET /v1/market/rank` | `gmgn-cli market trending` |
+| Trending (disabled by default) | `GET /v1/market/rank` | `gmgn-cli market trending` |
 | Market/holder/activity data | `GET /v1/token/info` | `gmgn-cli token info` |
 | Security/concentration | `GET /v1/token/security` | `gmgn-cli token security` |
 | Hourly OHLC candles | `GET /v1/market/token_kline` | `gmgn-cli market kline` |
@@ -75,6 +76,17 @@ opts into two chains. Discovery windows are
 `1m,5m,1h,6h,24h` via `DISCOVERY_INTERVAL`; token info supplies those metric windows
 when available. Base analysis deliberately uses **closed 1h candles**, up to seven days.
 GMGN also documents finer candle resolutions, but those are outside this small V1.
+
+Live scanning and `inspect` use Hot Search only: `TRENDING_DISCOVERY_ENABLED=false`
+is the default. This makes one discovery request per enabled chain per scan, rather
+than two. Previously tracked tokens remain in the normal watchlist until expiry;
+new tokens appearing only on Trending are no longer discovered. Hot Search still
+provides historical ATH market cap. Market, security, and candle request budgets
+remain in effect. Removing Trending reduces discovery load and avoids that endpoint,
+but does not guarantee freedom from GMGN rate limits. Set
+`TRENDING_DISCOVERY_ENABLED=true` in `.env` and restart to explicitly restore it.
+Alert weights and thresholds are preserved, so current Trending/both-source bonuses
+are no longer earned by live candidates.
 
 ## Telegram setup
 

@@ -29,13 +29,19 @@ Read-only routes do not require Ed25519 signing or a wallet private key.
 | Endpoint | Parameters / body | Used for |
 |---|---|---|
 | `POST /v1/market/hot_searches` | `{"params":[{"chain":"sol","interval":"1h","limit":20}]}` | Search-interest discovery/ranks |
-| `GET /v1/market/rank` | `chain,interval,limit` | Trading-activity discovery/ranks |
+| `GET /v1/market/rank` | `chain,interval,limit` | Optional trading-activity discovery/ranks; disabled by default |
 | `GET /v1/token/info` | `chain,address` | Current price, supply, liquidity, holders, activity |
 | `GET /v1/token/security` | `chain,address` | Optional security/supply aggregates |
 | `GET /v1/market/token_kline` | `chain,address,resolution=1h,from,to` | Closed hourly candles |
 
 K-line `from`/`to` are **milliseconds on the HTTP API**. The official CLI accepts
 seconds and multiplies by 1000 before making its request. We do the same conversion.
+
+As of 2026-10-09, live discovery and token inspection use Hot Search only by default.
+`TRENDING_DISCOVERY_ENABLED=true` explicitly restores Trending after a restart.
+Legacy Trending fields remain readable for historical records. Off-list watch tokens
+are refreshed without stale current ranking scores, and the selected discovery mode
+is included in the recorded configuration context.
 
 The official validator and command docs include `sol,bsc,base,robinhood,arc` for
 these operations. Other GMGN-supported chains are deliberately outside this MVP.

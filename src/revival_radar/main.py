@@ -51,7 +51,12 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
         return 0
     if args.command == "demo":
         config = config.model_copy(
-            update={"dry_run": True, "enabled_chains": "sol", "database_path": args.database}
+            update={
+                "dry_run": True,
+                "enabled_chains": "sol",
+                "database_path": args.database,
+                "trending_discovery_enabled": True,
+            }
         )
     if (
         args.command in {"run", "scan-once", "inspect"}
@@ -106,7 +111,7 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
             if args.command == "inspect":
                 seed = TokenSnapshot(chain=args.chain, contract_address=args.contract)
                 # Find current discovery ATH cap if the token is listed; never invent it.
-                for discovery in ("hot_search", "trending"):
+                for discovery in config.discovery_sources:
                     try:
                         matches = await source.discover(args.chain, discovery)
                         match = next((t for t in matches if t.key == seed.key), None)

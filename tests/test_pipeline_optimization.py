@@ -113,7 +113,7 @@ async def test_known_bad_discovery_skips_all_expensive_calls_but_retains_diagnos
 ):
     source = SplitSource(changed(token, market_cap=1000))
     report = await run_scan(config, repo, source)
-    assert source.calls == {"hot_search": 1, "trending": 1}
+    assert source.calls == {"hot_search": 1}
     assert report.processed == 1 and report.errors == 0
     assert report.funnel["sol"]["prefilter_rejected"] == 1
     assert repo.db.execute("SELECT COUNT(*) FROM evaluations").fetchone()[0] == 1
@@ -338,13 +338,17 @@ async def test_real_client_pipeline_skips_security_after_market_filter_failure(
     def handler(request):
         path = request.url.path
         requests.append(path)
+        assert path != "/v1/market/rank", "Trending must not be requested by default"
         assert path != "/v1/token/security" and path != "/v1/market/token_kline"
         return httpx.Response(200, json=responses[path.rsplit("/", 1)[-1]])
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
         client = GMGNClient(config, http)
         report = await Scanner(config, client, repo, TelegramClient(config, http)).scan_once()
-    assert requests == ["/v1/market/hot_searches", "/v1/market/rank", "/v1/token/info"]
+    assert requests == ["/v1/market/hot_searches", "/v1/token/info"]
+    assert report.sources_ok == 1
+    assert report.discovered_by_source == {"sol": {"hot_search": 1}}
+    assert report.source_errors == {"sol": {}}
     assert report.performance["calls"]["/v1/token/info"] == 1
     assert report.performance["calls"]["/v1/token/security"] == 0
     assert report.funnel["sol"]["prefilter_pass"] == 1

@@ -132,6 +132,31 @@ def test_configuration_revision_weights_and_legacy_are_isolated():
     assert cohort(context, signal | {"score_version": "v2"}) != cohort(context, signal)
 
 
+async def test_discovery_flag_is_recorded_and_separates_same_revision_cohorts(config, repo, token):
+    source = SplitSource(changed(token, market_cap=1000))
+    first = await run_scan(config, repo, source)
+    config.trending_discovery_enabled = True
+    source.discovery = changed(source.discovery, timestamp=token.timestamp + 300)
+    second = await run_scan(config, repo, source)
+    contexts = [
+        json.loads(repo.get_state(f"telegram:scan:{report.scan_id}")) for report in (first, second)
+    ]
+    assert [c["settings"]["trending_discovery_enabled"] for c in contexts] == [False, True]
+    assert contexts[0]["revision"] == contexts[1]["revision"]
+    signals = []
+    for report in (first, second):
+        identity = repo.db.execute(
+            "SELECT id FROM evaluations WHERE scan_id=?", (report.scan_id,)
+        ).fetchone()[0]
+        detail = repo.presentation_detail("e", identity)
+        assert detail["configuration"] == contexts[len(signals)]
+        signals.append(detail["signal"])
+    assert cohort(contexts[0], signals[0]) != cohort(contexts[1], signals[1])
+    assert first.discovered_by_source == {"sol": {"hot_search": 1}}
+    assert second.discovered_by_source == {"sol": {"hot_search": 1, "trending": 1}}
+    assert source.calls["hot_search"] == 2 and source.calls["trending"] == 1
+
+
 def test_deferral_age_delay_and_left_censoring():
     traces = [
         {
