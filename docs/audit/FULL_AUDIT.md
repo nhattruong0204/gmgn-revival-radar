@@ -1,5 +1,10 @@
 # Production audit and deployment
 
+Follow-up: the [October 9 production re-audit and exploratory alert plan](ALERT_PLAN_2026-10-09.md)
+uses a fresh VPS backup, explains the subsequent zero-alert window and API cooldowns,
+and compares separate watch notifications against the five-distinct-tickers/day goal.
+The dated measurements below remain the October 8 deployment record.
+
 Audit date: 2026-10-08, UTC+7. Final database cutoff: **2026-10-08 14:48:34 UTC**.
 Overall assessment: **NEEDS ATTENTION for data coverage and research readiness**.
 Production scheduling, persistence and VPS resources are healthy in the measured
