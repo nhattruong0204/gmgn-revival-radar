@@ -10,7 +10,8 @@ from pathlib import Path
 import httpx
 from pydantic import ValidationError
 
-from revival_radar.clients.gmgn import DataSourceError, GMGNClient
+from revival_radar.clients.gmgn import DataSourceError
+from revival_radar.clients.providers import HybridDataSource
 from revival_radar.clients.telegram import TelegramClient, format_alert
 from revival_radar.config import Settings
 from revival_radar.config_context import configuration_context
@@ -56,6 +57,7 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
                 "enabled_chains": "sol",
                 "database_path": args.database,
                 "trending_discovery_enabled": True,
+                "helius_enabled": False,
             }
         )
     if (
@@ -97,7 +99,7 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
                 with scanner_lock(config.database_path):
                     await run_service(runtime, repo, http)
                 return 0
-            source = DemoSource() if args.command == "demo" else GMGNClient(config, http)
+            source = DemoSource() if args.command == "demo" else HybridDataSource(config, http)
             scanner = Scanner(
                 config,
                 source,
