@@ -74,6 +74,7 @@ class Settings(BaseSettings):
     realert_score_increase: int = Field(default=10, ge=1, le=100)
     dry_run: bool = True
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    trending_discovery_enabled: bool = False
     discovery_interval: Literal["1m", "5m", "1h", "6h", "24h"] = "1h"
     discovery_limit: int = Field(default=20, ge=1, le=100)
     watchlist_hours: Positive = 24
@@ -139,6 +140,10 @@ class Settings(BaseSettings):
     @property
     def chains(self) -> list[str]:
         return list(dict.fromkeys(c.strip().lower() for c in self.enabled_chains.split(",")))
+
+    @property
+    def discovery_sources(self) -> tuple[str, ...]:
+        return ("hot_search", "trending") if self.trending_discovery_enabled else ("hot_search",)
 
     @model_validator(mode="after")
     def validate_ranges(self) -> "Settings":

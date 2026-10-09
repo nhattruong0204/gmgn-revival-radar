@@ -302,8 +302,9 @@ def test_env_example_loads_json_scoring_thresholds_without_credentials():
     assert config.min_tx_5m_for_acceleration == 10 and config.chains == ["sol"]
 
 
-async def test_partial_rank_failure_is_unknown_coverage_for_watchlist(
-    config, repo, token, history, candles, monkeypatch
+@pytest.mark.parametrize("discovery_fails", [False, True])
+async def test_hot_search_only_failure_preserves_watchlist_and_marks_unknown_coverage(
+    config, repo, token, history, candles, monkeypatch, discovery_fails
 ):
     monkeypatch.setattr("time.time", lambda: token.timestamp)
     for old in history:
@@ -311,12 +312,24 @@ async def test_partial_rank_failure_is_unknown_coverage_for_watchlist(
 
     class PartialSource(SplitSource):
         async def discover(self, chain, kind):
-            if kind == "trending":
+            self.calls[kind] += 1
+            assert kind == "hot_search", "Disabled Trending is not a fallback source"
+            if discovery_fails:
                 raise ValueError("ranking unavailable")
             return []
 
     source = PartialSource(token, candles=candles)
     report = await run_scan(config, repo, source)
-    assert report.errors == 1 and report.processed == 1
-    assert report.signals[0][1].discovery_context == "RANKING_UNAVAILABLE"
+    assert report.errors == int(discovery_fails) and report.processed == 1
+    assert report.sources_ok == int(not discovery_fails)
+    assert source.calls["hot_search"] == source.calls["market"] == 1
+    assert source.calls["trending"] == 0
+    assert report.source_errors == {"sol": {"hot_search": 1} if discovery_fails else {}}
+    assert report.signals[0][1].discovery_context == (
+        "RANKING_UNAVAILABLE" if discovery_fails else "WATCHLIST_REVIVAL"
+    )
     assert not report.signals[0][0].discovery_source
+    assert ("Current ranking coverage incomplete" in report.signals[0][0].data_warnings) == (
+        discovery_fails
+    )
+    assert repo.watch_priority(token)["last_polled"] == token.timestamp

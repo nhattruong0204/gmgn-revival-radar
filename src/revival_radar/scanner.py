@@ -312,7 +312,7 @@ class Scanner:
         report.funnel[chain] = dict.fromkeys(FUNNEL_STAGES, 0)
         report.discovered_by_source[chain] = {}
         report.source_errors[chain] = {}
-        for source in ("hot_search", "trending"):
+        for source in self.config.discovery_sources:
             try:
                 with self.metrics.measure("discovery"):
                     discovered = await self.source.discover(chain, source)

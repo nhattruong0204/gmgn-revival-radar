@@ -188,6 +188,7 @@ async def test_budget_deferral_cannot_send_unchecked_alert_and_is_due_next_scan(
 async def test_market_budget_is_global_priority_deterministic_and_deferred_rotate(
     config, repo, token
 ):
+    config.trending_discovery_enabled = True  # Exercise the retained optional source tiers.
     config.enabled_chains = "sol,base"
     config.max_market_enrich_per_scan = 1
     a = changed(token, contract_address="A" * 32, discovery_source={"trending"})

@@ -41,6 +41,7 @@ async def test_stale_candles_do_not_trigger_alert(config, repo, token, candles, 
 
 
 async def test_full_dry_run_pipeline(config, repo):
+    config.trending_discovery_enabled = True  # Preserve the two-source synthetic score fixture.
     source = DemoSource()
     for snapshot in source.histories():
         repo.save_snapshot(snapshot)
@@ -60,7 +61,8 @@ async def test_full_dry_run_pipeline(config, repo):
 async def test_chain_source_and_token_failure_isolation(config, repo):
     class BrokenSource(DemoSource):
         async def discover(self, chain, source):
-            if chain == "bsc" or source == "hot_search":
+            assert source == "hot_search"
+            if chain == "bsc":
                 raise DataSourceError("fixture failure")
             return await super().discover(chain, source)
 
@@ -74,10 +76,15 @@ async def test_chain_source_and_token_failure_isolation(config, repo):
         report = await Scanner(
             config, BrokenSource(), repo, TelegramClient(config, http)
         ).scan_once()
-    assert report.processed == 2 and report.errors == 4 and report.sources_ok == 1
+    assert report.processed == 2 and report.errors == 2 and report.sources_ok == 1
+    assert report.discovered_by_source == {"sol": {"hot_search": 3}, "bsc": {}}
+    assert report.source_errors == {"sol": {}, "bsc": {"hot_search": 1}}
 
 
-async def test_disappearing_token_refreshed_without_stale_metrics(config, repo, token):
+@pytest.mark.parametrize("historical_source", ["hot_search", "trending"])
+async def test_disappearing_token_refreshed_without_stale_metrics(
+    config, repo, token, historical_source
+):
     seen = []
 
     class MissingRankSource:
@@ -91,14 +98,16 @@ async def test_disappearing_token_refreshed_without_stale_metrics(config, repo, 
         async def candles(self, seed):
             return []
 
-    repo.save_snapshot(token)
+    repo.save_snapshot(changed(token, discovery_source={historical_source}))
     async with httpx.AsyncClient() as http:
         report = await Scanner(
             config, MissingRankSource(), repo, TelegramClient(config, http)
         ).scan_once()
     assert report.processed == 1
     assert seen[0].volume_5m is None and seen[0].hot_search_rank is None
+    assert seen[0].trending_rank is None and not seen[0].discovery_source
     assert seen[0].ath_market_cap == token.ath_market_cap
+    assert report.signals[0][1].discovery_context == "WATCHLIST_REVIVAL"
     assert not report.signals[0][1].eligible
 
 
@@ -106,6 +115,7 @@ async def test_live_mock_delivery_and_cooldown(config, repo):
     from pydantic import SecretStr
 
     config.dry_run = False
+    config.trending_discovery_enabled = True  # Offline fixture also covers legacy source scores.
     config.telegram_bot_token = SecretStr("fixture-token")
     config.telegram_chat_id = "fixture-chat"
     source = DemoSource()
