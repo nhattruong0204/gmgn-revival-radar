@@ -315,6 +315,27 @@ def test_dimension_validation_runs_once_per_maximum_score_candidate(repo, token,
     assert sorted(calls) == [120, 130]
 
 
+def test_peak_latest_and_counts_without_automatic_cte_indexes(repo, token, config):
+    # SQLite 3.40 on the production image does not reliably index materialized
+    # CTE joins. Reporting must remain correct without those planner optimizations.
+    repo.db.execute("PRAGMA automatic_index=OFF")
+    expected = []
+    for index, character in enumerate("ABCDEFGHJKLMNPQRSTUVWXYZ"):
+        candidate = changed(token, contract_address=character * 32)
+        peak = observe(repo, candidate, config, 110 + index, 50 + index, confirmation_score=20)
+        latest = observe(repo, candidate, config, 150 + index, 40, confirmation_score=10)
+        expected.append((candidate.contract_address, peak, latest))
+    report = repo.market_report(100, now=200)
+    actual = [
+        (entry["contract_address"], entry["peak"]["id"], entry["latest"]["id"])
+        for entry in report["entries"]
+    ]
+    assert actual == list(reversed(expected))[:10]
+    assert report["unique_tokens"] == len(expected)
+    assert report["evaluations"] == 2 * len(expected)
+    assert all(entry["observations"] == 2 for entry in report["entries"])
+
+
 def test_report_validation_works_on_read_only_connection(repo, token, config, tmp_path):
     import sqlite3
 

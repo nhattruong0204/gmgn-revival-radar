@@ -528,30 +528,30 @@ class Repository:
         params = (since, until, until)
         valid = "CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END"
         query = f"""WITH observations AS MATERIALIZED (
-            SELECT e.* {base}
-        ), maxima AS (
-            SELECT contract_address,MAX(score) AS peak_score FROM observations
-            GROUP BY contract_address
+            SELECT e.*,MAX(e.score) OVER (PARTITION BY e.contract_address) AS peak_score,
+                ROW_NUMBER() OVER (
+                    PARTITION BY e.contract_address ORDER BY e.timestamp DESC,e.id DESC
+                ) AS latest_position,
+                COUNT(*) OVER (PARTITION BY e.contract_address) AS observations {base}
         ), candidates AS MATERIALIZED (
             SELECT o.*,market_evidence_rank(st.value,o.chain,o.contract_address,o.timestamp,
                 o.score,o.status,o.eligible) AS evidence_rank
-            FROM observations o JOIN maxima m ON m.contract_address=o.contract_address
-                AND m.peak_score=o.score
+            FROM observations o
             LEFT JOIN state st ON st.key='telegram:evaluation:' || o.id
+            WHERE o.score=o.peak_score
         ), peaks AS (
             SELECT *,ROW_NUMBER() OVER (
                 PARTITION BY contract_address ORDER BY evidence_rank DESC,timestamp DESC,id DESC
             ) AS peak_position FROM candidates
-        ), latest AS (
-            SELECT *,ROW_NUMBER() OVER (
-                PARTITION BY contract_address ORDER BY timestamp DESC,id DESC
-            ) AS latest_position, COUNT(*) OVER (PARTITION BY contract_address) AS observations
-            FROM observations
-        ) SELECT p.id AS peak_id,l.id AS latest_id,l.observations
-            FROM peaks p JOIN latest l ON l.contract_address=p.contract_address
-            WHERE p.peak_position=1 AND l.latest_position=1
+        ), top_peaks AS MATERIALIZED (
+            SELECT * FROM peaks WHERE peak_position=1
+            ORDER BY score DESC,evidence_rank DESC,timestamp DESC,contract_address ASC LIMIT ?
+        ) SELECT p.id AS peak_id,(
+                SELECT o.id FROM observations o
+                WHERE o.contract_address=p.contract_address AND o.latest_position=1
+            ) AS latest_id,p.observations FROM top_peaks p
             ORDER BY p.score DESC,p.evidence_rank DESC,
-                p.timestamp DESC,p.contract_address ASC LIMIT ?"""
+                p.timestamp DESC,p.contract_address ASC"""
         ranked = self.db.execute(query, (*params, limit)).fetchall()
         totals = self.db.execute(
             "SELECT COUNT(*) AS evaluations,COUNT(DISTINCT e.contract_address) AS unique_tokens,"
