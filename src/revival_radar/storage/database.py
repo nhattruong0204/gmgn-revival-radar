@@ -53,6 +53,9 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             _migrate_enrichment(db)
         if version < 4:
             _migrate_outcomes(db)
+        # An additive query index is compatible with existing schema-4/rollback readers.
+        db.execute("""CREATE INDEX IF NOT EXISTS evaluations_chain_time
+            ON evaluations(chain,timestamp DESC,id DESC)""")
         db.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
         db.commit()
     except Exception:

@@ -64,6 +64,7 @@ class Settings(BaseSettings):
     exclude_wrapped_assets: bool = True
     daily_summary_enabled: bool = False
     daily_summary_hour: int = Field(default=9, ge=0, le=23)
+    market_report_enabled: bool = True
     report_timezone: str = "Asia/Bangkok"
     enabled_chains: str = "sol"
     database_path: Path = Path("data/revival_radar.db")

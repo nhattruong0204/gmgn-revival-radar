@@ -123,6 +123,15 @@ ADVANCED_PAGES = (
         ),
     ),
 )
+MARKET_REPORT_TIMEFRAMES = (
+    ("1h", "1"),
+    ("4h", "4"),
+    ("12h", "12"),
+    ("24h", "24"),
+    ("72h", "72"),
+    ("7d", "168"),
+)
+MARKET_REPORT_HOURS = frozenset(hours for _, hours in MARKET_REPORT_TIMEFRAMES)
 
 
 class ControlsError(RuntimeError):
@@ -160,10 +169,12 @@ class TelegramControls:
         detail_provider: Callable[[str, int], Any] | None = None,
         scan_request: Callable[[], str] | None = None,
         schedule_provider: Callable[[], dict] | None = None,
+        market_report_provider: Callable[[float], Any] | None = None,
     ):
         self.runtime, self.http, self.health_provider = runtime, http, health_provider
         self.detail_provider, self.scan_request = detail_provider, scan_request
         self.schedule_provider = schedule_provider
+        self.market_report_provider = market_report_provider
         config = runtime.effective()
         configured_owner = config.telegram_owner_id
         chat_id = config.telegram_chat_id.strip()
@@ -195,6 +206,7 @@ class TelegramControls:
     def _safe(self, value: str) -> str:
         for secret in (
             self.runtime.base.gmgn_api_key,
+            self.runtime.base.helius_api_token,
             self.runtime.base.telegram_bot_token,
         ):
             raw = secret.get_secret_value()
@@ -413,6 +425,9 @@ class TelegramControls:
             await self._menu("settings_hub" if command == "/settings" else "home")
         elif command in {"/status", "/health"}:
             await self._health() if command == "/health" else await self._status()
+        elif command in {"/market", "/report"}:
+            self._input, self._proposal = None, None
+            await self._market_report()
         elif command == "/cancel":
             self._input, self._proposal = None, None
             await self._menu("home")
@@ -443,6 +458,9 @@ class TelegramControls:
                 await self._status()
             elif action == "health":
                 await self._health(value or "overview")
+            elif action == "market":
+                self._input = None
+                await self._market_report(value if len(parts) == 4 else None)
             elif action == "act" and value in {"scan", "test"}:
                 await self._action_preview(value)
             elif action == "p" and value in PRESETS:
@@ -528,6 +546,7 @@ class TelegramControls:
             )
             rows = [
                 [self._button("📊 Status", "status"), self._button("🩺 Health", "health")],
+                [self._button("📈 Market report", "market")],
                 [self._button("🎯 Strategy presets", "m:presets")],
                 [
                     self._button("🔍 Near misses", "health:near"),
@@ -940,6 +959,54 @@ class TelegramControls:
                     )
         await self._send(text, rows, edit=True)
 
+    async def _market_report(self, hours: str | None = None) -> None:
+        if hours is None:
+            buttons = [
+                self._button(label, f"market:{duration}")
+                for label, duration in MARKET_REPORT_TIMEFRAMES
+            ]
+            rows = [buttons[index : index + 3] for index in range(0, len(buttons), 3)]
+            rows.append([self._button("🏠 Main menu", "m:home")])
+            await self._send(
+                "📈 <b>Market report</b>\n\n"
+                "Choose a timeframe to review tracked tokens and their recorded activity.",
+                rows,
+                edit=True,
+            )
+            return
+        if hours not in MARKET_REPORT_HOURS:
+            await self._send(
+                "Choose a supported timeframe for the market report.",
+                [[self._button("🕒 Choose timeframe", "market")]],
+                edit=True,
+            )
+            return
+        if self.market_report_provider is None:
+            await self._send("Market reports are not available in this process yet.")
+            return
+        try:
+            result = self.market_report_provider(float(hours))
+            if inspect.isawaitable(result):
+                result = await result
+            if not isinstance(result, Mapping):
+                raise TypeError("Market report provider returned an invalid result")
+            from revival_radar.market_report import market_report_buttons, market_report_page
+
+            report = dict(result)
+            text = market_report_page(report)
+            rows = market_report_buttons(report)
+        except Exception:
+            # A database/provider failure can contain private data; use fixed text.
+            await self._send("The market report could not be loaded. Try again later.")
+            return
+        rows.append(
+            [
+                self._button("🕒 Change timeframe", "market"),
+                self._button("🏠 Main menu", "m:home"),
+            ]
+        )
+        await self._send(text, rows, edit=True)
+
     def _schedule_text(self) -> str:
         schedule = self.schedule_provider() if self.schedule_provider else {}
         if not schedule:
@@ -977,12 +1044,22 @@ class TelegramControls:
     async def _detail(self, data: str) -> None:
         parts = data.split(":")
         if (
-            len(parts) != 3
+            len(parts) not in {3, 4}
             or parts[0] not in {"a", "e"}
             or len(parts[1]) > 18
             or not parts[1].isascii()
             or not parts[1].isdigit()
-            or parts[2] not in {"why", "full"}
+            or parts[2] not in {"why", "full", "report"}
+            or (parts[2] == "report" and parts[0] != "e")
+            or (
+                len(parts) == 4
+                and (
+                    parts[2] != "report"
+                    or not parts[3].isascii()
+                    or not parts[3].isdigit()
+                    or len(parts[3]) > 10
+                )
+            )
         ):
             return
         if not self.detail_provider:
@@ -998,6 +1075,11 @@ class TelegramControls:
         if not detail:
             await self._send(
                 "This saved observation is unavailable or predates detailed recording."
+            )
+            return
+        if parts[2] == "report":
+            await self._evaluation_evidence(
+                detail, int(parts[1]), int(parts[3]) if len(parts) == 4 else 0
             )
             return
         from revival_radar.clients.telegram import format_full_alert, format_why
@@ -1017,4 +1099,60 @@ class TelegramControls:
             if parts[2] == "why"
             else format_full_alert(token, signal) + "\n" + config_footer(context)
         )
-        await self._send(text, [[self._button("🏠 Main menu", "m:home")]])
+        rows = []
+        if parts[0] == "e" and isinstance(detail.get("evaluation"), Mapping):
+            from revival_radar.market_report import market_evidence_summary
+
+            summary = market_evidence_summary(
+                detail["evaluation"], min(600, 4096 - len(text.encode("utf-16-le")) // 2 - 2)
+            )
+            if summary:
+                text += "\n\n" + summary
+            rows.append([{"text": "📋 Saved evidence", "callback_data": f"e:{parts[1]}:report"}])
+        rows.append([self._button("🏠 Main menu", "m:home")])
+        await self._send(text, rows)
+
+    async def _evaluation_evidence(self, detail: Any, identity: int, page: int) -> None:
+        from revival_radar.market_report import market_evidence_pages
+
+        try:
+            if (
+                not isinstance(detail, Mapping)
+                or detail.get("evaluation", {}).get("id") != identity
+            ):
+                raise ValueError("Saved evaluation identity mismatch")
+            pages = market_evidence_pages(detail, self.runtime.effective().report_timezone)
+        except Exception:
+            await self._send("Saved evaluation evidence could not be loaded. Try again later.")
+            return
+        if page >= len(pages):
+            await self._send(
+                "This saved evidence page is unavailable.",
+                [[{"text": "📋 Saved evidence", "callback_data": f"e:{identity}:report"}]],
+            )
+            return
+        rows, navigation = [], []
+        if page:
+            navigation.append(
+                {"text": "◀ Previous", "callback_data": f"e:{identity}:report:{page - 1}"}
+            )
+        if page + 1 < len(pages):
+            navigation.append(
+                {"text": "Next ▶", "callback_data": f"e:{identity}:report:{page + 1}"}
+            )
+        if navigation:
+            rows.append(navigation)
+        if (
+            isinstance(detail.get("token"), Mapping)
+            and isinstance(detail.get("signal"), Mapping)
+            and detail["token"]
+            and detail["signal"]
+        ):
+            rows.append([{"text": "📊 Full details", "callback_data": f"e:{identity}:full"}])
+        rows.append(
+            [
+                self._button("🕒 Change timeframe", "market"),
+                self._button("🏠 Main menu", "m:home"),
+            ]
+        )
+        await self._send(pages[page], rows)
