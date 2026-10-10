@@ -5,6 +5,9 @@ from collections import Counter
 from math import isfinite
 from statistics import median
 from typing import Any
+from zoneinfo import ZoneInfo
+
+from pydantic import ValidationError
 
 from revival_radar.analysis.acceleration import fresh_history
 from revival_radar.analysis.filters import first_pass
@@ -18,6 +21,11 @@ from revival_radar.storage.database import SNAPSHOT_FIELDS
 class Repository:
     def __init__(self, db: sqlite3.Connection):
         self.db = db
+        # Connection-local and read-only: a report never trusts unvalidated JSON
+        # sub-scores for ranking. Re-registering on a reused connection is safe.
+        db.create_function(
+            "market_evidence_rank", 7, self._market_evidence_rank, deterministic=True
+        )
 
     @sqlite_timed
     def save_snapshot(self, token: TokenSnapshot) -> None:
@@ -133,7 +141,26 @@ class Repository:
             return None
         key = "alert" if kind == "a" else "evaluation"
         value = self.get_state(f"telegram:{key}:{identity}")
-        return json.loads(value) if value else None
+        if kind == "a":
+            return json.loads(value) if value else None
+        row = self.db.execute("SELECT * FROM evaluations WHERE id=?", (identity,)).fetchone()
+        if row is None:
+            return None
+        detail = (
+            json.loads(value)
+            if self._market_detail(row, value) is not None
+            else {"token": None, "signal": None, "configuration": {}}
+        )
+        detail["evaluation"] = {
+            "id": row["id"],
+            "timestamp": row["timestamp"],
+            "eligible": bool(row["eligible"]),
+            **{
+                name: self._saved_text_list(row[name])
+                for name in ("rejection_reasons", "missing_fields", "warnings")
+            },
+        }
+        return detail
 
     @sqlite_timed
     def finish_alert(self, alert_id: int, status: str, message_id: int | None = None) -> None:
@@ -310,6 +337,272 @@ class Repository:
             )
         return cursor.rowcount == 1
 
+    def claim_market_report(self, period_key: str, timestamp: float) -> bool:
+        """Reserve one scheduled attempt per period across workers and restarts."""
+        if not period_key or len(period_key) > 150 or not isfinite(timestamp):
+            raise ValueError("Invalid market report period")
+        with self.db:
+            cursor = self.db.execute(
+                "INSERT OR IGNORE INTO state (key,value,updated_at) VALUES (?,?,?)",
+                (
+                    f"market_report:{period_key}",
+                    json.dumps({"status": "pending", "claimed_at": timestamp}),
+                    timestamp,
+                ),
+            )
+        return cursor.rowcount == 1
+
+    def finish_market_report(
+        self,
+        period_key: str,
+        status: str,
+        message_id: int | None = None,
+        timestamp: float | None = None,
+    ) -> None:
+        if status not in {"sent", "failed", "unknown"}:
+            raise ValueError("Invalid market report delivery status")
+        now = time.time() if timestamp is None else timestamp
+        with self.db:
+            row = self.db.execute(
+                "SELECT value FROM state WHERE key=?", (f"market_report:{period_key}",)
+            ).fetchone()
+            if row is None:
+                raise ValueError("Market report was not reserved")
+            delivery = json.loads(row["value"])
+            delivery.update(status=status, finished_at=now, message_id=message_id)
+            payload = json.dumps(delivery)
+            self.db.execute(
+                "UPDATE state SET value=?,updated_at=? WHERE key=?",
+                (payload, now, f"market_report:{period_key}"),
+            )
+            self.db.execute(
+                """INSERT INTO state (key,value,updated_at) VALUES (?,?,?)
+                ON CONFLICT(key) DO UPDATE SET
+                value=excluded.value,updated_at=excluded.updated_at""",
+                ("market_report_delivery", json.dumps({"period": period_key, **delivery}), now),
+            )
+
+    @staticmethod
+    def _saved_text_list(value: str | None) -> list[str]:
+        try:
+            values = json.loads(value)
+        except (ValueError, TypeError, RecursionError):
+            return []
+        return (
+            [item for item in values if isinstance(item, str)] if isinstance(values, list) else []
+        )
+
+    @staticmethod
+    def _market_detail(row: sqlite3.Row | dict, payload: str | None) -> dict | None:
+        """One evidence policy for both SQL tie-breaks and reconstructed details."""
+        try:
+            detail = json.loads(payload) if payload else None
+            if not isinstance(detail, dict):
+                raise ValueError("Missing saved details")
+            token = TokenSnapshot.model_validate(detail["token"])
+            signal = RevivalResult.model_validate(detail["signal"])
+            if (
+                token.key != (row["chain"], row["contract_address"])
+                or token.timestamp != row["timestamp"]
+                or signal.score != row["score"]
+                or signal.status != row["status"]
+                or signal.eligible != bool(row["eligible"])
+            ):
+                raise ValueError("Saved details disagree with evaluation")
+            # Sub-scores are persisted integers. Do not promote coerced strings
+            # or booleans into trusted evidence when reading a damaged payload.
+            for name in ("setup_score", "confirmation_score", "trigger_score"):
+                value = detail["signal"].get(name)
+                if value is not None and type(value) is not int:
+                    raise ValueError("Invalid saved dimension score")
+            configuration = detail.get("configuration")
+            context = {}
+            if isinstance(configuration, dict):
+                # Keep report context nonsecret, including old or malformed saved payloads.
+                settings = configuration.get("settings")
+                preset, revision = configuration.get("preset"), configuration.get("revision")
+                context = {
+                    "preset": preset
+                    if preset in ("Strict", "Balanced", "Broad", "Custom")
+                    else None,
+                    "revision": revision if type(revision) is int and revision >= 0 else None,
+                    "settings": {},
+                }
+                if isinstance(settings, dict):
+                    gap = settings.get("history_max_gap_seconds")
+                    threshold = settings.get("alert_score_threshold")
+                    if type(gap) in {int, float} and isfinite(gap) and gap > 0:
+                        context["settings"]["history_max_gap_seconds"] = gap
+                    if type(threshold) is int and 0 <= threshold <= 100:
+                        context["settings"]["alert_score_threshold"] = threshold
+            evidence = {
+                "token": token.model_dump(mode="json"),
+                "signal": signal.model_dump(mode="json"),
+                "configuration": context,
+            }
+            # Older signal models allow nonfinite floats and can coerce strings
+            # such as "Infinity". They must not poison a frozen report snapshot.
+            json.dumps(evidence, allow_nan=False)
+            return evidence
+        except (ValueError, TypeError, KeyError, OverflowError, RecursionError, ValidationError):
+            return None
+
+    @staticmethod
+    def _market_evidence_rank(payload, chain, address, timestamp, score, status, eligible) -> int:
+        evidence = Repository._market_detail(
+            {
+                "chain": chain,
+                "contract_address": address,
+                "timestamp": timestamp,
+                "score": score,
+                "status": status,
+                "eligible": eligible,
+            },
+            payload,
+        )
+        if evidence is None:
+            return 0
+        signal = evidence["signal"]
+        confirmation, trigger = signal["confirmation_score"], signal["trigger_score"]
+        return ((confirmation if confirmation is not None else -1) + 1) * 102 + (
+            (trigger if trigger is not None else -1) + 1
+        )
+
+    @staticmethod
+    def _market_observation(row: sqlite3.Row, payload: str | None) -> dict:
+        observation = {
+            name: row[name] for name in ("id", "timestamp", "score", "status", "eligible")
+        }
+        observation["eligible"] = bool(observation["eligible"])
+        for name in ("rejection_reasons", "missing_fields", "warnings"):
+            observation[name] = Repository._saved_text_list(row[name])
+        observation.update(token=None, signal=None, configuration={})
+        evidence = Repository._market_detail(row, payload)
+        if evidence is None:
+            observation["warnings"].append("Saved detail evidence unavailable")
+        else:
+            observation.update(evidence)
+            observation["warnings"] = list(
+                dict.fromkeys(
+                    observation["warnings"]
+                    + evidence["token"]["data_warnings"]
+                    + evidence["signal"]["warnings"]
+                )
+            )
+        return observation
+
+    def market_report(
+        self,
+        since: float,
+        now: float | None = None,
+        timezone: str = "Asia/Bangkok",
+        limit: int = 10,
+    ) -> dict:
+        # Hold one read snapshot across ranking, latest evidence and coverage queries.
+        # Reuse a caller's transaction without committing or discarding its writes.
+        if self.db.in_transaction:
+            return self._market_report(since, now, timezone, limit)
+        self.db.execute("BEGIN")
+        try:
+            return self._market_report(since, now, timezone, limit)
+        finally:
+            self.db.rollback()
+
+    def _market_report(self, since: float, now: float | None, timezone: str, limit: int) -> dict:
+        """Peak and latest saved Solana evaluations in (since, until], regardless of eligibility."""
+        until = time.time() if now is None else now
+        if (
+            not isfinite(since)
+            or not isfinite(until)
+            or not 0 < until - since <= 7 * 86400
+            or type(limit) is not int
+            or not 1 <= limit <= 10
+        ):
+            raise ValueError("Invalid market report window")
+        ZoneInfo(timezone)
+        # Invalid/missing legacy JSON contributes its saved score, with unknown sub-scores.
+        base = """FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id
+            LEFT JOIN state st ON st.key='telegram:evaluation:' || e.id
+            WHERE e.chain='sol' AND e.timestamp>? AND e.timestamp<=?
+            AND s.finished IS NOT NULL AND s.finished<=?"""
+        params = (since, until, until)
+        valid = "CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END"
+        query = f"""WITH observations AS MATERIALIZED (
+            SELECT e.* {base}
+        ), maxima AS (
+            SELECT contract_address,MAX(score) AS peak_score FROM observations
+            GROUP BY contract_address
+        ), candidates AS MATERIALIZED (
+            SELECT o.*,market_evidence_rank(st.value,o.chain,o.contract_address,o.timestamp,
+                o.score,o.status,o.eligible) AS evidence_rank
+            FROM observations o JOIN maxima m ON m.contract_address=o.contract_address
+                AND m.peak_score=o.score
+            LEFT JOIN state st ON st.key='telegram:evaluation:' || o.id
+        ), peaks AS (
+            SELECT *,ROW_NUMBER() OVER (
+                PARTITION BY contract_address ORDER BY evidence_rank DESC,timestamp DESC,id DESC
+            ) AS peak_position FROM candidates
+        ), latest AS (
+            SELECT *,ROW_NUMBER() OVER (
+                PARTITION BY contract_address ORDER BY timestamp DESC,id DESC
+            ) AS latest_position, COUNT(*) OVER (PARTITION BY contract_address) AS observations
+            FROM observations
+        ) SELECT p.id AS peak_id,l.id AS latest_id,l.observations
+            FROM peaks p JOIN latest l ON l.contract_address=p.contract_address
+            WHERE p.peak_position=1 AND l.latest_position=1
+            ORDER BY p.score DESC,p.evidence_rank DESC,
+                p.timestamp DESC,p.contract_address ASC LIMIT ?"""
+        ranked = self.db.execute(query, (*params, limit)).fetchall()
+        totals = self.db.execute(
+            "SELECT COUNT(*) AS evaluations,COUNT(DISTINCT e.contract_address) AS unique_tokens,"
+            "MIN(e.timestamp) AS first_observation,MAX(s.finished) AS last_finished,"
+            f"COUNT(DISTINCT COALESCE(json_extract({valid},'$.configuration'),'legacy') || ':' || "
+            f"COALESCE(json_extract({valid},'$.signal.score_version'),'legacy')) AS configurations "
+            + base,
+            params,
+        ).fetchone()
+        runs = self.db.execute(
+            """SELECT SUM(CASE WHEN finished IS NOT NULL AND finished<=? THEN 1 ELSE 0 END)
+                AS completed_scans,SUM(CASE WHEN finished IS NULL OR finished>? THEN 1 ELSE 0 END)
+                AS incomplete_scans FROM scan_runs WHERE started<=?
+                AND (finished>? OR finished IS NULL)""",
+            (until, until, until, since),
+        ).fetchone()
+        entries = []
+        for item in ranked:
+            evidence = {}
+            for name in ("peak", "latest"):
+                identity = item[f"{name}_id"]
+                row = self.db.execute(
+                    "SELECT * FROM evaluations WHERE id=?", (identity,)
+                ).fetchone()
+                payload = self.get_state(f"telegram:evaluation:{identity}")
+                evidence[name] = self._market_observation(row, payload)
+            entries.append(
+                {
+                    "chain": row["chain"],
+                    "contract_address": row["contract_address"],
+                    "symbol": row["symbol"],
+                    "observations": item["observations"],
+                    **evidence,
+                }
+            )
+        return {
+            "since": since,
+            "until": until,
+            "timezone": timezone,
+            "hours": (until - since) / 3600,
+            "chain": "sol",
+            "evaluations": totals["evaluations"],
+            "unique_tokens": totals["unique_tokens"],
+            "completed_scans": runs["completed_scans"] or 0,
+            "incomplete_scans": runs["incomplete_scans"] or 0,
+            "first_observation": totals["first_observation"],
+            "last_finished": totals["last_finished"],
+            "multiple_configurations": totals["configurations"] > 1,
+            "entries": entries,
+        }
+
     def prune_diagnostics(self, before: float) -> None:
         with self.db:
             for table, kind in (("evaluations", "evaluation"), ("scan_runs", "scan")):
@@ -337,6 +630,9 @@ class Repository:
             self.db.execute("DELETE FROM watch_state WHERE last_seen<?", (before,))
             self.db.execute(
                 "DELETE FROM state WHERE key LIKE 'daily_summary:%' AND updated_at<?", (before,)
+            )
+            self.db.execute(
+                "DELETE FROM state WHERE key LIKE 'market_report:%' AND updated_at<?", (before,)
             )
 
     def health(self, since: float, now: float | None = None) -> dict[str, Any]:
@@ -499,7 +795,7 @@ class Repository:
                 item[field] = json.loads(row[field])
             detail = self.presentation_detail("e", item["id"])
             item["configuration"] = detail.get("configuration", {}) if detail else {}
-            signal = detail.get("signal", {}) if detail else {}
+            signal = (detail.get("signal") or {}) if detail else {}
             for dimension in ("setup_score", "trigger_score", "confirmation_score"):
                 item[dimension] = signal.get(dimension)
             candidates.append(item)

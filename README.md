@@ -117,7 +117,7 @@ replace GMGN volume, transaction windows, liquidity, prices, rankings, or candle
 
 ## Telegram setup
 
-The owner-only **/menu** opens Status, Strategy, Health, Settings, Near Misses,
+The owner-only **/menu** opens Status, Strategy, Health, Market Report, Settings, Near Misses,
 Scan Now, Pause/Resume Alerts, and Test Alert. **Settings** groups Chains, Thresholds,
 Structure, Activity, Alerts, and Reset, with Advanced configuration, discovery timing,
 and exclusions also available. Current enabled chains appear above the buttons;
@@ -127,6 +127,15 @@ Choose **Settings → Advanced configuration** for all preset settings and the s
 interval across three short pages. Tap a value, send its replacement (for example
 `15k`, `60%` or `150s`), and confirm to save it without editing code or restarting.
 Navigation updates the current menu, while confirmations remain separate messages.
+
+**📈 Market report** (also `/market` or `/report`) asks for a timeframe from 1h to 7d,
+then shows up to ten Solana tickers ranked by peak saved score, with latest scores,
+risks, blockers and missing evidence. Below-threshold evaluations are included.
+Automatic reports cover the previous four hours at 00/04/08/12/16/20 in
+`REPORT_TIMEZONE` (UTC+7 by default), independently of signal-alert pause controls.
+`MARKET_REPORT_ENABLED=true` enables them; `DRY_RUN=true` suppresses automatic delivery.
+Reports use saved observations without extra GMGN or Helius calls. See
+[market report definitions and delivery behavior](docs/market-reports.md).
 
 Alerts lead with a compact token/chain, score/stage, market, trigger and structure
 summary. **GMGN**, **Explorer**, **Why this alert**, and **Full details** buttons keep

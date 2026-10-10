@@ -6,6 +6,7 @@ from revival_radar.runtime_settings import ALLOWED_SETTINGS, PRESETS
 PERFORMANCE_SETTINGS = frozenset(
     {
         "trending_discovery_enabled",
+        "market_report_enabled",
         "helius_enabled",
         "helius_cache_ttl_seconds",
         "max_helius_verify_per_scan",
