@@ -9,7 +9,7 @@ from revival_radar.clients.telegram import TelegramClient
 from revival_radar.config_context import configuration_context
 from revival_radar.models.signal import RevivalResult
 from revival_radar.scanner import Scanner
-from revival_radar.storage.database import connect
+from revival_radar.storage.database import SCHEMA_VERSION, connect
 from revival_radar.storage.repository import Repository
 
 from .conftest import changed
@@ -208,6 +208,8 @@ def test_v3_migration_backfills_only_saved_signal_and_leaves_bytes_unchanged(con
     with repo.db:
         repo.db.execute("DROP TABLE signal_outcomes")
         repo.db.execute("DROP TABLE alert_signals")
+        for table in ("web_commands", "web_previews", "web_sessions"):
+            repo.db.execute(f"DROP TABLE {table}")
         repo.db.execute("PRAGMA user_version=3")
         repo.db.execute(
             "INSERT INTO alerts(timestamp,chain,contract_address,score,reason) VALUES(?,?,?,?,?)",
@@ -215,7 +217,7 @@ def test_v3_migration_backfills_only_saved_signal_and_leaves_bytes_unchanged(con
         )
     other = connect(Path(repo.db.execute("PRAGMA database_list").fetchone()["file"]))
     try:
-        assert other.execute("PRAGMA user_version").fetchone()[0] == 4
+        assert other.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
         assert (
             tuple(other.execute("SELECT * FROM alerts WHERE id=?", (identity,)).fetchone())
             == saved_alert
@@ -292,6 +294,8 @@ def test_failed_migration_rolls_back_and_can_retry(config, repo, token, monkeypa
     with repo.db:
         repo.db.execute("DROP TABLE signal_outcomes")
         repo.db.execute("DROP TABLE alert_signals")
+        for table in ("web_commands", "web_previews", "web_sessions"):
+            repo.db.execute(f"DROP TABLE {table}")
         repo.db.execute("PRAGMA user_version=3")
 
     def fail(db):
@@ -307,7 +311,7 @@ def test_failed_migration_rolls_back_and_can_retry(config, repo, token, monkeypa
         "SELECT name FROM sqlite_master WHERE name='partial_migration'"
     ).fetchone()
     migrated = connect(path)
-    assert migrated.execute("PRAGMA user_version").fetchone()[0] == 4
+    assert migrated.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
     migrated.close()
 
 
@@ -318,6 +322,8 @@ def test_corrupt_legacy_presentation_stays_unknown_without_breaking_migration(co
     with repo.db:
         repo.db.execute("DROP TABLE signal_outcomes")
         repo.db.execute("DROP TABLE alert_signals")
+        for table in ("web_commands", "web_previews", "web_sessions"):
+            repo.db.execute(f"DROP TABLE {table}")
         repo.db.execute("PRAGMA user_version=3")
     migrated = connect(path)
     try:

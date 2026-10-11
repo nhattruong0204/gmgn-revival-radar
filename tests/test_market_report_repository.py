@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from revival_radar.models.signal import RevivalResult, Structure
-from revival_radar.storage.database import connect
+from revival_radar.storage.database import SCHEMA_VERSION, connect
 from revival_radar.storage.repository import Repository
 
 from .conftest import changed
@@ -194,7 +194,7 @@ def test_market_report_claim_delivery_durable_across_connections_and_restart(tmp
     repo = Repository(reopened)
     assert not repo.claim_market_report("Asia/Bangkok:14400", 15003)
     assert repo.claim_market_report("Asia/Bangkok:28800", 28801)
-    assert repo.db.execute("PRAGMA user_version").fetchone()[0] == 4
+    assert repo.db.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
     reopened.close()
 
 

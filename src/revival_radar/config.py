@@ -58,6 +58,7 @@ class Settings(BaseSettings):
     telegram_chat_id: str = ""
     telegram_owner_id: int = Field(default=0, ge=0)
     telegram_controls_enabled: bool = True
+    web_controls_enabled: bool = False
     alerts_paused: bool = False
     exclude_tokenized_stocks: bool = True
     exclude_stablecoins: bool = True

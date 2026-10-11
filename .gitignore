@@ -22,3 +22,7 @@ data/*
 .DS_Store
 .wheelhouse/*
 !.wheelhouse/.gitkeep
+node_modules/
+web/.vite/
+web/test-results/
+web/playwright-report/

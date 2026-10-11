@@ -14,6 +14,7 @@ from typing import Any
 import httpx
 
 from revival_radar.chains import CHAINS
+from revival_radar.control_service import SharedController
 from revival_radar.runtime_settings import PRESETS, RuntimeSettings, SettingsChangeError
 from revival_radar.telegram_presentation import (
     SHORT_LABELS,
@@ -170,11 +171,15 @@ class TelegramControls:
         scan_request: Callable[[], str] | None = None,
         schedule_provider: Callable[[], dict] | None = None,
         market_report_provider: Callable[[float], Any] | None = None,
+        controller: SharedController | None = None,
     ):
         self.runtime, self.http, self.health_provider = runtime, http, health_provider
         self.detail_provider, self.scan_request = detail_provider, scan_request
         self.schedule_provider = schedule_provider
         self.market_report_provider = market_report_provider
+        self.controller = controller or SharedController(
+            runtime, http, scan_request, schedule_provider
+        )
         config = runtime.effective()
         configured_owner = config.telegram_owner_id
         chat_id = config.telegram_chat_id.strip()
@@ -706,8 +711,10 @@ class TelegramControls:
     ) -> None:
         self._proposal = None
         before = self.runtime.public_values()
-        candidate = self.runtime.base if reset else self.runtime.preview(changes)
-        after = candidate.model_dump(mode="json")
+        preview = self.controller.preview(
+            "reset" if reset else "settings", changes if not reset else None
+        )
+        after = preview["after"]
         keys = before.keys() if reset else changes.keys()
         lines = [f"📝 <b>{html.escape(title)}</b>"]
         for key in sorted(keys):
@@ -737,7 +744,7 @@ class TelegramControls:
         proposal = Proposal(
             secrets.token_hex(6),
             self.runtime.revision,
-            dict(changes),
+            dict(preview["changes"]),
             time.monotonic() + 600,
             reset,
         )
@@ -782,38 +789,21 @@ class TelegramControls:
             await self._send("This preview expired. Open /menu and review it again.")
             return
         if proposal.action:
+            result = await self.controller.execute(
+                proposal.action,
+                expected_revision=proposal.revision,
+                test_sender=self._send,
+            )
             if proposal.action == "scan":
-                answer = (
-                    self.scan_request()
-                    if self.scan_request
-                    else "Manual scans are unavailable in this process."
-                )
-                await self._send(html.escape(answer), [[self._button("🏠 Main menu", "m:home")]])
-            else:
-                from revival_radar.analysis.market_structure import analyze_structure
-                from revival_radar.analysis.scoring import score_token
-                from revival_radar.clients.telegram import format_alert
-                from revival_radar.demo import DemoSource
-                from revival_radar.models.token import Candle, TokenSnapshot
-
-                demo = DemoSource().data[0]
-                token = TokenSnapshot(**demo["token"])
-                config = self.runtime.effective()
-                signal = score_token(
-                    token,
-                    [TokenSnapshot(**h) for h in demo["history"]],
-                    analyze_structure([Candle(**c) for c in demo["candles"]], config),
-                    config,
-                )
                 await self._send(
-                    "🧪 <b>TEST · Synthetic example, not a live signal</b>\n\n"
-                    + format_alert(token, signal)
+                    html.escape(result["message"]), [[self._button("🏠 Main menu", "m:home")]]
                 )
             return
-        if proposal.reset:
-            self.runtime.reset(expected_revision=proposal.revision)
-        else:
-            self.runtime.apply(proposal.changes, expected_revision=proposal.revision)
+        await self.controller.execute(
+            "reset" if proposal.reset else "settings",
+            None if proposal.reset else proposal.changes,
+            expected_revision=proposal.revision,
+        )
         self._input = None
         immediate = (
             proposal.changes.get("alerts_paused") is True or proposal.changes.get("dry_run") is True
@@ -1021,6 +1011,7 @@ class TelegramControls:
 
     async def _action_preview(self, action: str) -> None:
         self._input = None
+        self.controller.preview(action)
         self._proposal = Proposal(
             secrets.token_hex(6), self.runtime.revision, {}, time.monotonic() + 600, action=action
         )

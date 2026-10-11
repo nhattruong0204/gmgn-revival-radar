@@ -10,7 +10,7 @@ from revival_radar.clients.telegram import format_alert, format_full_alert, form
 from revival_radar.config import Settings
 from revival_radar.config_context import configuration_context
 from revival_radar.models.signal import RevivalResult, Structure, has_returning_activity
-from revival_radar.storage.database import connect
+from revival_radar.storage.database import SCHEMA_VERSION, connect
 from revival_radar.storage.repository import Repository
 
 from .conftest import changed
@@ -268,7 +268,7 @@ def test_dimensions_persist_without_changing_old_alert_payloads(config, repo, to
         assert evaluation["signal"]["setup_score"] == 100
         assert evaluation["configuration"]["settings"]["base_maturity_hours"] == [6, 12, 24, 48, 72]
         assert restored.get_state(f"telegram:alert:{identity}") == prior
-        assert other.execute("PRAGMA user_version").fetchone()[0] == 4
+        assert other.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
         assert "fixture-key" not in json.dumps(evaluation)
     finally:
         other.close()

@@ -14,12 +14,14 @@ from revival_radar.clients.providers import HybridDataSource
 from revival_radar.clients.telegram import TelegramClient
 from revival_radar.config import Settings
 from revival_radar.config_context import configuration_context
+from revival_radar.control_service import SharedController
 from revival_radar.market_report import market_report_buttons, market_report_page
 from revival_radar.runtime_settings import RuntimeSettings
 from revival_radar.scanner import Scanner
 from revival_radar.storage.repository import Repository
 from revival_radar.telegram_controls import TelegramControls
 from revival_radar.telegram_views import health_page
+from revival_radar.web_commands import WebCommandWorker
 
 log = logging.getLogger(__name__)
 MARKET_REPORT_POLL_SECONDS = 30
@@ -159,6 +161,7 @@ async def run_service(runtime: RuntimeSettings, repo: Repository, http: httpx.As
             now - hours * 3600, now=now, timezone=runtime.effective().report_timezone
         )
 
+    controller = SharedController(runtime, http, request_scan, lambda: dict(schedule))
     controls = TelegramControls(
         runtime,
         http,
@@ -167,6 +170,7 @@ async def run_service(runtime: RuntimeSettings, repo: Repository, http: httpx.As
         scan_request=request_scan,
         schedule_provider=lambda: dict(schedule),
         market_report_provider=market_report_provider,
+        controller=controller,
     )
     tasks: list[asyncio.Task] = []
     source = HybridDataSource(runtime.effective(), http)
@@ -192,6 +196,10 @@ async def run_service(runtime: RuntimeSettings, repo: Repository, http: httpx.As
         tasks.append(
             asyncio.create_task(market_reports_loop(runtime, repo, http), name="market-reports")
         )
+        if runtime.base.web_controls_enabled:
+            tasks.append(
+                asyncio.create_task(WebCommandWorker(controller, repo).run(), name="web-controls")
+            )
         for task in tasks:
             task.add_done_callback(_background_finished)
         while True:

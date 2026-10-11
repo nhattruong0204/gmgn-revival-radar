@@ -15,7 +15,7 @@ from revival_radar.metrics import CURRENT_SCAN, ENDPOINTS, STAGES, ScanMetrics, 
 from revival_radar.models.signal import Structure
 from revival_radar.models.token import Security, TokenSnapshot
 from revival_radar.scanner import Scanner
-from revival_radar.storage.database import connect
+from revival_radar.storage.database import SCHEMA_VERSION, connect
 from revival_radar.storage.repository import Repository
 from revival_radar.telegram_views import health_page
 
@@ -283,7 +283,7 @@ async def test_timing_counts_persist_restart_reset_and_leave_schema_compatible(c
         restored = Repository(reopened).health(0)
         assert restored["latest_scan"]["performance"] == second.performance
         assert restored["latest_scan"]["funnel"] == second.funnel
-        assert reopened.execute("PRAGMA user_version").fetchone()[0] == 4
+        assert reopened.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
         for view in ("performance", "funnel"):
             text = health_page(restored, view)
             assert len(text.encode("utf-16-le")) // 2 <= 4096

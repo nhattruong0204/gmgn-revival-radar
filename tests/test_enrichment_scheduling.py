@@ -14,7 +14,7 @@ from revival_radar.models.signal import RevivalResult, Structure
 from revival_radar.models.token import Candle, Security, TokenSnapshot
 from revival_radar.runtime_settings import RuntimeSettings
 from revival_radar.scanner import Scanner
-from revival_radar.storage.database import connect
+from revival_radar.storage.database import SCHEMA_VERSION, connect
 from revival_radar.storage.repository import Repository
 from revival_radar.telegram_views import health_page
 
@@ -313,7 +313,7 @@ def test_schema_two_migration_preserves_all_existing_content(config, tmp_path, t
     migrated = connect(path)
     for name, records in saved.items():
         assert [tuple(r) for r in migrated.execute(f"SELECT * FROM {name}")] == records
-    assert migrated.execute("PRAGMA user_version").fetchone()[0] == 4
+    assert migrated.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
     migrated.close()
     reopened = connect(path)
     assert reopened.execute("SELECT count(*) FROM token_snapshots").fetchone()[0] == 1

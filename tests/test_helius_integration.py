@@ -14,6 +14,7 @@ from revival_radar.enrichment import Enrichment, EnrichmentDeferred
 from revival_radar.metrics import ScanMetrics
 from revival_radar.models.token import Security, SolanaMintVerification
 from revival_radar.scanner import Scanner
+from revival_radar.storage.database import SCHEMA_VERSION
 
 from .conftest import changed
 from .test_pipeline_optimization import SplitSource, run_scan
@@ -507,7 +508,7 @@ async def test_helius_evidence_persists_inside_payloads_without_schema_or_market
         "token_age_seconds",
     ):
         assert getattr(current, field) == getattr(token, field)
-    assert repo.db.execute("PRAGMA user_version").fetchone()[0] == 4
+    assert repo.db.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
     stored = json.loads(
         repo.db.execute(
             "SELECT payload FROM token_snapshots ORDER BY timestamp DESC LIMIT 1"
