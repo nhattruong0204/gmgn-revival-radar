@@ -135,6 +135,7 @@ def _worker(db) -> dict:
         isinstance(heartbeat, (int, float))
         and 0 <= time.time() - heartbeat <= 30
         and value.get("enabled") is True
+        and value.get("stopped_at") is None
     )
     return value
 
