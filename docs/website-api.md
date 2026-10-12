@@ -54,8 +54,8 @@ coverage, peak/latest distinctions, and mixed-configuration indication.
 
 Public reads have a configurable SQL timeout (default 1500ms), bounded pagination,
 chart windows and point counts. Responses are cached in a bounded 256-entry process
-cache for up to 10 seconds by default, invalidated by completed scans and new saved
-market/alert data. HTTP responses use `Cache-Control: no-store` to avoid accidental
+cache for up to 10 seconds by default, invalidated by completed scans, new saved market data, sent-delivery receipts,
+outcome checkpoints and newer enrichment-cache fetches. HTTP responses use `Cache-Control: no-store` to avoid accidental
 browser caching of private API routes. Public requests are limited to 120 per minute
 per client IP by default, with `429` and `Retry-After`; configure trusted proxy IP
 handling at the HTTPS proxy/Uvicorn boundary. These process-local limits multiply
@@ -125,3 +125,23 @@ no private settings or control records; full nullability/defaults are defined in
 scores; candles contain timestamp/open/high/low/close. They are not full token
 observations. Timestamps describe saved measurements/candle open times, independently
 of page refresh. Missing/truncated chart evidence and gaps remain explicit.
+
+
+## Public-read acceptance (#18)
+
+Public readers check the scanner-owned schema version in their read transaction
+and reject older/newer layouts without attempting migration. Search by token name
+and sorting by market cap/liquidity/volume use the same identity-validated saved
+evidence as serialization; malformed or mismatched payloads cannot contribute
+metrics and sort after known measurements. Symbols and contract addresses remain
+searchable from their evaluation identity.
+
+Cache versions include completed-scan time, snapshot maximum, sent-alert maximum
+and count, outcome maximum/count, and latest enrichment fetch. Counting sent receipts
+handles an older pending alert completing after a newer one; outcome inserts can
+invalidate results independently from snapshot writes. The cache remains bounded
+to 256 entries with a 10-second default TTL; it does not promise immediate visibility
+for arbitrary manual rewrites of old rows. Query deadlines also apply to version
+lookups and validated search/sort work; timeout errors return the generic 503.
+
+Validation and scope evidence are recorded in [public API validation](website-public-api-validation.md).
