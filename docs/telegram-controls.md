@@ -33,7 +33,8 @@ private chat; other users and group messages cannot view or change settings.
 ## Menu actions
 
 The main menu provides **📊 Status**, **🎯 Strategy presets**, **🩺 Health**,
-**⚙️ Settings**, **🔍 Near misses**, **🔄 Scan now**, **⏸ Pause / ▶️ Resume alerts**,
+**📈 Market report**, **⚙️ Settings**, **🔍 Near misses**, **🔄 Scan now**,
+**⏸ Pause / ▶️ Resume alerts**,
 and **🧪 Test alert**. **/settings** opens the settings categories directly:
 Chains, Thresholds, Structure, Activity, Alerts, and Reset. Advanced configuration,
 discovery timing, and asset exclusions remain available in this hub.
@@ -44,6 +45,12 @@ The API pacing and cooldown remain in force. **Test alert** requires confirmatio
 sends only to the authorized private owner chat, and labels its data as synthetic.
 It makes no GMGN requests and does not reserve a live alert or change strategy settings.
 The test is available during dry run or pause so owners can inspect the layout.
+
+**Market report**, `/market` or `/report` asks for 1h, 4h, 12h, 24h, 72h or 7d and
+returns up to ten Solana tickers ranked by peak score, with latest saved scores and
+evidence. Below-threshold and blocked evaluations are included with their caveats.
+Automatic reports run every four hours independently of signal alert pause controls.
+See [market report definitions, timing and API use](market-reports.md).
 
 - **⚙️ Advanced configuration:** all 20 preset settings plus the scan interval, each with
   its current value, across three short pages: Market & eligibility, Activity & chart
@@ -79,9 +86,11 @@ to a ratio. Price-change settings accept `40` or `40%` for 40%. Each prompt expl
 its units. Base ranges and history intervals must remain consistent. Credentials,
 owners and filesystem paths are not editable through Telegram.
 
-Use `/start`, `/menu`, `/settings`, `/status`, `/health`, or `/cancel`. Menus sent before
+Use `/start`, `/menu`, `/settings`, `/status`, `/health`, `/market`, `/report`, or `/cancel`.
+Menus sent before
 a restart expire: open `/menu` again. `DRY_RUN=true` suppresses scanner alerts and daily
-summaries; the bot can still answer the owner's explicit control commands.
+summaries and automatic market reports; the bot can still answer the owner's explicit
+control commands.
 
 ## Suggested initial tuning
 

@@ -1,0 +1,21 @@
+[Unit]
+Description=Revival Radar website (saved data and owner command API)
+After=network.target
+
+[Service]
+Type=simple
+User=radar
+Group=radar
+WorkingDirectory=/opt/gmgn-revival-radar
+EnvironmentFile=/etc/revival-radar/web.env
+ExecStart=/opt/gmgn-revival-radar/.venv/bin/revival-radar-web --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/gmgn-revival-radar/data
+
+[Install]
+WantedBy=multi-user.target

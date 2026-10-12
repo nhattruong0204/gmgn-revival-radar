@@ -1,6 +1,7 @@
 import html
 import logging
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
 import httpx
 
@@ -144,6 +145,19 @@ def format_full_alert(token: TokenSnapshot, result: RevivalResult) -> str:
         f"Age {_text(age, 24)} · ATH cap {money(token.ath_market_cap)}",
         f"Hot Search {_text(rank, 48)} · Trending {_text(trending, 24)}",
     ]
+    mint = token.security.solana_mint
+    if mint is not None:
+        details.extend(
+            [
+                "",
+                "<b>Solana mint authorities · Helius</b>",
+                f"Mint authority {'revoked' if mint.mint_renounced else 'active'} · "
+                f"Freeze authority {'revoked' if mint.freeze_renounced else 'active'}",
+                f"Confirmed slot {mint.slot:,} · "
+                + datetime.fromtimestamp(mint.observed_at, UTC).strftime("%Y-%m-%d %H:%M:%S UTC"),
+                "Authority checks assess these two powers; other token risks may remain.",
+            ]
+        )
     if not s.available:
         lines.append("📊 <b>Structure</b> · unavailable")
         details.append("Unavailable · insufficient candle history")
@@ -296,6 +310,17 @@ def format_alert(token: TokenSnapshot, result: RevivalResult, context: dict | No
         lines += ["", "⚠️ " + " · ".join(_text(risk, 60) for risk in unique[:8])]
         if len(unique) > 8:
             lines.append(f"+{len(unique) - 8} risk deductions · see full details")
+    mint = token.security.solana_mint
+    if mint is not None:
+        lines += [
+            "",
+            "🔎 Mint authority "
+            + ("revoked ✓" if mint.mint_renounced else "active ⚠️")
+            + " · Freeze "
+            + ("revoked ✓" if mint.freeze_renounced else "active ⚠️"),
+        ]
+    elif any(warning.startswith("Helius mint verification") for warning in token.data_warnings):
+        lines += ["", "⚠️ Solana mint authorities unverified · see full details"]
     lines += [
         "",
         f"<code>{html.escape(token.contract_address)}</code>",

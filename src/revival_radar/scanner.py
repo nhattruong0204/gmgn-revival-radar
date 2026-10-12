@@ -148,6 +148,19 @@ class Scanner:
             return token, result
         self._count(report, token.chain, "market_pass")
         self.metrics.candidate(token, market_pass=True)
+        try:
+            token = await self.enrichment.onchain(token)
+        except EnrichmentDeferred:
+            token.data_warnings.append("Helius mint verification deferred; authorities unverified")
+        except Exception as exc:
+            self.metrics.failures["helius"] += 1
+            self.metrics.error("helius", exc, token)
+            token.data_warnings.append(
+                "Helius mint verification unavailable; authorities unverified"
+            )
+        mint_evidence = token.security.solana_mint
+        result = score_token(token, history, structure, self.config)
+        self.metrics.candidate(token, helius_verified=mint_evidence is not None)
         recent = fresh_history(token, history, self.config)
         if (
             sum(entry.volume_5m is not None for entry in recent)
@@ -221,6 +234,8 @@ class Scanner:
                 finally:
                     if self.enrichment.used["security"] > before_security:
                         self._count(report, token.chain, "security_requested")
+        if mint_evidence is not None:
+            token = self.enrichment.apply_mint(token, mint_evidence)
         return token, score_token(token, history, structure, self.config)
 
     async def process(self, token: TokenSnapshot, report: ScanReport) -> None:

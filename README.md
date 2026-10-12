@@ -88,9 +88,36 @@ but does not guarantee freedom from GMGN rate limits. Set
 Alert weights and thresholds are preserved, so current Trending/both-source bonuses
 are no longer earned by live candidates.
 
+## Optional Helius Solana verification
+
+Set `HELIUS_API_TOKEN` in your private `.env` and restart to enable independent
+Solana mint checks. `HELIUS_ENABLED=false` disables them. The token is never shown
+in Telegram, saved configuration context, or logs. The offline demo disables Helius.
+
+For market-qualified Solana candidates, the bot reads a confirmed, parsed mint
+account from Helius RPC and stores its authorities, total supply, decimals, token
+program, extension names, observation time, and slot in the existing SQLite payload.
+An active mint or freeze authority blocks an alert. Revoked authorities preserve
+other known GMGN risk findings. Conflicting authority reports are labeled, and the
+on-chain authority values take priority. Total mint supply is retained as evidence;
+market cap continues to use GMGN circulating supply and fresh price data.
+
+Checks use a separate 15-minute persistent cache, up to 20 new mint checks per scan,
+and at most 15 seconds of cumulative Helius request time. Helius has independent
+pacing, bounded retries, and cooldowns for authentication, rate, and outage failures.
+Unavailable, malformed, or deferred checks remain explicitly unverified while the
+bot continues its existing GMGN alert rules and market-history collection. No Helius
+failure is treated as successful verification. Token-2022 extensions are recorded
+and flagged as unassessed; revoked mint/freeze authority is not a complete risk audit.
+
+`/health` → Performance shows Helius attempts, time, cache use and failures. Alert
+details retain the original mint evidence. See [Helius integration](docs/helius.md)
+for settings, data boundaries, and verification details. This addition does not
+replace GMGN volume, transaction windows, liquidity, prices, rankings, or candles.
+
 ## Telegram setup
 
-The owner-only **/menu** opens Status, Strategy, Health, Settings, Near Misses,
+The owner-only **/menu** opens Status, Strategy, Health, Market Report, Settings, Near Misses,
 Scan Now, Pause/Resume Alerts, and Test Alert. **Settings** groups Chains, Thresholds,
 Structure, Activity, Alerts, and Reset, with Advanced configuration, discovery timing,
 and exclusions also available. Current enabled chains appear above the buttons;
@@ -100,6 +127,15 @@ Choose **Settings → Advanced configuration** for all preset settings and the s
 interval across three short pages. Tap a value, send its replacement (for example
 `15k`, `60%` or `150s`), and confirm to save it without editing code or restarting.
 Navigation updates the current menu, while confirmations remain separate messages.
+
+**📈 Market report** (also `/market` or `/report`) asks for a timeframe from 1h to 7d,
+then shows up to ten Solana tickers ranked by peak saved score, with latest scores,
+risks, blockers and missing evidence. Below-threshold evaluations are included.
+Automatic reports cover the previous four hours at 00/04/08/12/16/20 in
+`REPORT_TIMEZONE` (UTC+7 by default), independently of signal-alert pause controls.
+`MARKET_REPORT_ENABLED=true` enables them; `DRY_RUN=true` suppresses automatic delivery.
+Reports use saved observations without extra GMGN or Helius calls. See
+[market report definitions and delivery behavior](docs/market-reports.md).
 
 Alerts lead with a compact token/chain, score/stage, market, trigger and structure
 summary. **GMGN**, **Explorer**, **Why this alert**, and **Full details** buttons keep
@@ -439,3 +475,24 @@ an active database, or use SQLite's backup API. Snapshot history currently has n
 For cloud onboarding, dependencies/files survive snapshots; processes do not. Restart with
 `revival-radar run` after configuring credentials. An offline demo validates development
 readiness, not live Telegram delivery or profit.
+
+## Public website and owner area
+
+The React/TypeScript website and separate FastAPI service read saved scanner data:
+Radar filters, token evidence/history, confirmed alerts, Solana reports, observed
+outcomes and methodology. The private owner area uses server sessions and CSRF
+protection; settings/actions are previewed and confirmed through the existing bot's
+durable command queue. Browsing makes no GMGN or Helius requests.
+
+Start locally with the [website deployment guide](docs/website-deployment.md).
+Use `python scripts/seed_website_demo.py /tmp/radar-web-demo.db` for current-time
+synthetic browser data; the original deterministic CLI demo remains unchanged.
+Build the frontend with `cd web && npm ci && npm test && npm run build`.
+Set `WEB_STATIC_DIRECTORY` to the absolute `web/dist` path and run
+`revival-radar-web` against the scanner's existing SQLite database.
+
+Owner access is disabled by default. Enable `WEB_CONTROLS_ENABLED=true` in the
+scanner and configure the web service separately with a protected owner password
+hash and trusted HTTPS origin. The web process never migrates storage or starts a
+second scanner. [Validation and remaining launch checks](docs/website-validation.md)
+distinguish local readiness from the pending production HTTPS deployment.

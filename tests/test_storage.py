@@ -2,7 +2,7 @@ import sqlite3
 import threading
 
 from revival_radar.models.signal import RevivalResult
-from revival_radar.storage.database import connect
+from revival_radar.storage.database import SCHEMA_VERSION, connect
 from revival_radar.storage.repository import Repository
 
 from .conftest import changed
@@ -21,7 +21,7 @@ def test_snapshots_nullable_dedup_and_persistence(repo, token, history):
     row = repo.db.execute("SELECT volume_1m FROM token_snapshots LIMIT 1").fetchone()
     assert row[0] is None
     assert len(repo.history(token)) == 4
-    assert repo.db.execute("PRAGMA user_version").fetchone()[0] == 4
+    assert repo.db.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
     assert len(repo.watchlist("sol", 0, 10)) == 1
 
 

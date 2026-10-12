@@ -13,6 +13,33 @@ Count = Annotated[int, Field(ge=0)]
 Source = Literal["hot_search", "trending"]
 
 
+class SolanaMintVerification(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    provider: Literal["helius"] = "helius"
+    contract_address: str = Field(pattern=r"^[1-9A-HJ-NP-Za-km-z]{32,44}$")
+    slot: Annotated[int, Field(ge=0)]
+    observed_at: Nonnegative
+    commitment: Literal["confirmed"] = "confirmed"
+    token_program: Literal[
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+    ]
+    supply_raw: str = Field(pattern=r"^[0-9]{1,20}$")
+    decimals: Annotated[int, Field(ge=0, le=255)]
+    mint_renounced: bool
+    freeze_renounced: bool
+    extensions: list[Annotated[str, Field(pattern=r"^[a-z][A-Za-z0-9]{0,63}$")]] = Field(
+        default_factory=list, max_length=64
+    )
+
+    @field_validator("supply_raw")
+    @classmethod
+    def valid_supply(cls, value: str) -> str:
+        if int(value) > 2**64 - 1:
+            raise ValueError("Mint supply exceeds u64")
+        return value
+
+
 class Security(BaseModel):
     top10_ratio: Fraction | None = None
     dev_ratio: Fraction | None = None
@@ -26,6 +53,7 @@ class Security(BaseModel):
     liquidity_burned: bool | None = None
     dangerous: bool | None = None
     flags: list[str] = Field(default_factory=list)
+    solana_mint: SolanaMintVerification | None = None
 
 
 class TokenSnapshot(BaseModel):
@@ -33,6 +61,7 @@ class TokenSnapshot(BaseModel):
     # Transient market-stat provenance preserves field priority during split enrichment.
     # Private attributes never enter snapshots, database columns, or Telegram output.
     _market_security_info: dict = PrivateAttr(default_factory=dict)
+    _gmgn_security: Security | None = PrivateAttr(default=None)
     timestamp: Nonnegative = Field(default_factory=time.time)
     chain: Literal["sol", "bsc", "base", "robinhood", "arc"]
     contract_address: str

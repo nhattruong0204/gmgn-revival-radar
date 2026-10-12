@@ -7,13 +7,14 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field
 from functools import wraps
 
-STAGES = ("discovery", "market", "security", "kline", "sqlite", "telegram")
+STAGES = ("discovery", "market", "security", "kline", "helius", "sqlite", "telegram")
 ENDPOINTS = (
     "/v1/market/hot_searches",
     "/v1/market/rank",
     "/v1/token/info",
     "/v1/token/security",
     "/v1/market/token_kline",
+    "helius:getAccountInfo",
 )
 
 
@@ -23,6 +24,30 @@ def error_category(error: BaseException, stage: str = "") -> str:
 
     import httpx
     from pydantic import ValidationError
+
+    if stage == "helius":
+        category = getattr(error, "category", "helius_unavailable")
+        return (
+            category
+            if category
+            in {
+                "helius_invalid_address",
+                "helius_auth",
+                "helius_cooldown",
+                "helius_timeout",
+                "helius_transport",
+                "helius_429",
+                "helius_5xx",
+                "helius_http",
+                "helius_rpc_error",
+                "helius_rpc_unavailable",
+                "helius_missing_account",
+                "helius_malformed_response",
+                "helius_retry_exhausted",
+                "helius_unavailable",
+            }
+            else "helius_unavailable"
+        )
 
     if isinstance(error, sqlite3.Error):
         return "sqlite"

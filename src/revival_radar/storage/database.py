@@ -14,7 +14,7 @@ TEXT_FIELDS = {
     "asset_classification_reason",
 }
 SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in {"security", "data_warnings"}]
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 
 def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
@@ -53,6 +53,11 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             _migrate_enrichment(db)
         if version < 4:
             _migrate_outcomes(db)
+        if version < 5:
+            _migrate_web_controls(db)
+        # An additive query index is compatible with existing schema-4/rollback readers.
+        db.execute("""CREATE INDEX IF NOT EXISTS evaluations_chain_time
+            ON evaluations(chain,timestamp DESC,id DESC)""")
         db.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
         db.commit()
     except Exception:
@@ -142,3 +147,27 @@ def _migrate_outcomes(db: sqlite3.Connection) -> None:
             json_extract(s.value,'$.configuration.revision')
         FROM alerts a LEFT JOIN state s
         ON s.key='telegram:alert:' || a.id AND json_valid(s.value)""")
+
+
+def _migrate_web_controls(db: sqlite3.Connection) -> None:
+    """Scanner-owned, additive storage; the separate web API never migrates."""
+    db.execute("""CREATE TABLE web_commands (
+        id TEXT PRIMARY KEY, owner TEXT NOT NULL, action TEXT NOT NULL,
+        payload TEXT NOT NULL, expected_revision INTEGER, target_revision INTEGER,
+        status TEXT NOT NULL DEFAULT 'queued'
+            CHECK(status IN ('queued','running','succeeded','failed','unknown')),
+        result TEXT, created_at REAL NOT NULL, started_at REAL, finished_at REAL
+    )""")
+    db.execute("CREATE INDEX web_commands_pending ON web_commands(status,created_at,id)")
+    db.execute("CREATE INDEX web_commands_owner ON web_commands(owner,created_at DESC)")
+    db.execute("""CREATE TABLE web_previews (
+        id TEXT PRIMARY KEY, owner TEXT NOT NULL, payload TEXT NOT NULL,
+        revision INTEGER NOT NULL, expires_at REAL NOT NULL,
+        used INTEGER NOT NULL DEFAULT 0 CHECK(used IN (0,1))
+    )""")
+    db.execute("CREATE INDEX web_previews_expiry ON web_previews(expires_at)")
+    db.execute("""CREATE TABLE web_sessions (
+        token_hash TEXT PRIMARY KEY, csrf_hash TEXT NOT NULL,
+        expires_at REAL NOT NULL, created_at REAL NOT NULL
+    )""")
+    db.execute("CREATE INDEX web_sessions_expiry ON web_sessions(expires_at)")

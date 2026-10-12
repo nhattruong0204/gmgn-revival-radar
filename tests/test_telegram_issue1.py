@@ -11,7 +11,7 @@ from revival_radar.clients.telegram import alert_buttons, format_alert, format_w
 from revival_radar.config_context import configuration_context
 from revival_radar.models.signal import Acceleration, RevivalResult, Structure
 from revival_radar.runtime_settings import RuntimeSettings
-from revival_radar.storage.database import connect
+from revival_radar.storage.database import SCHEMA_VERSION, connect
 from revival_radar.storage.repository import Repository
 from revival_radar.telegram_controls import TelegramControls
 from revival_radar.telegram_views import health_page
@@ -120,7 +120,7 @@ def test_saved_alert_detail_is_immutable_survives_reopen_and_contains_no_secrets
     other = connect(Path(path))
     try:
         assert Repository(other).presentation_detail("a", identity) == detail
-        assert other.execute("PRAGMA user_version").fetchone()[0] == 4
+        assert other.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
     finally:
         other.close()
     assert repo.presentation_detail("a", 2**63) is None

@@ -1,0 +1,544 @@
+import { useState } from "react";
+import { useData } from "./api";
+import {
+  Avatar,
+  Empty,
+  Freshness,
+  Icon,
+  Link,
+  Loading,
+  Notice,
+  PageHeading,
+  Score,
+  Stage,
+  Stat,
+} from "./components";
+import { compact, dateTime, percent, relative, tokenPath } from "./format";
+import type {
+  Alert,
+  AlertDetail,
+  ListResponse,
+  Outcomes,
+  Report,
+} from "./types";
+import { SignalEvidence } from "./TokenDetail";
+export function Alerts({ id }: { id?: string }) {
+  const [page, setPage] = useState(1);
+  const feed = useData<ListResponse<Alert>>(
+    !id ? `/api/v1/alerts?page=${page}&page_size=25` : null,
+  );
+  const detail = useData<AlertDetail>(
+    id ? `/api/v1/alerts/${encodeURIComponent(id)}` : null,
+  );
+  const source = id ? detail : feed;
+  return (
+    <>
+      <PageHeading
+        eyebrow="SIGNAL ARCHIVE"
+        title={
+          id ? `${detail.data?.symbol ?? "Token"} alert` : "Confirmed alerts"
+        }
+        description={
+          id
+            ? "The exact evidence saved when this alert was sent."
+            : "Signals with confirmed Telegram delivery. Saved at the moment of the alert."
+        }
+        action={
+          id ? (
+            <Link className="button button-secondary" href="/alerts">
+              ← All alerts
+            </Link>
+          ) : (
+            <button className="button button-secondary" onClick={feed.refresh}>
+              <Icon name="refresh" />
+              Refresh
+            </button>
+          )
+        }
+      />
+      {source.error && <Notice tone="error">{source.error}</Notice>}
+      {source.loading && !source.data ? (
+        <Loading />
+      ) : id && detail.data ? (
+        <>
+          <div className="alert-meta">
+            <Stage stage={detail.data.observation?.status ?? "UNKNOWN"} />
+            <span>Sent {dateTime(detail.data.timestamp)}</span>
+            <span>
+              {detail.data.preset ?? "Unlabeled strategy"} · revision{" "}
+              {detail.data.revision ?? "unknown"}
+            </span>
+            <Link
+              className="external-link"
+              href={tokenPath(detail.data.chain, detail.data.contract_address)}
+            >
+              Current token observation
+              <Icon name="arrow" size={15} />
+            </Link>
+          </div>
+          {detail.data.observation ? (
+            <SignalEvidence observation={detail.data.observation} />
+          ) : (
+            <Notice tone="warning">
+              Original evidence is unavailable for this legacy alert. It has not
+              been replaced with current evidence.
+            </Notice>
+          )}
+          <section className="panel">
+            <h2>Observed after the alert</h2>
+            <p className="muted">
+              Recorded prices at supported horizons. These are signal returns,
+              not executed-trade P&amp;L.
+            </p>
+            {detail.data.outcomes?.length ? (
+              <div className="structure-grid">
+                {detail.data.outcomes.map((v, i) => (
+                  <div key={i}>
+                    <span>+{v.horizon_hours ?? v.hours ?? "?"}h</span>
+                    <strong
+                      className={
+                        v.return_pct != null && v.return_pct >= 0
+                          ? "positive"
+                          : "muted"
+                      }
+                    >
+                      {percent(v.return_pct, false, true)}
+                    </strong>
+                    <small>
+                      {v.observed_at
+                        ? dateTime(v.observed_at)
+                        : "Observation unavailable"}
+                    </small>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Empty title="No outcome observations yet">
+                A future stored market observation may complete the supported
+                horizons.
+              </Empty>
+            )}
+          </section>
+        </>
+      ) : (
+        <section className="panel">
+          <div className="panel-header">
+            <div>
+              <h2>Sent signals</h2>
+              <p>Failed, pending and uncertain deliveries are excluded</p>
+            </div>
+            <Freshness observed={feed.data?.last_scan_at} />
+          </div>
+          {feed.data?.items.length ? (
+            <>
+              <div className="alerts-list">
+                {feed.data.items.map((a) => (
+                  <Link
+                    key={a.id}
+                    href={`/alerts/${a.id}`}
+                    className="alert-row"
+                  >
+                    <div className="alert-symbol">
+                      <div className="signal-icon">
+                        <Icon name="alerts" />
+                      </div>
+                      <div>
+                        <strong>{a.symbol}</strong>
+                        <small>
+                          {a.preset ?? "Unlabeled strategy"} · rev{" "}
+                          {a.revision ?? "unknown"}
+                        </small>
+                      </div>
+                    </div>
+                    <div className="alert-stage">
+                      <Stage stage={a.observation?.status ?? "UNKNOWN"} />
+                    </div>
+                    <Score value={a.score} />
+                    <span className="muted">{relative(a.timestamp)}</span>
+                    <Icon name="chevron" />
+                  </Link>
+                ))}
+              </div>
+              <div className="panel-footer">
+                <span>{feed.data.total} confirmed sent alerts</span>
+                <div className="pagination">
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage((v) => v - 1)}
+                  >
+                    ←
+                  </button>
+                  <span>Page {page}</span>
+                  <button
+                    disabled={page * 25 >= feed.data.total}
+                    onClick={() => setPage((v) => v + 1)}
+                  >
+                    →
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <Empty title="No confirmed sent alerts">
+              Alerts appear here after Telegram confirms delivery.
+            </Empty>
+          )}
+        </section>
+      )}
+    </>
+  );
+}
+export function Reports() {
+  const [hours, setHours] = useState(24);
+  const { data, error, loading, refresh } = useData<Report>(
+    `/api/v1/reports?hours=${hours}`,
+  );
+  return (
+    <>
+      <PageHeading
+        eyebrow="THE BIGGER PICTURE"
+        title="Market reports"
+        description="Top Solana candidates, ranked by their peak observed revival score."
+        action={
+          <button className="button button-secondary" onClick={refresh}>
+            <Icon name="refresh" />
+            Refresh
+          </button>
+        }
+      />
+      <div className="report-toolbar">
+        <span className="chain-chip">Solana only</span>
+        <div className="segmented-control">
+          {[1, 4, 12, 24, 72, 168].map((h) => (
+            <button
+              key={h}
+              className={hours === h ? "active" : ""}
+              onClick={() => setHours(h)}
+            >
+              {h === 168 ? "7d" : `${h}h`}
+            </button>
+          ))}
+        </div>
+        <span className="muted small">
+          Top 10 · Up to seven days of evidence
+        </span>
+      </div>
+      {error && <Notice tone="error">{error}</Notice>}
+      {data?.multiple_configurations && (
+        <Notice tone="warning">
+          This window includes multiple strategy configurations. Compare saved
+          revisions before interpreting changes in scores.
+        </Notice>
+      )}
+      <div className="stats-grid">
+        <Stat
+          label="Evaluations"
+          value={compact(data?.evaluations)}
+          detail="In completed scans"
+        />
+        <Stat
+          label="Unique tokens"
+          value={compact(data?.unique_tokens)}
+          detail="Observed in this window"
+        />
+        <Stat
+          label="Completed scans"
+          value={compact(data?.completed_scans)}
+          detail={`${data?.incomplete_scans ?? "—"} incomplete scans excluded`}
+          icon="check"
+        />
+        <Stat
+          label="Latest completion"
+          value={relative(data?.last_finished)}
+          detail={data?.timezone ?? "Saved source timezone"}
+          icon="clock"
+        />
+      </div>
+      <section className="panel report-panel">
+        <div className="panel-header">
+          <div>
+            <h2>Window leaders</h2>
+            <p>
+              {data
+                ? `${dateTime(data.since)} — ${dateTime(data.until)}`
+                : "Reading saved rankings"}
+            </p>
+          </div>
+          <span className="muted small">Peak / Latest</span>
+        </div>
+        {loading && !data ? (
+          <Loading />
+        ) : !data?.entries.length ? (
+          <Empty title="No report observations in this window">
+            Completed scans will populate the Solana ranking.
+          </Empty>
+        ) : (
+          <div className="report-list">
+            {data.entries.map((e, i) => (
+              <div
+                className="report-row"
+                key={`${e.peak?.chain}:${e.peak?.contract_address}`}
+              >
+                <span className="rank-number">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <Link
+                  className="token-link"
+                  href={tokenPath(e.peak.chain, e.peak.contract_address)}
+                >
+                  <Avatar observation={e.peak} />
+                  <span>
+                    <strong>{e.peak.symbol}</strong>
+                    <small>{e.peak.name ?? "Solana"}</small>
+                  </span>
+                </Link>
+                <Stage stage={e.peak.status} />
+                <div className="report-scores">
+                  <strong className="positive">{e.peak.score}</strong>
+                  <span>/</span>
+                  <strong>{e.latest.score}</strong>
+                </div>
+                <div className="report-market">
+                  <strong>{compact(e.latest.market_cap, true)}</strong>
+                  <small>Latest market cap</small>
+                </div>
+                <Link
+                  className="detail-link"
+                  aria-label={`View ${e.peak.symbol}`}
+                  href={tokenPath(e.peak.chain, e.peak.contract_address)}
+                >
+                  <Icon name="chevron" />
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="panel-footer">
+          Peak and latest are saved evaluations. Sparse observations do not
+          establish continuous performance.
+        </div>
+      </section>
+    </>
+  );
+}
+export function OutcomePage() {
+  const [days, setDays] = useState(7);
+  const { data, error, loading } = useData<Outcomes>(
+    `/api/v1/outcomes?days=${days}`,
+  );
+  return (
+    <>
+      <PageHeading
+        eyebrow="FOLLOW THE OBSERVATIONS"
+        title="Signal outcomes"
+        description="What saved market observations show after confirmed sent alerts."
+        action={
+          <label className="select-field">
+            <span>Alert window</span>
+            <select
+              value={days}
+              onChange={(e) => setDays(Number(e.target.value))}
+            >
+              <option value={1}>Last day</option>
+              <option value={3}>Last 3 days</option>
+              <option value={7}>Last 7 days</option>
+            </select>
+          </label>
+        }
+      />
+      <Notice>
+        These are observed signal returns, not trade P&amp;L. Only available
+        recorded prices enter the median and positive-return rate. Pending and
+        missed observations are shown separately.
+      </Notice>
+      {error && <Notice tone="error">{error}</Notice>}
+      {loading && !data ? (
+        <Loading />
+      ) : (
+        <div className="outcome-grid">
+          {[1, 6, 24, 72].map((h) => {
+            const v = data?.horizons[String(h)];
+            return (
+              <section className="panel outcome-card" key={h}>
+                <div className="outcome-heading">
+                  <span className="horizon-chip">+{h}h</span>
+                  <Icon name="outcomes" />
+                </div>
+                <div className="outcome-value">
+                  <span
+                    className={
+                      (v?.median_return_pct ?? 0) >= 0 ? "positive" : "danger"
+                    }
+                  >
+                    {percent(v?.median_return_pct, false, true)}
+                  </span>
+                  <small>Median observed return</small>
+                </div>
+                <div className="outcome-meter">
+                  <i
+                    style={{
+                      width: `${v?.returns_available ? (v.positive / v.returns_available) * 100 : 0}%`,
+                    }}
+                  />
+                </div>
+                <dl>
+                  <div>
+                    <dt>Positive returns</dt>
+                    <dd>
+                      {v?.returns_available
+                        ? percent(v.positive / v.returns_available, true)
+                        : "—"}{" "}
+                      <small>
+                        ({v?.positive ?? 0} / {v?.returns_available ?? 0})
+                      </small>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Recorded observations</dt>
+                    <dd>{v?.observed ?? "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>Returns available</dt>
+                    <dd>{v?.returns_available ?? "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>Pending horizon</dt>
+                    <dd>{v?.pending ?? "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>Missed observations</dt>
+                    <dd className={v?.missed ? "warning-text" : ""}>
+                      {v?.missed ?? "—"}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+            );
+          })}
+        </div>
+      )}
+      <section className="panel methodology-note">
+        <h2>Reading these results</h2>
+        <p>
+          The scanner samples tokens over time. A saved price around a supported
+          horizon is used to compare with the alert-time price. No observation
+          means no return calculation; gaps are never filled with an assumed
+          price.
+        </p>
+        <p>
+          Small samples, changing strategy revisions and incomplete token
+          coverage limit comparisons. Use the counts alongside every percentage.
+        </p>
+        {data && (
+          <div className="small muted">
+            Alert cohort: {dateTime(data.since)} — {dateTime(data.until)}
+          </div>
+        )}
+      </section>
+    </>
+  );
+}
+export function Methodology() {
+  return (
+    <>
+      <PageHeading
+        eyebrow="EVIDENCE BEFORE CONVICTION"
+        title="How the radar works"
+        description="A clear view of what the scanner observes, and what each score means."
+      />
+      <div className="method-hero">
+        <div className="method-radar">
+          <img src="/revival-radar.png" alt="Revival Radar" />
+        </div>
+        <div>
+          <span className="eyebrow">FIND THE COMEBACK</span>
+          <h2>
+            From quiet base
+            <br />
+            to returning activity.
+          </h2>
+          <p>
+            Revival Radar tracks established tokens after a deep decline. It
+            looks for a mature base, renewed participation and market structure
+            that supports a potential revival.
+          </p>
+        </div>
+      </div>
+      <div className="method-grid">
+        {[
+          [
+            "01",
+            "Discover",
+            "The bot discovers tokens from enabled GMGN sources and revisits its tracked universe. Public pages display stored observations from completed scans.",
+          ],
+          [
+            "02",
+            "Evaluate",
+            "Setup measures recovery conditions. Trigger measures returning activity. Confirmation reflects cached closed-candle structure. Older unknown dimensions stay unknown.",
+          ],
+          [
+            "03",
+            "Qualify",
+            "Eligibility filters, risk findings and missing data accompany every score. A strong score can coexist with a filter blocker or unavailable security evidence.",
+          ],
+          [
+            "04",
+            "Observe",
+            "Confirmed sent Telegram alerts enter the public archive. Later saved market observations support the outcome horizons; no executed trades are implied.",
+          ],
+        ].map(([n, title, text]) => (
+          <section className="panel method-card" key={n}>
+            <span className="method-number">{n}</span>
+            <h2>{title}</h2>
+            <p>{text}</p>
+          </section>
+        ))}
+      </div>
+      <section className="panel">
+        <h2>From watch to revival</h2>
+        <div className="stage-explainer">
+          {[
+            [
+              "WATCH",
+              "A candidate worth monitoring; evidence is still developing.",
+            ],
+            [
+              "EARLY_REVIVAL",
+              "Returning activity is present, with limited confirmation.",
+            ],
+            [
+              "CONFIRMED_REVIVAL",
+              "A mature base and supporting chart evidence meet the strategy.",
+            ],
+            [
+              "STRONG_REVIVAL",
+              "Stronger evidence across the configured revival criteria.",
+            ],
+          ].map(([stage, text]) => (
+            <div key={stage}>
+              <Stage stage={stage} />
+              <p>{text}</p>
+            </div>
+          ))}
+        </div>
+        <p className="small muted">
+          Stage thresholds depend on the saved strategy and revision. Historical
+          observations keep the configuration that produced them.
+        </p>
+      </section>
+      <section className="panel">
+        <h2>Know the coverage</h2>
+        <p>
+          Observation time tells you when evidence was collected. Page refresh
+          time tells you when your browser last read it. Token charts leave gaps
+          visible, and market reports cover Solana only, with a ten-token
+          ranking and at most seven days of history.
+        </p>
+        <p>
+          Unknown security fields are unavailable evidence. Scores summarize
+          observations and do not certify safety or predict future returns.
+        </p>
+      </section>
+    </>
+  );
+}

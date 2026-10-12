@@ -93,6 +93,7 @@ def health_page(report: dict, view: str = "overview") -> str:
                 ("market", "Market info"),
                 ("security", "Security"),
                 ("kline", "Candles"),
+                ("helius", "Solana mint checks"),
                 ("sqlite", "SQLite"),
                 ("telegram", "Telegram"),
             ):
@@ -104,12 +105,17 @@ def health_page(report: dict, view: str = "overview") -> str:
                 "/v1/token/info": "Token info",
                 "/v1/token/security": "Security",
                 "/v1/market/token_kline": "Candles",
+                "helius:getAccountInfo": "Helius mint RPC",
             }
             for route, label in routes.items():
                 lines.append(f"{label}  {metrics['calls'].get(route, 0)}")
             cache = metrics.get("cache", {})
             lines += ["", "<b>Cache hits / fetches</b>"]
-            for kind, label in (("security", "Security"), ("kline", "Candles")):
+            for kind, label in (
+                ("security", "Security"),
+                ("kline", "Candles"),
+                ("helius", "Solana mint"),
+            ):
                 hits, fetches = cache.get(f"{kind}_hit", 0), cache.get(f"{kind}_fetch", 0)
                 attempts = hits + fetches
                 rate = f"{100 * hits / attempts:.0f}%" if attempts else "No requests"

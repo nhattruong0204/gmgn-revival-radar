@@ -45,16 +45,27 @@ class Settings(BaseSettings):
         env_file=".env", env_nested_delimiter="__", extra="ignore", allow_inf_nan=False
     )
     gmgn_api_key: SecretStr = SecretStr("")
+    helius_api_token: SecretStr = SecretStr("")
+    helius_enabled: bool = True
+    helius_cache_ttl_seconds: float = Field(default=900, ge=0, allow_inf_nan=False)
+    max_helius_verify_per_scan: int = Field(default=20, ge=0, le=100)
+    helius_scan_budget_seconds: Positive = 15
+    helius_request_spacing_seconds: Positive = 0.12
+    helius_http_timeout_seconds: Positive = 10
+    helius_http_attempts: int = Field(default=2, ge=1, le=3)
+    helius_retry_max_wait_seconds: Positive = 2
     telegram_bot_token: SecretStr = SecretStr("")
     telegram_chat_id: str = ""
     telegram_owner_id: int = Field(default=0, ge=0)
     telegram_controls_enabled: bool = True
+    web_controls_enabled: bool = False
     alerts_paused: bool = False
     exclude_tokenized_stocks: bool = True
     exclude_stablecoins: bool = True
     exclude_wrapped_assets: bool = True
     daily_summary_enabled: bool = False
     daily_summary_hour: int = Field(default=9, ge=0, le=23)
+    market_report_enabled: bool = True
     report_timezone: str = "Asia/Bangkok"
     enabled_chains: str = "sol"
     database_path: Path = Path("data/revival_radar.db")

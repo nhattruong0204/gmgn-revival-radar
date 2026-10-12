@@ -1,5 +1,6 @@
 """Validated, nonsecret runtime overrides kept beside the scanner database."""
 
+import hashlib
 import json
 import os
 import tempfile
@@ -134,6 +135,7 @@ class RuntimeSettings:
         self._overrides: dict[str, Any] = {}
         self._revision = 0
         self._offset = 0
+        self._web_receipt: dict[str, Any] | None = None
         if self.path.exists():
             self._load()
         self.active_revision: int | None = None
@@ -145,6 +147,12 @@ class RuntimeSettings:
     @property
     def offset(self) -> int:
         return self._offset
+
+    @property
+    def web_receipt(self) -> dict[str, Any] | None:
+        """Evidence atomically committed with the last web settings mutation."""
+        with self._lock:
+            return dict(self._web_receipt) if self._web_receipt else None
 
     def _validate(self, overrides: dict[str, Any]) -> Settings:
         if not isinstance(overrides, dict) or set(overrides) - ALLOWED_SETTINGS:
@@ -183,34 +191,68 @@ class RuntimeSettings:
                 raise SettingsChangeError("That setting cannot be changed through Telegram.")
             return self._validate(self._overrides | changes)
 
+    def preview_reset(self) -> Settings:
+        with self._lock:
+            return self._validate({})
+
     def _check_revision(self, expected: int | None) -> None:
         if expected is not None and expected != self._revision:
             raise StaleRevisionError("Settings changed. Open /menu and review a new preview.")
 
-    def apply(self, changes: dict[str, Any], expected_revision: int | None = None) -> Settings:
+    def apply(
+        self,
+        changes: dict[str, Any],
+        expected_revision: int | None = None,
+        *,
+        command_id: str | None = None,
+        command_payload: dict[str, Any] | None = None,
+    ) -> Settings:
         with self._lock:
             self._check_revision(expected_revision)
             effective = self.preview(changes)
             normalized = effective.model_dump(mode="json")
             overrides = {key: normalized[key] for key in self._overrides.keys() | changes.keys()}
-            self._persist(overrides, self._revision + 1, self._offset)
+            receipt = self._receipt(command_id, command_payload)
+            self._persist(overrides, self._revision + 1, self._offset, receipt)
             self._overrides, self._revision = overrides, self._revision + 1
+            self._web_receipt = receipt
             return effective
 
-    def reset(self, expected_revision: int | None = None) -> Settings:
+    def reset(
+        self,
+        expected_revision: int | None = None,
+        *,
+        command_id: str | None = None,
+        command_payload: dict[str, Any] | None = None,
+    ) -> Settings:
         with self._lock:
             self._check_revision(expected_revision)
             effective = self._validate({})
-            self._persist({}, self._revision + 1, self._offset)
+            receipt = self._receipt(command_id, command_payload)
+            self._persist({}, self._revision + 1, self._offset, receipt)
             self._overrides, self._revision = {}, self._revision + 1
+            self._web_receipt = receipt
             return effective
+
+    def _receipt(self, command_id: str | None, payload: dict[str, Any] | None) -> dict | None:
+        if command_id is None:
+            # Telegram edits and offset writes must retain evidence until the web
+            # worker acknowledges an interrupted command on its next startup.
+            return self._web_receipt
+        if not isinstance(command_id, str) or not command_id or payload is None:
+            raise SettingsChangeError("Invalid settings command receipt.")
+        return {
+            "id": command_id,
+            "revision": self._revision + 1,
+            "payload_hash": command_fingerprint(payload),
+        }
 
     def set_offset(self, offset: int) -> None:
         with self._lock:
             if type(offset) is not int or offset < 0:
                 raise SettingsChangeError("Invalid Telegram update offset.")
             if offset > self._offset:
-                self._persist(self._overrides, self._revision, offset)
+                self._persist(self._overrides, self._revision, offset, self._web_receipt)
                 self._offset = offset
 
     def _load(self) -> None:
@@ -218,7 +260,11 @@ class RuntimeSettings:
             if self.path.stat().st_size > 65_536:
                 raise ValueError
             data = json.loads(self.path.read_text())
-            if not isinstance(data, dict) or set(data) != {"revision", "offset", "overrides"}:
+            required = {"revision", "offset", "overrides"}
+            if not isinstance(data, dict) or set(data) not in (
+                required,
+                required | {"web_receipt"},
+            ):
                 raise ValueError
             revision, offset = data["revision"], data["offset"]
             if any(type(value) is not int or value < 0 for value in (revision, offset)):
@@ -227,6 +273,21 @@ class RuntimeSettings:
             normalized = effective.model_dump(mode="json")
             self._overrides = {key: normalized[key] for key in data["overrides"]}
             self._revision, self._offset = revision, offset
+            receipt = data.get("web_receipt")
+            if receipt is not None:
+                if (
+                    not isinstance(receipt, dict)
+                    or set(receipt) != {"id", "revision", "payload_hash"}
+                    or not isinstance(receipt["id"], str)
+                    or not receipt["id"]
+                    or type(receipt["revision"]) is not int
+                    or not 0 < receipt["revision"] <= revision
+                    or not isinstance(receipt["payload_hash"], str)
+                    or len(receipt["payload_hash"]) != 64
+                    or any(char not in "0123456789abcdef" for char in receipt["payload_hash"])
+                ):
+                    raise ValueError
+                self._web_receipt = receipt
             # Repair overly permissive modes from copies/restores without rewriting values.
             self.path.chmod(0o600)
         except (OSError, ValueError, TypeError, KeyError):
@@ -234,15 +295,24 @@ class RuntimeSettings:
                 "Runtime settings file could not be loaded; repair it before starting controls."
             ) from None
 
-    def _persist(self, overrides: dict[str, Any], revision: int, offset: int) -> None:
+    def _persist(
+        self,
+        overrides: dict[str, Any],
+        revision: int,
+        offset: int,
+        receipt: dict[str, Any] | None = None,
+    ) -> None:
         temporary: str | None = None
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             fd, temporary = tempfile.mkstemp(prefix=".radar-controls-", dir=self.path.parent)
             with os.fdopen(fd, "w") as output:
                 os.fchmod(output.fileno(), 0o600)
+                data = {"revision": revision, "offset": offset, "overrides": overrides}
+                if receipt is not None:
+                    data["web_receipt"] = receipt
                 json.dump(
-                    {"revision": revision, "offset": offset, "overrides": overrides},
+                    data,
                     output,
                     allow_nan=False,
                     sort_keys=True,
@@ -268,3 +338,9 @@ class RuntimeSettings:
             if temporary is not None:
                 with suppress(OSError):
                     os.unlink(temporary)
+
+
+def command_fingerprint(payload: dict[str, Any]) -> str:
+    """Stable nonsecret receipt; never store settings or a command's raw input twice."""
+    encoded = json.dumps(payload, allow_nan=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(encoded.encode()).hexdigest()
