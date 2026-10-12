@@ -1924,3 +1924,15 @@ select option {
   border-radius: 5px;
   padding: 6px 10px;
 }
+.contract-address {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-family: monospace;
+  font-size: 12px;
+  margin-bottom: 14px;
+  user-select: all;
+}
+.observed-chart svg:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 4px;
+}

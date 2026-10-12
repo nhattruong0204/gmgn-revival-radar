@@ -29,6 +29,7 @@ export interface Token {
   security?: Security;
 }
 export interface Signal {
+  returning_activity?: boolean | null;
   reasons?: string[];
   warnings?: string[];
   components?: Record<string, number>;

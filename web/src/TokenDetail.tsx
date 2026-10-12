@@ -66,7 +66,10 @@ export function SignalEvidence({
             {Object.entries(o.signal?.components ?? {}).map(([key, v]) => (
               <div key={key}>
                 <span>{humanKey(key)}</span>
-                <strong>+{v}</strong>
+                <strong>
+                  {v > 0 ? "+" : ""}
+                  {v}
+                </strong>
               </div>
             ))}
           </div>
@@ -201,7 +204,8 @@ export function TokenDetail({
   const [metric, setMetric] = useState<
       "price" | "market_cap" | "score" | "candles"
     >("price"),
-    [copied, setCopied] = useState(false);
+    [copied, setCopied] = useState(false),
+    [copyError, setCopyError] = useState(false);
   const o = data?.observation;
   return (
     <>
@@ -235,6 +239,13 @@ export function TokenDetail({
               </div>
             }
           />
+          {copyError && (
+            <Notice tone="warning">
+              Copy failed. Select the contract address below to copy it
+              manually.
+            </Notice>
+          )}
+          <p className="contract-address">{o.contract_address}</p>
           <div className="token-meta-row">
             <button
               className="address-button"
@@ -242,18 +253,25 @@ export function TokenDetail({
                 try {
                   await navigator.clipboard.writeText(o.contract_address);
                   setCopied(true);
+                  setCopyError(false);
                   setTimeout(() => setCopied(false), 2000);
                 } catch {
                   setCopied(false);
+                  setCopyError(true);
                 }
               }}
+              aria-label={`Copy contract ${o.contract_address}`}
               title={o.contract_address}
             >
               {shortAddress(o.contract_address)}
               <Icon name={copied ? "check" : "copy"} size={15} />
               <span>{copied ? "Copied" : "Copy address"}</span>
             </button>
-            <Freshness observed={o.timestamp} refreshed={refreshedAt} />
+            <Freshness
+              label="Saved evaluation observed"
+              observed={o.timestamp}
+              refreshed={refreshedAt}
+            />
             <span className="config-pill">
               {o.preset ?? "Unlabeled strategy"} · rev {o.revision ?? "unknown"}
             </span>
@@ -314,6 +332,43 @@ export function TokenDetail({
               observations in this window are omitted.
             </Notice>
           )}
+          <section className="panel">
+            <h2>Returning activity</h2>
+            <p className="small muted">
+              Ratios use the saved evaluation’s matching-window baseline.
+              Missing activity evidence remains unknown.
+            </p>
+            <div className="structure-grid">
+              <div>
+                <span>5m volume acceleration</span>
+                <strong>
+                  {typeof o.signal?.acceleration?.volume_acceleration_5m ===
+                  "number"
+                    ? `${number(o.signal.acceleration.volume_acceleration_5m, 2)}×`
+                    : "Unknown"}
+                </strong>
+              </div>
+              <div>
+                <span>5m transaction acceleration</span>
+                <strong>
+                  {typeof o.signal?.acceleration?.tx_acceleration_5m ===
+                  "number"
+                    ? `${number(o.signal.acceleration.tx_acceleration_5m, 2)}×`
+                    : "Unknown"}
+                </strong>
+              </div>
+              <div>
+                <span>Returning activity observed</span>
+                <strong>
+                  {o.signal?.returning_activity == null
+                    ? "Unknown"
+                    : o.signal.returning_activity
+                      ? "Yes"
+                      : "No"}
+                </strong>
+              </div>
+            </div>
+          </section>
           <section className="panel chart-panel">
             <div className="panel-header">
               <div>

@@ -197,18 +197,20 @@ export function Avatar({ observation }: { observation: Observation }) {
 export function Freshness({
   observed,
   refreshed,
+  label = "Last completed scan",
 }: {
   observed: number | null | undefined;
   refreshed?: number | null;
+  label?: string;
 }) {
   const stale = observed == null || Date.now() / 1000 - observed > 1800;
   return (
     <div className={`freshness ${stale ? "stale" : ""}`}>
       <span className="status-dot" />
       <span title={dateTime(observed)}>
-        Last completed scan{" "}
-        {observed == null ? "unavailable" : relative(observed)}
+        {label} {observed == null ? "unavailable" : relative(observed)}
       </span>
+      {stale && observed != null && <small>Stale observation</small>}
       {refreshed && (
         <small title={dateTime(refreshed)}>
           Page refreshed {relative(refreshed)}

@@ -13,7 +13,10 @@ export function chartSegments(points: ChartPoint[]): ChartPoint[][] {
     .map((p, i) => p.timestamp - ordered[i].timestamp)
     .filter((v) => v > 0)
     .sort((a, b) => a - b);
-  const cadence = intervals[Math.floor((intervals.length - 1) / 2)] ?? 3600;
+  const cadence = Math.min(
+    3600,
+    intervals[Math.floor((intervals.length - 1) / 2)] ?? 3600,
+  );
   const segments: ChartPoint[][] = [];
   let previous: ChartPoint | undefined;
   for (const point of ordered) {

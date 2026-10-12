@@ -63,7 +63,7 @@ export function ObservedChart({
     score ? `${number(v)} / 100` : money ? price(v) : number(v, 3);
   return (
     <div className="observed-chart">
-      <div className="chart-legend">
+      <div className="chart-legend" aria-live="polite">
         <span>
           <i />
           {label}
@@ -74,6 +74,26 @@ export function ObservedChart({
       <svg
         viewBox={`0 0 ${w} ${h}`}
         role="img"
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+            event.preventDefault();
+            setActive((current) =>
+              event.key === "Home"
+                ? 0
+                : event.key === "End"
+                  ? data.length - 1
+                  : Math.max(
+                      0,
+                      Math.min(
+                        data.length - 1,
+                        (current ?? data.length - 1) +
+                          (event.key === "ArrowLeft" ? -1 : 1),
+                      ),
+                    ),
+            );
+          }
+        }}
         aria-label={`${label}. ${data.length} saved points, from ${dateTime(start)} to ${dateTime(end)}. Gaps are left unconnected.`}
         onPointerMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect(),
@@ -228,9 +248,9 @@ export function ObservedChart({
         ))}
       </svg>
       <div className="chart-note">
-        {data.length} saved{" "}
+        Coverage: {dateTime(start)} – {dateTime(end)} · {data.length} saved{" "}
         {candles?.length ? "closed 1h candles" : "observations"} · Missing
-        intervals remain visible · Hover to inspect
+        intervals remain visible · Hover or use arrow keys to inspect
       </div>
     </div>
   );

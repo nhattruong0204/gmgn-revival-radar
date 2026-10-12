@@ -69,7 +69,9 @@ export function tokenPath(chain: string, address: string): string {
 }
 export function radarQuery(search: string): URLSearchParams {
   const query = new URLSearchParams(search);
-  const score = Number(query.get("min_score") ?? 40);
+  const score = Number(
+    query.get("min_score") ?? (query.get("status") === "IGNORE" ? 0 : 40),
+  );
   query.set(
     "min_score",
     String(
