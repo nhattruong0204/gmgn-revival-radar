@@ -354,7 +354,7 @@ function SettingsFields({
   );
 }
 export function Admin({ section }: { section: string }) {
-  const session = useData<Session>("/api/v1/admin/session", false),
+  const session = useData<Session>("/api/v1/admin/session"),
     authenticated = session.data?.authenticated;
   const status = useData<AdminStatus>(
     authenticated ? "/api/v1/admin/status" : null,
@@ -374,6 +374,29 @@ export function Admin({ section }: { section: string }) {
     [last, setLast] = useState<Command | null>(null),
     [controller, setController] = useState<AbortController | null>(null);
   useEffect(() => () => controller?.abort(), [controller]);
+  useEffect(() => {
+    if (!authenticated) {
+      controller?.abort();
+      setPreview(null);
+      setLast(null);
+      setBusy(false);
+    }
+  }, [authenticated, controller]);
+  useEffect(() => {
+    if (
+      authenticated &&
+      [status.errorStatus, settings.errorStatus, commands.errorStatus].includes(
+        401,
+      )
+    )
+      session.refresh();
+  }, [
+    authenticated,
+    status.errorStatus,
+    settings.errorStatus,
+    commands.errorStatus,
+    session.refresh,
+  ]);
   const csrf = session.data?.csrf_token;
   const post = async (payload: JsonRecord) => {
     if (!csrf) throw new Error("Session token unavailable. Sign in again.");
@@ -458,6 +481,7 @@ export function Admin({ section }: { section: string }) {
           ),
         );
     } catch (e) {
+      if (e instanceof ApiError && e.status === 401) session.refresh();
       setError(e instanceof Error ? e.message : "Confirmation failed.");
     } finally {
       setBusy(false);

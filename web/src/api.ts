@@ -70,6 +70,7 @@ export async function request<T>(
 export function useData<T>(path: string | null, poll = true) {
   const [data, setData] = useState<T | null>(null),
     [error, setError] = useState<string | null>(null),
+    [errorStatus, setErrorStatus] = useState<number | null>(null),
     [loading, setLoading] = useState(true),
     [refreshedAt, setRefreshedAt] = useState<number | null>(null);
   const [generation, setGeneration] = useState(0);
@@ -84,6 +85,7 @@ export function useData<T>(path: string | null, poll = true) {
     if (previousPath.current !== path) {
       setData(null);
       setError(null);
+      setErrorStatus(null);
       previousPath.current = path;
     }
     if (!path) {
@@ -104,12 +106,14 @@ export function useData<T>(path: string | null, poll = true) {
         if (!disposed && current === sequence) {
           setData(next);
           setError(null);
+          setErrorStatus(null);
           setRefreshedAt(Date.now() / 1000);
           failures = 0;
         }
       } catch (e) {
         if (!disposed && current === sequence) {
           setError(e instanceof Error ? e.message : "Data unavailable.");
+          setErrorStatus(e instanceof ApiError ? e.status : null);
           failures++;
         }
       } finally {
@@ -137,7 +141,7 @@ export function useData<T>(path: string | null, poll = true) {
       document.removeEventListener("visibilitychange", visible);
     };
   }, [path, generation, poll]);
-  return { data, error, loading, refreshedAt, refresh };
+  return { data, error, errorStatus, loading, refreshedAt, refresh };
 }
 export function navigate(path: string) {
   window.history.pushState(null, "", path);

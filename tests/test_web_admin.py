@@ -1,9 +1,11 @@
 import json
+import logging
 import time
 from uuid import uuid4
 
 import httpx
 import pytest
+from pydantic import SecretStr
 
 from revival_radar.storage.database import connect
 from revival_radar.storage.repository import Repository
@@ -207,3 +209,93 @@ async def test_worker_status_staleness_and_settings(web_config):
         settings = (await client.get("/api/v1/admin/settings")).json()
         assert settings["revision"] == 5 and settings["active_revision"] == 4
         assert settings["available"] is False
+
+
+async def test_password_rotation_revokes_old_sessions_without_schema_change(web_config):
+    async with client_for(web_config) as client:
+        await sign_in(client)
+        old_cookie = client.cookies[COOKIE_NAME]
+        rotated = "rotated-owner-password-for-tests"
+        web_config.web_admin_password_hash = SecretStr(password_hash(rotated))
+        for path in ("status", "settings", "commands", f"commands/{uuid4()}"):
+            assert (await client.get(f"/api/v1/admin/{path}")).status_code == 401
+        assert (await client.get("/api/v1/admin/session")).json()["authenticated"] is False
+        assert (await client.delete("/api/v1/admin/session")).status_code == 401
+        assert (
+            await client.post(
+                "/api/v1/admin/commands",
+                json={
+                    "id": str(uuid4()),
+                    "action": "preview",
+                    "desired_action": "scan",
+                },
+            )
+        ).status_code == 401
+        assert (
+            await client.post("/api/v1/admin/session", json={"password": TEST_PASSWORD})
+        ).status_code == 401
+        result = await client.post("/api/v1/admin/session", json={"password": rotated})
+        assert result.status_code == 200
+        assert client.cookies[COOKIE_NAME] != old_cookie
+        assert (await client.get("/api/v1/admin/status")).status_code == 200
+
+
+@pytest.mark.parametrize("expired", [False, True])
+async def test_every_admin_mutation_rejects_anonymous_or_expired_session(web_config, expired):
+    async with client_for(web_config) as client:
+        if expired:
+            await sign_in(client)
+            with connect(web_config.database_path) as db:
+                db.execute("UPDATE web_sessions SET expires_at=0")
+        for path in ("status", "settings", "commands", f"commands/{uuid4()}"):
+            assert (await client.get(f"/api/v1/admin/{path}")).status_code == 401
+        assert (await client.delete("/api/v1/admin/session")).status_code == 401
+        assert (
+            await client.post(
+                "/api/v1/admin/commands",
+                json={
+                    "id": str(uuid4()),
+                    "action": "preview",
+                    "desired_action": "scan",
+                },
+            )
+        ).status_code == 401
+        assert (await client.get("/api/v1/radar")).status_code == 200
+
+
+async def test_untrusted_and_nonascii_origin_are_rejected_safely(web_config):
+    async with client_for(web_config) as client:
+        await sign_in(client)
+        for origin in (b"", b"http://foreign.example", b"https://\xc3\xa9.invalid"):
+            result = await client.delete("/api/v1/admin/session", headers={b"Origin": origin})
+            assert result.status_code == 403
+            assert TEST_PASSWORD not in result.text
+        for csrf in ("", "invalid", str(uuid4())):
+            assert (
+                await client.post(
+                    "/api/v1/admin/commands",
+                    json={
+                        "id": str(uuid4()),
+                        "action": "preview",
+                        "desired_action": "scan",
+                    },
+                    headers={"X-CSRF-Token": csrf},
+                )
+            ).status_code == 403
+
+
+async def test_authentication_secrets_are_absent_from_logs_and_public_data(web_config, caplog):
+    caplog.set_level(logging.DEBUG)
+    async with client_for(web_config) as client:
+        result = await sign_in(client)
+        session_cookie = client.cookies[COOKIE_NAME]
+        csrf = result.json()["csrf_token"]
+        public = await client.get("/api/v1/radar")
+        for value in (
+            TEST_PASSWORD,
+            session_cookie,
+            csrf,
+            web_config.web_admin_password_hash.get_secret_value(),
+        ):
+            assert value not in public.text
+            assert value not in caplog.text

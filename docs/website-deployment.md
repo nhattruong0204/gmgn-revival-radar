@@ -121,3 +121,5 @@ Restart the scanner once, then the API. Verify `PRAGMA integrity_check`, schema,
 cooldowns and polling offset on the restored copy before resuming live delivery.
 Do not downgrade schema by editing its version number. Production backup/restore
 and proxy configuration must be exercised on the actual host before public launch.
+
+Owner credential rotation and session revocation: [owner authentication guide](website-owner-auth.md).

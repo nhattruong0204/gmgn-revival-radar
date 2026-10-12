@@ -57,8 +57,11 @@ def token_hash(value: str) -> str:
     return hashlib.sha256(value.encode()).hexdigest()
 
 
-def csrf_token(cookie: str) -> str:
-    return hmac.new(cookie.encode(), b"revival-radar:csrf:v1", hashlib.sha256).hexdigest()
+def csrf_token(cookie: str, credential_hash: str = "") -> str:
+    # Bind persisted sessions to the current owner credential without a schema
+    # change. Replacing the password hash invalidates old sessions on every route.
+    message = b"revival-radar:csrf:v2:" + hashlib.sha256(credential_hash.encode()).digest()
+    return hmac.new(cookie.encode(), message, hashlib.sha256).hexdigest()
 
 
 @contextmanager
@@ -96,7 +99,7 @@ def require_enabled(request: Request) -> WebConfig:
 def require_origin(request: Request, config: WebConfig) -> None:
     expected = config.web_trusted_origin.rstrip("/") or str(request.base_url).rstrip("/")
     origin = request.headers.get("origin", "").rstrip("/")
-    if not origin or not hmac.compare_digest(origin, expected):
+    if not origin or not hmac.compare_digest(origin.encode(), expected.encode()):
         raise HTTPException(403, "Request origin is not allowed.")
 
 
@@ -110,7 +113,12 @@ def owner_session(request: Request, *, mutation: bool = False) -> dict:
         row = db.execute(
             "SELECT csrf_hash,expires_at FROM web_sessions WHERE token_hash=?", (identity,)
         ).fetchone()
-    if row is None or row["expires_at"] <= time.time():
+    current_csrf = csrf_token(cookie, config.web_admin_password_hash.get_secret_value())
+    if (
+        row is None
+        or row["expires_at"] <= time.time()
+        or not hmac.compare_digest(token_hash(current_csrf), row["csrf_hash"])
+    ):
         raise HTTPException(401, "Owner session expired. Sign in again.")
     if mutation:
         require_origin(request, config)
@@ -120,7 +128,7 @@ def owner_session(request: Request, *, mutation: bool = False) -> dict:
     return {
         "owner": "owner:" + identity,
         "token_hash": identity,
-        "csrf_token": csrf_token(cookie),
+        "csrf_token": current_csrf,
         "expires_at": row["expires_at"],
     }
 
