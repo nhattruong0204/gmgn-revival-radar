@@ -485,6 +485,8 @@ protection; settings/actions are previewed and confirmed through the existing bo
 durable command queue. Browsing makes no GMGN or Helius requests.
 
 Start locally with the [website deployment guide](docs/website-deployment.md).
+For Docker packaging, matched release backups and recovery, use the
+[website operations guide](docs/website-operations.md).
 Use `python scripts/seed_website_demo.py /tmp/radar-web-demo.db` for current-time
 synthetic browser data; the original deterministic CLI demo remains unchanged.
 Build the frontend with `cd web && npm ci && npm test && npm run build`.

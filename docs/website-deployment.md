@@ -1,10 +1,14 @@
 # Website operation and HTTPS launch
 
-The website is implemented on `feat/public-website`. Local verification is recorded
+The website implementation is merged into `main`. Local verification is recorded
 in [website validation](website-validation.md). The proposed host is VPS `130.94.7.127`; the proposed domain is
 `onchain.revival.com`. SSH access and control of the parent domain `revival.com`
 have not been confirmed, so there is **no verified deployed URL**.
 Issue #16's HTTPS launch acceptance remains open until deployment and smoke checks.
+
+For the Docker release workflow, matched backups, monitoring and pending launch
+sign-off, see [website operations](website-operations.md). The Compose overlay and
+separate `website` image preserve the existing scanner service.
 
 ## Local development
 
