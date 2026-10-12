@@ -85,7 +85,7 @@ def login(payload: LoginRequest, request: Request, response: Response) -> dict:
     if not valid:
         raise HTTPException(401, "Invalid owner credentials.")
     cookie = secrets.token_urlsafe(32)
-    csrf = csrf_token(cookie)
+    csrf = csrf_token(cookie, config.web_admin_password_hash.get_secret_value())
     now = time.time()
     expires = now + config.web_session_hours * 3600
     with admin_database(config, writable=True) as db, db:
