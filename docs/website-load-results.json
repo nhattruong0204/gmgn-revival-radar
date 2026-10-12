@@ -1,0 +1,100 @@
+{
+  "gate": {
+    "relative_scan_overhead": 0.25,
+    "absolute_scan_overhead_seconds": 0.1
+  },
+  "tokens_per_scan": 100,
+  "scans_per_arm": 8,
+  "identical_initial_database": true,
+  "initial_rows": {
+    "token_snapshots": 2800,
+    "evaluations": 2400,
+    "scan_runs": 24,
+    "state": 2444,
+    "alerts": 20,
+    "signal_outcomes": 10
+  },
+  "replay_wait_per_provider_operation_seconds": 0.005,
+  "clients": 6,
+  "public_requests": 672,
+  "http_statuses": {
+    "200": 672
+  },
+  "external_requests": 0,
+  "scan_errors": 0,
+  "scans_completed_while_reading": 8,
+  "baseline_scan_seconds": [
+    0.6100123879987223,
+    0.5816655430026003,
+    0.5805390159985109,
+    0.5400026030001754,
+    0.509748110001965,
+    0.4934370949995355,
+    0.5125667170032102,
+    0.4885049800031993
+  ],
+  "loaded_scan_seconds": [
+    1.275996849002695,
+    0.6475546069996199,
+    0.7014165450018481,
+    0.5992531019983289,
+    0.5724564859992824,
+    0.5367933979978261,
+    0.5453277019987581,
+    0.6124583279997751
+  ],
+  "baseline_median_seconds": 0.5262846600016928,
+  "loaded_median_seconds": 0.605855714999052,
+  "allowed_overhead_seconds": 0.1315711650004232,
+  "api_latency_seconds": {
+    "/meta": {
+      "count": 96,
+      "median": 0.008549402000426198,
+      "p95": 0.032078971998998895,
+      "max": 0.15378397200038307
+    },
+    "/radar?sort=market_cap&search=": {
+      "count": 96,
+      "median": 0.010964148998027667,
+      "p95": 0.1535703879999346,
+      "max": 0.20508199100004276
+    },
+    "/alerts": {
+      "count": 96,
+      "median": 0.008370774499780964,
+      "p95": 0.059309771000698674,
+      "max": 0.1544950979987334
+    },
+    "/outcomes": {
+      "count": 96,
+      "median": 0.0062934835004853085,
+      "p95": 0.01906545200108667,
+      "max": 0.15481903399995645
+    },
+    "/radar": {
+      "count": 96,
+      "median": 0.013590272499641287,
+      "p95": 0.12574525399759295,
+      "max": 0.2032991080013744
+    },
+    "/reports?hours=24": {
+      "count": 96,
+      "median": 0.010207991999777732,
+      "p95": 0.24064661100055673,
+      "max": 0.29371312700095586
+    },
+    "/tokens/sol/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2/history": {
+      "count": 96,
+      "median": 0.009795592499358463,
+      "p95": 0.05115835900141974,
+      "max": 0.12719730099706794
+    }
+  },
+  "read_sql_statements": {
+    "SELECT": 3560,
+    "WITH": 76
+  },
+  "read_sqlite_errors": {},
+  "passed": true,
+  "limitations": "Synthetic bounded corpus and ASGI transport; 5ms replay waits are not live provider latency. Production-size database, proxy/network and VPS resources still require launch validation."
+}

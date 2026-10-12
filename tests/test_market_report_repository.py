@@ -394,3 +394,22 @@ def test_saved_evaluation_metadata_uses_safe_lists_and_alert_detail_is_unchanged
     original = {"legacy": "unchanged"}
     repo.set_state("telegram:alert:123", json.dumps(original))
     assert repo.presentation_detail("a", 123) == original
+
+
+def test_ranking_validates_only_competitive_tokens_and_keeps_boundary_ties(repo, token, config):
+    for index, score in enumerate((99, 98, 97, 97, 40, 30)):
+        candidate = changed(token, contract_address="ABCDEFG"[index] * 32)
+        for timestamp in (110, 120):
+            observe(repo, candidate, config, timestamp, score, confirmation_score=index * 10)
+    calls = []
+
+    def tracked(*arguments):
+        calls.append(arguments[4])
+        return Repository._market_evidence_rank(*arguments)
+
+    repo.db.create_function("market_evidence_rank", 7, tracked, deterministic=True)
+    report = repo.market_report(100, now=200, limit=3)
+    assert [entry["peak"]["score"] for entry in report["entries"]] == [99, 98, 97]
+    assert report["entries"][2]["contract_address"] == "D" * 32
+    assert sorted(calls) == [97, 97, 97, 97, 98, 98, 99, 99]
+    assert report["evaluations"] == 12 and report["unique_tokens"] == 6
