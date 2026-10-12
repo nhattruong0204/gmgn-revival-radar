@@ -1,6 +1,7 @@
 """Transport-independent controls for the one scanner-owned runtime instance."""
 
 from collections.abc import Awaitable, Callable
+from copy import deepcopy
 from typing import Any
 
 import httpx
@@ -170,6 +171,6 @@ class SharedController:
             "settings": self.runtime.public_values(),
             "revision": self.runtime.revision,
             "active_revision": self.runtime.active_revision,
-            "presets": PRESETS,
+            "presets": deepcopy(PRESETS),
             "preset": configuration_context(self.runtime.effective())["preset"],
         }
