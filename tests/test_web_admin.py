@@ -301,3 +301,31 @@ async def test_authentication_secrets_are_absent_from_logs_and_public_data(web_c
         ):
             assert value not in public.text
             assert value not in caplog.text
+
+
+async def test_private_scan_history_is_bounded_and_excludes_raw_errors(web_config):
+    now = time.time()
+    with connect(web_config.database_path) as db, db:
+        for identity in range(25):
+            db.execute(
+                "INSERT INTO scan_runs(id,started,source_errors) VALUES(?,?,?)",
+                (identity + 1, now - identity, '{"sol":{"private_fixture_error":1}}'),
+            )
+        db.execute("INSERT INTO scan_runs(id,started) VALUES(100,?)", (now - 90000,))
+    async with client_for(web_config) as client:
+        assert (await client.get("/api/v1/admin/status")).status_code == 401
+        await sign_in(client)
+        data = (await client.get("/api/v1/admin/status")).json()
+        history = data["scan_history"]
+        assert len(history) == 20
+        assert [run["id"] for run in history] == list(range(1, 21))
+        assert all(
+            set(run)
+            == {"id", "started", "finished", "duration_seconds", "processed", "errors", "sent"}
+            for run in history
+        )
+        assert all(run["finished"] is None for run in history)
+        assert "private_fixture_error" not in json.dumps(history)
+        public = await client.get("/api/v1/meta")
+        assert "private_fixture_error" not in public.text
+        assert "scan_history" not in public.text

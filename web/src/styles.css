@@ -585,7 +585,8 @@ select option {
   background: #13232e;
   color: #d9e4ea;
 }
-.radar-table-wrap {
+.radar-table-wrap,
+.admin-table-wrap {
   overflow-x: auto;
 }
 .radar-table {
