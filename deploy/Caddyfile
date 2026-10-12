@@ -1,0 +1,5 @@
+# Set RADAR_DOMAIN to the site's DNS name and point its A/AAAA records at this host.
+{$RADAR_DOMAIN} {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:8000
+}

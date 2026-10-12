@@ -21,7 +21,7 @@ class WebsiteFiles(StaticFiles):
         try:
             return await super().get_response(path, scope)
         except HTTPException as exc:
-            if exc.status_code != 404 or path.startswith("api/"):
+            if exc.status_code != 404 or path == "api" or path.startswith("api/"):
                 raise
             # Missing assets are real 404s, while browser routes receive the app shell.
             if Path(path).suffix:
@@ -98,6 +98,12 @@ def create_app(
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; connect-src 'self'; object-src 'none'; "
+            "base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+        )
         if path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
         return response

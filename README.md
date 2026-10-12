@@ -475,3 +475,24 @@ an active database, or use SQLite's backup API. Snapshot history currently has n
 For cloud onboarding, dependencies/files survive snapshots; processes do not. Restart with
 `revival-radar run` after configuring credentials. An offline demo validates development
 readiness, not live Telegram delivery or profit.
+
+## Public website and owner area
+
+The React/TypeScript website and separate FastAPI service read saved scanner data:
+Radar filters, token evidence/history, confirmed alerts, Solana reports, observed
+outcomes and methodology. The private owner area uses server sessions and CSRF
+protection; settings/actions are previewed and confirmed through the existing bot's
+durable command queue. Browsing makes no GMGN or Helius requests.
+
+Start locally with the [website deployment guide](docs/website-deployment.md).
+Use `python scripts/seed_website_demo.py /tmp/radar-web-demo.db` for current-time
+synthetic browser data; the original deterministic CLI demo remains unchanged.
+Build the frontend with `cd web && npm ci && npm test && npm run build`.
+Set `WEB_STATIC_DIRECTORY` to the absolute `web/dist` path and run
+`revival-radar-web` against the scanner's existing SQLite database.
+
+Owner access is disabled by default. Enable `WEB_CONTROLS_ENABLED=true` in the
+scanner and configure the web service separately with a protected owner password
+hash and trusted HTTPS origin. The web process never migrates storage or starts a
+second scanner. [Validation and remaining launch checks](docs/website-validation.md)
+distinguish local readiness from the pending production HTTPS deployment.

@@ -63,7 +63,11 @@ def session(request: Request, response: Response) -> dict:
         if exc.status_code == 401:
             return {"authenticated": False, "enabled": True, "csrf_token": None}
         raise
-    return {"authenticated": True, "enabled": True, **{k: current[k] for k in ("csrf_token", "expires_at")}}
+    return {
+        "authenticated": True,
+        "enabled": True,
+        **{k: current[k] for k in ("csrf_token", "expires_at")},
+    }
 
 
 @router.post("/session")
@@ -109,8 +113,11 @@ def logout(request: Request, response: Response) -> dict:
     with admin_database(request.app.state.config, writable=True) as db, db:
         db.execute("DELETE FROM web_sessions WHERE token_hash=?", (current["token_hash"],))
     response.delete_cookie(
-        COOKIE_NAME, path=COOKIE_PATH, secure=request.app.state.config.web_cookie_secure,
-        httponly=True, samesite="strict",
+        COOKIE_NAME,
+        path=COOKIE_PATH,
+        secure=request.app.state.config.web_cookie_secure,
+        httponly=True,
+        samesite="strict",
     )
     return {"authenticated": False, "csrf_token": None}
 

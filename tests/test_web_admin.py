@@ -75,7 +75,8 @@ async def test_anonymous_admin_reads_rejected(web_config, path):
 async def test_login_origin_cookie_csrf_logout_and_storage(web_config):
     async with client_for(web_config) as client:
         response = await client.post(
-            "/api/v1/admin/session", json={"password": TEST_PASSWORD},
+            "/api/v1/admin/session",
+            json={"password": TEST_PASSWORD},
             headers={"Origin": "https://foreign.example"},
         )
         assert response.status_code == 403
@@ -89,9 +90,7 @@ async def test_login_origin_cookie_csrf_logout_and_storage(web_config):
             saved = db.execute("SELECT * FROM web_sessions").fetchone()
             assert saved["token_hash"] != client.cookies[COOKIE_NAME]
             assert saved["csrf_hash"] != client.headers["X-CSRF-Token"]
-        no_csrf = await client.delete(
-            "/api/v1/admin/session", headers={"X-CSRF-Token": ""}
-        )
+        no_csrf = await client.delete("/api/v1/admin/session", headers={"X-CSRF-Token": ""})
         assert no_csrf.status_code == 403
         logged_out = await client.delete("/api/v1/admin/session")
         assert logged_out.status_code == 200
@@ -131,10 +130,14 @@ async def test_admin_disabled_or_unmigrated_never_creates_database(tmp_path, enc
     async with client_for(config) as client:
         assert (await client.get("/api/v1/admin/session")).json()["enabled"] is False
         assert (await client.get("/api/v1/admin/status")).status_code == 503
-    enabled = config.model_copy(update={
-        "web_admin_enabled": True, "web_admin_password_hash": encoded_password,
-        "web_trusted_origin": ORIGIN, "web_cookie_secure": False,
-    })
+    enabled = config.model_copy(
+        update={
+            "web_admin_enabled": True,
+            "web_admin_password_hash": encoded_password,
+            "web_trusted_origin": ORIGIN,
+            "web_cookie_secure": False,
+        }
+    )
     # Pydantic model_copy does not validate SecretStr; use a validated config.
     enabled = WebConfig(**enabled.model_dump())
     async with client_for(enabled) as client:
@@ -149,8 +152,9 @@ async def test_commands_idempotency_csrf_and_session_ownership(web_config):
     async with client_for(web_config) as first, client_for(web_config) as second:
         await sign_in(first)
         await sign_in(second)
-        assert (await first.post("/api/v1/admin/commands", json=payload,
-                                 headers={"X-CSRF-Token": ""})).status_code == 403
+        assert (
+            await first.post("/api/v1/admin/commands", json=payload, headers={"X-CSRF-Token": ""})
+        ).status_code == 403
         created = await first.post("/api/v1/admin/commands", json=payload)
         assert created.status_code == 202, created.text
         assert created.json()["status"] == "queued"
@@ -171,7 +175,9 @@ async def test_confirm_does_not_accept_replacement_payload(web_config):
     async with client_for(web_config) as client:
         await sign_in(client)
         payload = {
-            "id": str(uuid4()), "action": "confirm", "preview_id": "saved-preview",
+            "id": str(uuid4()),
+            "action": "confirm",
+            "preview_id": "saved-preview",
             "changes": {"alerts_paused": True},
         }
         assert (await client.post("/api/v1/admin/commands", json=payload)).status_code == 422
@@ -179,11 +185,20 @@ async def test_confirm_does_not_accept_replacement_payload(web_config):
 
 async def test_worker_status_staleness_and_settings(web_config):
     with connect(web_config.database_path) as db:
-        Repository(db).set_state("web:worker", json.dumps({
-            "heartbeat_at": time.time() - 100, "enabled": True,
-            "settings": {"alerts_paused": False}, "revision": 5,
-            "active_revision": 4, "presets": {}, "schedule": {"running": True},
-        }))
+        Repository(db).set_state(
+            "web:worker",
+            json.dumps(
+                {
+                    "heartbeat_at": time.time() - 100,
+                    "enabled": True,
+                    "settings": {"alerts_paused": False},
+                    "revision": 5,
+                    "active_revision": 4,
+                    "presets": {},
+                    "schedule": {"running": True},
+                }
+            ),
+        )
     async with client_for(web_config) as client:
         await sign_in(client)
         response = await client.get("/api/v1/admin/status")

@@ -144,7 +144,9 @@ class LoginLimiter:
                 self._attempts.popitem(last=False)
             if len(attempts) >= 10:
                 raise HTTPException(
-                    429, "Too many sign-in attempts. Try again later.", headers={"Retry-After": "900"}
+                    429,
+                    "Too many sign-in attempts. Try again later.",
+                    headers={"Retry-After": "900"},
                 )
             attempts.append(now)
 

@@ -1,6 +1,6 @@
 # Revival Radar website plan
 
-Planning date: 11 October 2026. This document describes proposed work; implementation and deployment have not started.
+Planning date: 11 October 2026. The public website, API, owner authentication and shared controls are now implemented. See [validation](website-validation.md) and [deployment](website-deployment.md). Production HTTPS deployment remains pending.
 
 ## Product and audience
 
