@@ -8,6 +8,7 @@ import { Alerts } from "./Publications";
 import { chartSegments } from "./chartData";
 import { radarQuery } from "./format";
 import { useData } from "./api";
+import { ObservedChart } from "./Chart";
 import type { Observation } from "./types";
 
 const legacy: Observation = {
@@ -133,6 +134,7 @@ it("bounds integer query values accepted by the API", () => {
   const q = radarQuery("?page=Infinity&min_score=42.9");
   expect(q.get("page")).toBe("10000");
   expect(q.get("min_score")).toBe("42");
+  expect(radarQuery("?status=IGNORE").get("min_score")).toBe("0");
 });
 
 it("leaves null measurements and missing intervals unconnected", () => {
@@ -173,4 +175,145 @@ it("does not let an older visibility refresh replace newer data", async () => {
   );
   expect(screen.queryByText("older")).toBeNull();
   expect(screen.getByText("newer")).toBeTruthy();
+});
+
+it("includes low scores when selecting Below watch and shares mobile sorting", async () => {
+  window.history.replaceState(null, "", "/");
+  render(<Radar search="" meta={null} />);
+  await userEvent.selectOptions(
+    screen.getByLabelText("Filter stage"),
+    "IGNORE",
+  );
+  expect(new URLSearchParams(window.location.search).get("min_score")).toBe(
+    "0",
+  );
+  await userEvent.selectOptions(
+    screen.getByLabelText("Sort candidates"),
+    "liquidity:asc",
+  );
+  expect(new URLSearchParams(window.location.search).get("sort")).toBe(
+    "liquidity",
+  );
+  expect(new URLSearchParams(window.location.search).get("order")).toBe("asc");
+});
+
+it("exposes the exact contract and reports clipboard failures", async () => {
+  const user = userEvent.setup();
+  vi.spyOn(navigator.clipboard, "writeText").mockRejectedValue(
+    new Error("denied"),
+  );
+  render(<TokenDetail chain="sol" address={legacy.contract_address} />);
+  await user.click(
+    await screen.findByRole("button", {
+      name: `Copy contract ${legacy.contract_address}`,
+    }),
+  );
+  expect(screen.getByText(/Copy failed/)).toBeTruthy();
+  expect(screen.getByText(legacy.contract_address)).toBeTruthy();
+  expect(screen.getByText(/Saved evaluation observed/)).toBeTruthy();
+});
+
+it("lets keyboard users inspect actual chart points", () => {
+  const { container } = render(
+    <ObservedChart
+      label="Saved score"
+      score
+      points={[
+        { timestamp: 100, value: 20 },
+        { timestamp: 400, value: 40 },
+        { timestamp: 700, value: 70 },
+      ]}
+    />,
+  );
+  const chart = screen.getByRole("img");
+  chart.focus();
+  act(() =>
+    chart.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Home", bubbles: true }),
+    ),
+  );
+  expect(container.querySelector(".chart-legend strong")?.textContent).toBe(
+    "20 / 100",
+  );
+  act(() =>
+    chart.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+    ),
+  );
+  expect(container.querySelector(".chart-legend strong")?.textContent).toBe(
+    "40 / 100",
+  );
+});
+
+it("does not join sparse observations across a missing day", () => {
+  expect(
+    chartSegments([
+      { timestamp: 0, value: 1 },
+      { timestamp: 86400, value: 2 },
+    ]),
+  ).toHaveLength(2);
+});
+
+it("keeps high-score risk and saved metrics separate from a later snapshot", async () => {
+  const observation: Observation = {
+    ...legacy,
+    score: 95,
+    status: "CONFIRMED_REVIVAL",
+    eligible: false,
+    market_cap: 100,
+    blockers: ["Active mint authority"],
+    token: {
+      ...legacy,
+      market_cap: 100,
+      security: {
+        mint_renounced: false,
+        freeze_renounced: null,
+        dangerous: true,
+      },
+    },
+    signal: {
+      components: { risk_penalty: -5 },
+      acceleration: { volume_acceleration_5m: 2 },
+      returning_activity: true,
+    },
+  };
+  const url = `https://gmgn.ai/sol/token/${legacy.contract_address}`;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      async (path: string) =>
+        new Response(
+          JSON.stringify(
+            path.includes("/history")
+              ? { snapshots: [], scores: [], candles: [] }
+              : {
+                  observation,
+                  latest_market: {
+                    ...observation.token,
+                    timestamp: legacy.timestamp + 60,
+                    market_cap: 900,
+                  },
+                  links: { gmgn: url },
+                },
+          ),
+        ),
+    ),
+  );
+  const { container } = render(
+    <TokenDetail chain="sol" address={legacy.contract_address} />,
+  );
+  await screen.findByText("Active mint authority");
+  expect(screen.getByText("Present")).toBeTruthy();
+  expect(screen.getAllByText("Unknown").length).toBeGreaterThan(0);
+  expect(container.querySelector(".stats-grid")?.textContent).toContain("$100");
+  expect(
+    screen
+      .getByRole("heading", { name: "Later market observation" })
+      .closest("section")?.textContent,
+  ).toContain("$900");
+  expect(screen.getByRole("link", { name: "Gmgn" }).getAttribute("href")).toBe(
+    url,
+  );
+  expect(screen.getByText("2×")).toBeTruthy();
+  expect(screen.getByText("-5")).toBeTruthy();
 });

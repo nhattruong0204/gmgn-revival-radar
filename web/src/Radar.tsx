@@ -37,6 +37,7 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
     const next = new URLSearchParams(search);
     if (value) next.set(key, value);
     else next.delete(key);
+    if (key === "status" && value === "IGNORE") next.set("min_score", "0");
     next.delete("page");
     navigate(`/?${next}`);
   };
@@ -189,11 +190,55 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
               value={q.get("min_score") ?? "40"}
               onChange={(e) => change("min_score", e.target.value)}
             >
-              {[0, 40, 50, 60, 65, 70, 75, 80, 90].map((s) => (
-                <option key={s} value={s}>
-                  {s === 0 ? "Any score" : `${s}+`}
-                </option>
-              ))}
+              {Array.from(
+                new Set([
+                  0,
+                  40,
+                  50,
+                  60,
+                  65,
+                  70,
+                  75,
+                  80,
+                  90,
+                  Number(q.get("min_score")),
+                ]),
+              )
+                .sort((a, b) => a - b)
+                .map((s) => (
+                  <option key={s} value={s}>
+                    {s === 0 ? "Any score" : `${s}+`}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <label className="select-field">
+            <span>Sort by</span>
+            <select
+              aria-label="Sort candidates"
+              value={`${q.get("sort")}:${q.get("order")}`}
+              onChange={(event) => {
+                const [sort, order] = event.target.value.split(":");
+                const next = new URLSearchParams(search);
+                next.set("sort", sort);
+                next.set("order", order);
+                next.delete("page");
+                navigate(`/?${next}`);
+              }}
+            >
+              {[
+                "score",
+                "timestamp",
+                "market_cap",
+                "liquidity",
+                "volume_5m",
+              ].flatMap((field) =>
+                ["desc", "asc"].map((order) => (
+                  <option key={`${field}:${order}`} value={`${field}:${order}`}>
+                    {field.replaceAll("_", " ")} {order === "desc" ? "↓" : "↑"}
+                  </option>
+                )),
+              )}
             </select>
           </label>
         </div>
@@ -242,7 +287,12 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
                     </th>
                     <th>
                       <button onClick={() => sorting("market_cap")}>
-                        Market cap {q.get("sort") === "market_cap" ? "↓" : ""}
+                        Market cap{" "}
+                        {q.get("sort") === "market_cap"
+                          ? q.get("order") === "desc"
+                            ? "↓"
+                            : "↑"
+                          : ""}
                       </button>
                     </th>
                     <th>
@@ -282,8 +332,9 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
                                 {chains[o.chain] ?? o.chain}
                               </small>
                             </strong>
-                            <small>
-                              {o.name || shortAddress(o.contract_address)}
+                            <small>{o.name || o.symbol}</small>
+                            <small title={o.contract_address}>
+                              {shortAddress(o.contract_address)}
                             </small>
                           </span>
                         </Link>
@@ -348,6 +399,9 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
                       <span>
                         <strong>{o.symbol}</strong>
                         <small>{o.name}</small>
+                        <small title={o.contract_address}>
+                          {shortAddress(o.contract_address)}
+                        </small>
                       </span>
                     </div>
                     <Score value={o.score} />
