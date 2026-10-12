@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ApiError, DEMO, request, useData } from "./api";
 import {
   Empty,
@@ -10,6 +10,7 @@ import {
   PageHeading,
   Stat,
 } from "./components";
+import { AdminDiagnostics, PreviewChanges } from "./AdminDiagnostics";
 import { dateTime, humanKey, relative } from "./format";
 import type {
   AdminSettings,
@@ -28,15 +29,15 @@ async function settleCommand(
   let command = initial;
   for (let n = 0; n < 30 && !terminal.has(command.status); n++) {
     await new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(resolve, 1000);
-      signal.addEventListener(
-        "abort",
-        () => {
-          clearTimeout(timer);
-          reject(new Error("Request cancelled."));
-        },
-        { once: true },
-      );
+      const cancel = () => {
+        clearTimeout(timer);
+        reject(new Error("Request cancelled."));
+      };
+      const timer = setTimeout(() => {
+        signal.removeEventListener("abort", cancel);
+        resolve();
+      }, 1000);
+      signal.addEventListener("abort", cancel, { once: true });
     });
     if (signal.aborted) throw new Error("Request cancelled.");
     command = await request<Command>(
@@ -132,16 +133,17 @@ function SettingsFields({
   const [values, setValues] = useState<Record<string, string>>({}),
     [error, setError] = useState<string | null>(null),
     [category, setCategory] = useState("all");
+  const savedValues = JSON.stringify(settings.settings);
   useEffect(() => {
     setValues(
       Object.fromEntries(
-        Object.entries(settings.settings).map(([k, v]) => [
+        Object.entries(JSON.parse(savedValues)).map(([k, v]) => [
           k,
           typeof v === "object" ? JSON.stringify(v) : String(v),
         ]),
       ),
     );
-  }, [settings]);
+  }, [savedValues]);
   const groups: Record<string, string[]> = {
     discovery: [
       "enabled_chains",
@@ -373,6 +375,25 @@ export function Admin({ section }: { section: string }) {
     } | null>(null),
     [last, setLast] = useState<Command | null>(null),
     [controller, setController] = useState<AbortController | null>(null);
+  const [now, setNow] = useState(() => Date.now() / 1000);
+  const dialog = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!preview) return;
+    setNow(Date.now() / 1000);
+    const timer = setInterval(() => setNow(Date.now() / 1000), 1000);
+    const previous = document.activeElement as HTMLElement | null;
+    dialog.current?.querySelector<HTMLButtonElement>("button")?.focus();
+    return () => {
+      clearInterval(timer);
+      previous?.focus();
+    };
+  }, [preview]);
+  const reviewed = preview?.command.result;
+  const expired =
+    typeof reviewed?.expires_at === "number" && reviewed.expires_at <= now;
+  const conflicting =
+    preview && settings.data && reviewed?.revision !== settings.data.revision;
+
   useEffect(() => () => controller?.abort(), [controller]);
   useEffect(() => {
     if (!authenticated) {
@@ -408,7 +429,10 @@ export function Admin({ section }: { section: string }) {
       body: JSON.stringify({ id: crypto.randomUUID(), ...payload }),
       signal: abort.signal,
     });
-    return await settleCommand(initial, abort.signal);
+    setLast(initial);
+    const settled = await settleCommand(initial, abort.signal);
+    setLast(settled);
+    return settled;
   };
   const makePreview = async (
     action: DesiredAction,
@@ -451,7 +475,7 @@ export function Admin({ section }: { section: string }) {
     }
   };
   const confirm = async () => {
-    if (!preview) return;
+    if (!preview || expired || conflicting) return;
     const result = preview.command.result ?? {},
       previewId = result.preview_id;
     if (typeof previewId !== "string") {
@@ -466,7 +490,7 @@ export function Admin({ section }: { section: string }) {
       const command = await post({
         action: "confirm",
         preview_id: previewId,
-        expected_revision: settings.data?.revision,
+        expected_revision: result.revision,
       });
       setLast(command);
       setPreview(null);
@@ -590,6 +614,7 @@ export function Admin({ section }: { section: string }) {
             : !terminal.has(last.status)
               ? " · Waiting for the worker. Follow this command in history."
               : ""}
+          {last.result?.message ? ` · ${String(last.result.message)}` : ""}
           {last.error ? ` · ${last.error}` : ""}
         </Notice>
       )}
@@ -600,6 +625,16 @@ export function Admin({ section }: { section: string }) {
           does not show that the worker is online.
         </Notice>
       )}
+      {settings.data &&
+        settings.data.active_revision !== settings.data.revision && (
+          <Notice tone="info">
+            Saved revision {settings.data.revision} is pending activation. The
+            current scan uses revision{" "}
+            {settings.data.active_revision ?? "unknown"}; ordinary strategy
+            changes apply on the next scan. Signal pause takes effect
+            immediately and does not pause scheduled market reports.
+          </Notice>
+        )}
       {section === "settings" ? (
         settings.data ? (
           <SettingsFields
@@ -695,16 +730,7 @@ export function Admin({ section }: { section: string }) {
               icon="reports"
             />
           </div>
-          <div className="detail-grid">
-            <section className="panel">
-              <h2>Worker state</h2>
-              <JsonGrid value={worker} />
-            </section>
-            <section className="panel">
-              <h2>Scanner health</h2>
-              <JsonGrid value={status.data?.health} />
-            </section>
-          </div>
+          <AdminDiagnostics status={status.data} />
         </>
       )}
       <section className="panel command-history">
@@ -735,6 +761,10 @@ export function Admin({ section }: { section: string }) {
                 <div className="command-details">
                   <span className="small muted">Command {c.id}</span>
                   {c.error && <Notice tone="error">{c.error}</Notice>}
+                  <p className="small muted">
+                    Started: {dateTime(c.started_at as number)} · Finished:{" "}
+                    {dateTime(c.finished_at as number)}
+                  </p>
                   <JsonGrid value={c.result} />
                 </div>
               </details>
@@ -755,6 +785,25 @@ export function Admin({ section }: { section: string }) {
         >
           <section
             className="confirmation-modal"
+            ref={dialog}
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && !busy) setPreview(null);
+              if (e.key !== "Tab") return;
+              const buttons =
+                dialog.current?.querySelectorAll<HTMLButtonElement>(
+                  "button:not(:disabled)",
+                );
+              if (!buttons?.length) return;
+              const first = buttons[0],
+                last = buttons[buttons.length - 1];
+              if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+              } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+              }
+            }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirmation-title"
@@ -786,7 +835,19 @@ export function Admin({ section }: { section: string }) {
                     ? "Ordinary strategy changes take effect on the next scan. Historical signals keep their original evidence."
                     : "The running bot will execute this saved preview."}
             </p>
-            <JsonGrid value={preview.command.result} />
+            <p>
+              Reviewed revision {String(reviewed?.revision ?? "unknown")} ·
+              Expires {dateTime(reviewed?.expires_at as number)}
+            </p>
+            <PreviewChanges result={reviewed} />
+            {(expired || conflicting) && (
+              <Notice tone="warning">
+                {expired
+                  ? "This preview expired."
+                  : "Settings changed since this preview."}
+                Cancel and request a fresh preview before confirming.
+              </Notice>
+            )}
             {error && <Notice tone="error">{error}</Notice>}
             <div className="modal-actions">
               <button
@@ -798,7 +859,7 @@ export function Admin({ section }: { section: string }) {
               </button>
               <button
                 className="button button-primary"
-                disabled={busy}
+                disabled={busy || expired || Boolean(conflicting)}
                 onClick={() => void confirm()}
               >
                 {busy ? "Waiting for bot…" : "Confirm action"}

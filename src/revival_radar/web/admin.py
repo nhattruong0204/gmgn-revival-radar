@@ -147,8 +147,18 @@ def status(request: Request, response: Response) -> dict:
     with admin_database(request.app.state.config) as db:
         db.execute("BEGIN")
         worker = _worker(db)
-        health = Repository(db).health(time.time() - 86400)
-    return {"worker": worker, "health": health}
+        now = time.time()
+        health = Repository(db).health(now - 86400, now=now)
+        history = [
+            dict(row)
+            for row in db.execute(
+                "SELECT id,started,finished,duration_seconds,processed,errors,sent "
+                "FROM scan_runs WHERE started>=? AND started<=? "
+                "ORDER BY started DESC,id DESC LIMIT 20",
+                (now - 86400, now),
+            )
+        ]
+    return {"worker": worker, "health": health, "scan_history": history}
 
 
 @router.get("/settings")
