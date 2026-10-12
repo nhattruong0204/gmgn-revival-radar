@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily OnchainFlow database backup at 02:00 Bangkok time
+
+[Timer]
+OnCalendar=*-*-* 19:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

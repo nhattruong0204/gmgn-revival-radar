@@ -110,7 +110,7 @@ def read[T: BaseModel](
     until = cutoff(request, as_of)
     try:
         with public_reader(request.app.state.config) as queries:
-            cache_key = (key, as_of, queries.version(until))
+            cache_key = (key, as_of, queries.version(until, key[0]))
 
             def create():
                 result = query(queries, until)
@@ -243,19 +243,21 @@ def outcomes(
 @router.get("/meta", response_model=Metadata)
 def metadata(request: Request, as_of: Cutoff = None) -> Metadata:
     def result(queries: PublicQueries, until: float) -> Metadata:
-        rows = queries.db.execute(
-            """SELECT DISTINCT e.chain FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id
-            WHERE e.timestamp>? AND e.timestamp<=? AND s.finished IS NOT NULL AND s.finished<=?
-            ORDER BY e.chain""",
-            (until - 7 * 86400, until, until),
-        ).fetchall()
+        # Stop at the first completed observation per supported chain instead
+        # of walking every retained evaluation just to discover chain names.
+        chains = [
+            chain
+            for chain in sorted(CHAINS)
+            if queries.db.execute(
+                """SELECT 1 FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id
+                WHERE e.chain=? AND e.timestamp>? AND e.timestamp<=?
+                AND s.finished IS NOT NULL AND s.finished<=? LIMIT 1""",
+                (chain, until - 7 * 86400, until, until),
+            ).fetchone()
+        ]
         telegram = request.app.state.config.web_telegram_url
         return Metadata(
-            chains=[
-                {"id": row[0], "name": CHAINS[row[0]].display_name}
-                for row in rows
-                if row[0] in CHAINS
-            ],
+            chains=[{"id": chain, "name": CHAINS[chain].display_name} for chain in chains],
             telegram_url=telegram if telegram.startswith("https://t.me/") else None,
             as_of=until,
             last_scan_at=queries.last_scan_at(until),

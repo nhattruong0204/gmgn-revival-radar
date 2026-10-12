@@ -1,0 +1,7 @@
+[Unit]
+Description=OnchainFlow online database backup
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/python3 /opt/gmgn-revival-radar/scripts/website_daily_backup.py --database /opt/gmgn-revival-radar/data/revival_radar.db --destination /root/onchainflow-backups/daily

@@ -3,6 +3,7 @@ import json
 import sqlite3
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -14,6 +15,20 @@ from revival_radar.web.queries import PublicQueries, public_reader
 from .conftest import changed
 from .test_web_public import NOW, observe
 from .test_web_public import web as web
+
+
+async def test_radar_cache_detects_late_completion_with_same_finished_time(
+    web, repo, token, config
+):
+    client, app = web
+    app.state.config.web_cache_seconds = 60
+    observe(repo, token, config, finished=False)
+    pending = repo.db.execute("SELECT MAX(id) FROM scan_runs").fetchone()[0]
+    observe(repo, changed(token, contract_address="B" * 32), config)
+    assert (await client.get("/api/v1/radar")).json()["total"] == 1
+    # MAX(id) and MAX(finished) stay identical; the completed count changes.
+    repo.finish_scan(pending, SimpleNamespace(processed=1), NOW - 99)
+    assert (await client.get("/api/v1/radar")).json()["total"] == 2
 
 
 @pytest.mark.parametrize("version", [SCHEMA_VERSION - 1, SCHEMA_VERSION + 1])
