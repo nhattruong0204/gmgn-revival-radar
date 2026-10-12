@@ -179,6 +179,7 @@ export function App() {
                 <label className="preview-selector">
                   Synthetic preview state
                   <select
+                    aria-label="Synthetic preview state"
                     value={state}
                     onChange={(event) => {
                       const params = new URLSearchParams(search);
