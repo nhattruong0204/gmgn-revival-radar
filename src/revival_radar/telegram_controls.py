@@ -177,6 +177,8 @@ class TelegramControls:
         self.detail_provider, self.scan_request = detail_provider, scan_request
         self.schedule_provider = schedule_provider
         self.market_report_provider = market_report_provider
+        if controller is not None and controller.runtime is not runtime:
+            raise SettingsChangeError("Telegram and shared controls must use the same runtime.")
         self.controller = controller or SharedController(
             runtime, http, scan_request, schedule_provider
         )
