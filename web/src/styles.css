@@ -1936,3 +1936,18 @@ select option {
   outline: 2px solid var(--green);
   outline-offset: 4px;
 }
+.report-evidence {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.report-evidence summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+}
+.report-evidence > section {
+  margin-top: 16px;
+}
+.report-evidence h3 {
+  margin-bottom: 8px;
+}

@@ -198,6 +198,7 @@ function readyRequest(path: string): unknown {
     const a = alerts.find(
       (v) => v.id === Number(url.pathname.split("/").at(-1)),
     );
+    if (!a) throw new Error("Alert not found in the synthetic demo.");
     return {
       ...a,
       latest_observation: a?.observation,
@@ -224,6 +225,7 @@ function readyRequest(path: string): unknown {
       multiple_configurations: false,
       entries: demoObservations.slice(0, 10).map((o) => ({
         symbol: o.symbol,
+        observations: 6,
         peak: o,
         latest: { ...o, score: o.score - 3 },
       })),
@@ -276,6 +278,35 @@ export function demoRequest(
         return { ...(data as History), snapshots: [], scores: [], candles: [] };
       throw new Error("Synthetic preview: no saved evaluation for this token.");
     }
+    if (path.includes("/alerts/"))
+      throw new Error("Synthetic preview: no public alert is available.");
+    if (path.includes("/reports"))
+      return {
+        ...(data as Report),
+        entries: [],
+        evaluations: 0,
+        unique_tokens: 0,
+        completed_scans: 0,
+        incomplete_scans: 0,
+        last_finished: null,
+      };
+    if (path.includes("/outcomes"))
+      return {
+        ...(data as Outcomes),
+        horizons: Object.fromEntries(
+          [1, 6, 24, 72].map((h) => [
+            String(h),
+            {
+              observed: 0,
+              returns_available: 0,
+              positive: 0,
+              median_return_pct: null,
+              pending: 0,
+              missed: 0,
+            },
+          ]),
+        ),
+      };
     if (path.includes("/radar") || path.includes("/alerts"))
       return { ...(data as ListResponse<Observation>), items: [], total: 0 };
   }
