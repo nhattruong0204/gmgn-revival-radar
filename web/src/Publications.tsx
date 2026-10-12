@@ -13,7 +13,15 @@ import {
   Stage,
   Stat,
 } from "./components";
-import { compact, dateTime, percent, relative, tokenPath } from "./format";
+import {
+  chains,
+  compact,
+  dateTime,
+  percent,
+  relative,
+  shortAddress,
+  tokenPath,
+} from "./format";
 import type {
   Alert,
   AlertDetail,
@@ -56,11 +64,22 @@ export function Alerts({ id }: { id?: string }) {
           )
         }
       />
-      {source.error && <Notice tone="error">{source.error}</Notice>}
+      {source.error && (
+        <Notice tone="error">
+          {source.error}{" "}
+          <button className="text-button" onClick={source.refresh}>
+            Try again
+          </button>
+        </Notice>
+      )}
       {source.loading && !source.data ? (
         <Loading />
       ) : id && detail.data ? (
         <>
+          <p className="contract-address">
+            {chains[detail.data.chain] ?? detail.data.chain} ·{" "}
+            {detail.data.contract_address}
+          </p>
           <div className="alert-meta">
             <Stage stage={detail.data.observation?.status ?? "UNKNOWN"} />
             <span>Sent {dateTime(detail.data.timestamp)}</span>
@@ -76,6 +95,55 @@ export function Alerts({ id }: { id?: string }) {
               <Icon name="arrow" size={15} />
             </Link>
           </div>
+          <div className="stats-grid">
+            <Stat
+              label="Alert-time score"
+              value={<Score value={detail.data.score} />}
+              detail="Original confirmed signal"
+            />
+            <Stat
+              label="Alert-time market cap"
+              value={compact(detail.data.observation?.market_cap, true)}
+            />
+            <Stat
+              label="Alert-time liquidity"
+              value={compact(detail.data.observation?.liquidity, true)}
+            />
+            <Stat
+              label="Alert evidence observed"
+              value={dateTime(detail.data.observation?.timestamp)}
+              detail="Saved independently from current markets"
+            />
+          </div>
+          {detail.data.observation &&
+            (!detail.data.observation.token ||
+              !detail.data.observation.signal) && (
+              <Notice tone="warning">
+                Original detail evidence is unavailable for this legacy alert.
+                Unknown fields have not been replaced with current metrics.
+              </Notice>
+            )}
+          {detail.data.latest_observation && (
+            <section className="panel">
+              <h2>Latest saved evaluation</h2>
+              <p>
+                Observed {dateTime(detail.data.latest_observation.timestamp)}.
+                Separate from the original alert above.
+              </p>
+              <div className="structure-grid">
+                <div>
+                  <span>Score</span>
+                  <strong>{detail.data.latest_observation.score}/100</strong>
+                </div>
+                <div>
+                  <span>Market cap</span>
+                  <strong>
+                    {compact(detail.data.latest_observation.market_cap, true)}
+                  </strong>
+                </div>
+              </div>
+            </section>
+          )}
           {detail.data.observation ? (
             <SignalEvidence observation={detail.data.observation} />
           ) : (
@@ -120,6 +188,11 @@ export function Alerts({ id }: { id?: string }) {
             )}
           </section>
         </>
+      ) : id ? (
+        <Empty title="Alert evidence unavailable">
+          This alert may not be public or its saved data is unavailable. Retry
+          the request or return to the confirmed alert list.
+        </Empty>
       ) : (
         <section className="panel">
           <div className="panel-header">
@@ -144,6 +217,10 @@ export function Alerts({ id }: { id?: string }) {
                       </div>
                       <div>
                         <strong>{a.symbol}</strong>
+                        <small title={a.contract_address}>
+                          {chains[a.chain] ?? a.chain} ·{" "}
+                          {shortAddress(a.contract_address)}
+                        </small>
                         <small>
                           {a.preset ?? "Unlabeled strategy"} · rev{" "}
                           {a.revision ?? "unknown"}
@@ -223,7 +300,14 @@ export function Reports() {
           Top 10 · Up to seven days of evidence
         </span>
       </div>
-      {error && <Notice tone="error">{error}</Notice>}
+      {error && (
+        <Notice tone="error">
+          {error}{" "}
+          <button className="text-button" onClick={refresh}>
+            Try again
+          </button>
+        </Notice>
+      )}
       {data?.multiple_configurations && (
         <Notice tone="warning">
           This window includes multiple strategy configurations. Compare saved
@@ -276,39 +360,90 @@ export function Reports() {
           <div className="report-list">
             {data.entries.map((e, i) => (
               <div
-                className="report-row"
-                key={`${e.peak?.chain}:${e.peak?.contract_address}`}
+                className="report-entry"
+                key={`${e.peak.chain}:${e.peak.contract_address}`}
               >
-                <span className="rank-number">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <Link
-                  className="token-link"
-                  href={tokenPath(e.peak.chain, e.peak.contract_address)}
+                <div
+                  className="report-row"
+                  key={`${e.peak?.chain}:${e.peak?.contract_address}`}
                 >
-                  <Avatar observation={e.peak} />
-                  <span>
-                    <strong>{e.peak.symbol}</strong>
-                    <small>{e.peak.name ?? "Solana"}</small>
+                  <span className="rank-number">
+                    {String(i + 1).padStart(2, "0")}
                   </span>
-                </Link>
-                <Stage stage={e.peak.status} />
-                <div className="report-scores">
-                  <strong className="positive">{e.peak.score}</strong>
-                  <span>/</span>
-                  <strong>{e.latest.score}</strong>
+                  <Link
+                    className="token-link"
+                    href={tokenPath(e.peak.chain, e.peak.contract_address)}
+                  >
+                    <Avatar observation={e.peak} />
+                    <span>
+                      <strong>{e.peak.symbol}</strong>
+                      <small>{e.peak.name ?? "Solana"}</small>
+                    </span>
+                  </Link>
+                  <Stage stage={e.peak.status} />
+                  <div className="report-scores">
+                    <strong className={e.peak.score >= 75 ? "positive" : ""}>
+                      {e.peak.score}
+                    </strong>
+                    <span>/</span>
+                    <strong>{e.latest.score}</strong>
+                  </div>
+                  <div className="report-market">
+                    <strong>{compact(e.latest.market_cap, true)}</strong>
+                    <small>Latest market cap</small>
+                  </div>
+                  <Link
+                    className="detail-link"
+                    aria-label={`View ${e.peak.symbol}`}
+                    href={tokenPath(e.peak.chain, e.peak.contract_address)}
+                  >
+                    <Icon name="chevron" />
+                  </Link>
                 </div>
-                <div className="report-market">
-                  <strong>{compact(e.latest.market_cap, true)}</strong>
-                  <small>Latest market cap</small>
-                </div>
-                <Link
-                  className="detail-link"
-                  aria-label={`View ${e.peak.symbol}`}
-                  href={tokenPath(e.peak.chain, e.peak.contract_address)}
-                >
-                  <Icon name="chevron" />
-                </Link>
+                <details className="report-evidence">
+                  <summary>
+                    Peak and latest evidence · {e.observations ?? "Unknown"}{" "}
+                    saved observations
+                    {(e.peak.blockers.length > 0 ||
+                      e.latest.blockers.length > 0) && (
+                      <span className="danger"> · Known blockers present</span>
+                    )}
+                    {(e.peak.missing_fields.length > 0 ||
+                      e.latest.missing_fields.length > 0) && (
+                      <span className="warning-text"> · Missing evidence</span>
+                    )}
+                  </summary>
+                  {(typeof e.observations !== "number" ||
+                    e.observations < 3) && (
+                    <Notice tone="warning">
+                      Sparse sample: these observations do not establish
+                      continuous performance.
+                    </Notice>
+                  )}
+                  {[
+                    ["Peak", e.peak],
+                    ["Latest", e.latest],
+                  ].map(([label, value]) => {
+                    const o = value as import("./types").Observation;
+                    return (
+                      <section key={String(label)} className="panel">
+                        <h3>
+                          {String(label)} saved evaluation · {o.score}/100
+                        </h3>
+                        <p>
+                          {dateTime(o.timestamp)} ·{" "}
+                          {o.preset ?? "Unlabeled strategy"} · revision{" "}
+                          {o.revision ?? "unknown"}
+                        </p>
+                        <Freshness
+                          label="Evaluation observed"
+                          observed={o.timestamp}
+                        />
+                        <SignalEvidence observation={o} />
+                      </section>
+                    );
+                  })}
+                </details>
               </div>
             ))}
           </div>
@@ -323,7 +458,7 @@ export function Reports() {
 }
 export function OutcomePage() {
   const [days, setDays] = useState(7);
-  const { data, error, loading } = useData<Outcomes>(
+  const { data, error, loading, refresh } = useData<Outcomes>(
     `/api/v1/outcomes?days=${days}`,
   );
   return (
@@ -351,7 +486,14 @@ export function OutcomePage() {
         recorded prices enter the median and positive-return rate. Pending and
         missed observations are shown separately.
       </Notice>
-      {error && <Notice tone="error">{error}</Notice>}
+      {error && (
+        <Notice tone="error">
+          {error}{" "}
+          <button className="text-button" onClick={refresh}>
+            Try again
+          </button>
+        </Notice>
+      )}
       {loading && !data ? (
         <Loading />
       ) : (
@@ -367,7 +509,11 @@ export function OutcomePage() {
                 <div className="outcome-value">
                   <span
                     className={
-                      (v?.median_return_pct ?? 0) >= 0 ? "positive" : "danger"
+                      v?.median_return_pct == null
+                        ? "muted"
+                        : v.median_return_pct >= 0
+                          ? "positive"
+                          : "danger"
                     }
                   >
                     {percent(v?.median_return_pct, false, true)}
@@ -389,7 +535,7 @@ export function OutcomePage() {
                         ? percent(v.positive / v.returns_available, true)
                         : "—"}{" "}
                       <small>
-                        ({v?.positive ?? 0} / {v?.returns_available ?? 0})
+                        ({v?.positive ?? "—"} / {v?.returns_available ?? "—"})
                       </small>
                     </dd>
                   </div>
@@ -417,6 +563,19 @@ export function OutcomePage() {
           })}
         </div>
       )}
+      {!loading && !data && (
+        <Empty title="Outcome data unavailable">
+          Retry to load stored checkpoint counts. No returns have been assumed.
+        </Empty>
+      )}
+      {data &&
+        Object.values(data.horizons).every(
+          (v) => v.observed + v.pending + v.missed === 0,
+        ) && (
+          <Empty title="No confirmed signal outcomes in this window">
+            Choose another cohort window or wait for confirmed signals.
+          </Empty>
+        )}
       <section className="panel methodology-note">
         <h2>Reading these results</h2>
         <p>
@@ -498,6 +657,7 @@ export function Methodology() {
         <h2>From watch to revival</h2>
         <div className="stage-explainer">
           {[
+            ["IGNORE", "Below the configured monitoring requirements."],
             [
               "WATCH",
               "A candidate worth monitoring; evidence is still developing.",
@@ -505,6 +665,10 @@ export function Methodology() {
             [
               "EARLY_REVIVAL",
               "Returning activity is present, with limited confirmation.",
+            ],
+            [
+              "REVIVING",
+              "Returning activity and developing structure meet the saved strategy.",
             ],
             [
               "CONFIRMED_REVIVAL",
@@ -535,8 +699,10 @@ export function Methodology() {
           ranking and at most seven days of history.
         </p>
         <p>
-          Unknown security fields are unavailable evidence. Scores summarize
-          observations and do not certify safety or predict future returns.
+          Only tracked candidates are covered, not the entire market. Unknown
+          security fields are unavailable evidence. Scores are heuristic rule
+          matches, not calibrated probabilities. They summarize observations and
+          do not certify safety or predict future returns.
         </p>
       </section>
     </>

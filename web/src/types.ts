@@ -123,6 +123,7 @@ export interface AlertDetail extends Alert {
   }>;
 }
 export interface ReportEntry {
+  observations?: number;
   chain?: string;
   contract_address?: string;
   symbol?: string;
