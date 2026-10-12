@@ -246,11 +246,12 @@ class WebCommandWorker:
         self.controller, self.repo = controller, repo
         self.store = CommandStore(repo.db)
 
-    def publish(self, now: float | None = None) -> None:
+    def publish(self, now: float | None = None, *, stopped: bool = False) -> None:
         now = time.time() if now is None else now
         schedule = self.controller.schedule_provider() if self.controller.schedule_provider else {}
         snapshot = self.controller.snapshot() | {
             "heartbeat_at": now,
+            "stopped_at": now if stopped else None,
             "enabled": bool(self.controller.runtime.base.web_controls_enabled),
             "schedule": schedule,
         }
@@ -291,7 +292,9 @@ class WebCommandWorker:
             self.store.finish(command, status, result, now)
 
     async def process_one(self, now: float | None = None) -> bool:
-        now = time.time() if now is None else now
+        # Explicit time keeps deterministic tests; production records actual completion.
+        clock = time.time if now is None else lambda: now
+        now = clock()
         command = self.store.claim(now)
         if command is None:
             return False
@@ -336,10 +339,10 @@ class WebCommandWorker:
                     if delivery == "failed"
                     else "succeeded"
                 )
-                self.store.finish(command, status, result, time.time() if now is None else now)
+                self.store.finish(command, status, result, clock())
         except (CommandError, SettingsChangeError) as exc:
             code = "stale_revision" if isinstance(exc, StaleRevisionError) else "invalid_command"
-            self.store.finish(command, "failed", {"code": code, "message": str(exc)}, now)
+            self.store.finish(command, "failed", {"code": code, "message": str(exc)}, clock())
         except asyncio.CancelledError:
             # The durable running row is reconciled by recover(), including an
             # uncertain Telegram send, rather than being blindly retried.
@@ -359,7 +362,7 @@ class WebCommandWorker:
             ):
                 result = self.controller._result(execution["action"], "Settings were saved.")
                 result["applied_revision"] = receipt["revision"]
-                self.store.finish(command, "succeeded", result, now)
+                self.store.finish(command, "succeeded", result, clock())
                 return True
             self.store.finish(
                 command,
@@ -371,26 +374,34 @@ class WebCommandWorker:
                         "Check worker status before retrying."
                     ),
                 },
-                now,
+                clock(),
             )
         return True
 
     async def run(self) -> None:
-        recovered = False
-        while True:
+        try:
+            recovered = False
+            while True:
+                try:
+                    if not recovered:
+                        self.recover()
+                        recovered = True
+                    self.publish()
+                    pending = await self.process_one()
+                except asyncio.CancelledError:
+                    raise
+                except Exception as exc:
+                    log.error("web controls background error=%s", type(exc).__name__)
+                    # An acknowledgement failure can leave a running row and its
+                    # atomic receipt. Reconcile before another settings mutation
+                    # could replace that evidence, including transient SQLite errors.
+                    recovered = False
+                    pending = False
+                await asyncio.sleep(0 if pending else WORKER_POLL_SECONDS)
+        finally:
+            # Graceful shutdown is immediately visible. Abrupt exits still age out
+            # through the API heartbeat deadline; running commands remain recoverable.
             try:
-                if not recovered:
-                    self.recover()
-                    recovered = True
-                self.publish()
-                pending = await self.process_one()
-            except asyncio.CancelledError:
-                raise
+                self.publish(stopped=True)
             except Exception as exc:
-                log.error("web controls background error=%s", type(exc).__name__)
-                # An acknowledgement failure can leave a running row and its
-                # atomic receipt. Reconcile before another settings mutation
-                # could replace that evidence, including transient SQLite errors.
-                recovered = False
-                pending = False
-            await asyncio.sleep(0 if pending else WORKER_POLL_SECONDS)
+                log.error("web controls shutdown status error=%s", type(exc).__name__)

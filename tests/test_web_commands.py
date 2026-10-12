@@ -87,11 +87,13 @@ def test_schema_four_copy_migration_preserves_legacy_rows_and_runtime_offset(
     db.execute(
         "INSERT INTO alert_signals(alert_id,score) VALUES(1,90)"
     )  # Unknown signal fields must remain unknown.
+    repo.set_state("telegram:alert:1", '{"evidence":"preserved"}', token.timestamp)
+    db.execute("INSERT INTO signal_outcomes VALUES(1,1,1000,1001,NULL,NULL,NULL)")
     for table in ("web_commands", "web_previews", "web_sessions"):
         db.execute(f"DROP TABLE {table}")
     db.execute("PRAGMA user_version=4")
     db.commit()
-    tables = ("alerts", "alert_signals", "token_snapshots", "state")
+    tables = ("alerts", "alert_signals", "signal_outcomes", "token_snapshots", "state")
     saved = {
         table: [tuple(row) for row in db.execute(f"SELECT * FROM {table}")] for table in tables
     }
@@ -598,3 +600,71 @@ async def test_web_controls_disabled_by_default_do_not_consume_queued_actions(
             await service.run_service(runtime, repo, http)
     assert store.get(OWNER, "disabled")["status"] == "queued"
     assert repo.get_state("web:worker") is None and runtime.revision == 0
+
+
+async def test_restart_before_claim_keeps_queued_work_and_after_claim_never_replays(worker):
+    worker.store.enqueue(OWNER, "queued", "preview", {"desired_action": "pause"}, 0, 1000)
+    worker.recover(1001)
+    assert worker.store.get(OWNER, "queued")["status"] == "queued"
+    assert await worker.process_one(1001)
+    preview = worker.store.get(OWNER, "queued")["result"]
+    worker.store.enqueue(OWNER, "claimed", "confirm", {"preview_id": preview["preview_id"]}, 0)
+    worker.store.claim(1002)
+    worker.recover(1003)
+    assert worker.store.get(OWNER, "claimed")["status"] == "unknown"
+    assert worker.controller.runtime.revision == 0
+    assert await worker.process_one(1004) is False
+
+
+async def test_crash_after_test_send_before_ack_does_not_duplicate_message(worker, monkeypatch):
+    preview = await make_preview(worker, "test")
+    finish = worker.store.finish
+
+    def crash(*args, **kwargs):
+        raise asyncio.CancelledError
+
+    monkeypatch.setattr(worker.store, "finish", crash)
+    with pytest.raises(asyncio.CancelledError):
+        await confirm_preview(worker, preview)
+    assert len(worker.sent) == 1
+    monkeypatch.setattr(worker.store, "finish", finish)
+    worker.recover(1002)
+    assert worker.store.get(OWNER, "confirm-1")["status"] == "unknown"
+    assert await worker.process_one(1003) is False
+    assert len(worker.sent) == 1 and worker.controller.runtime.offset == 501
+
+
+async def test_command_completion_timestamp_follows_slow_execution(worker, monkeypatch):
+    preview = await make_preview(worker, "test")
+    clock = [1001.0]
+    execute = worker.controller.execute
+
+    async def slow_execute(*args, **kwargs):
+        result = await execute(*args, **kwargs)
+        clock[0] = 1010.0
+        return result
+
+    monkeypatch.setattr("revival_radar.web_commands.time.time", lambda: clock[0])
+    monkeypatch.setattr(worker.controller, "execute", slow_execute)
+    worker.store.enqueue(OWNER, "slow", "confirm", {"preview_id": preview["preview_id"]}, 0)
+    assert await worker.process_one()
+    result = worker.store.get(OWNER, "slow")
+    assert result["started_at"] == 1001 and result["finished_at"] == 1010
+
+
+async def test_worker_shutdown_publishes_stopped_state_and_restart_clears_it(worker):
+    task = asyncio.create_task(worker.run())
+    try:
+        for _ in range(100):
+            if worker.repo.get_state("web:worker") is not None:
+                break
+            await asyncio.sleep(0.001)
+        assert json.loads(worker.repo.get_state("web:worker"))["stopped_at"] is None
+    finally:
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+    snapshot = json.loads(worker.repo.get_state("web:worker"))
+    assert snapshot["stopped_at"] == snapshot["heartbeat_at"]
+    worker.publish()
+    assert json.loads(worker.repo.get_state("web:worker"))["stopped_at"] is None

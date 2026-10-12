@@ -185,13 +185,15 @@ async def test_confirm_does_not_accept_replacement_payload(web_config):
         assert (await client.post("/api/v1/admin/commands", json=payload)).status_code == 422
 
 
-async def test_worker_status_staleness_and_settings(web_config):
+@pytest.mark.parametrize("age,stopped", [(100, False), (0, True), (0, False)])
+async def test_worker_status_staleness_and_settings(web_config, age, stopped):
     with connect(web_config.database_path) as db:
         Repository(db).set_state(
             "web:worker",
             json.dumps(
                 {
-                    "heartbeat_at": time.time() - 100,
+                    "heartbeat_at": time.time() - age,
+                    "stopped_at": time.time() if stopped else None,
                     "enabled": True,
                     "settings": {"alerts_paused": False},
                     "revision": 5,
@@ -205,10 +207,10 @@ async def test_worker_status_staleness_and_settings(web_config):
         await sign_in(client)
         response = await client.get("/api/v1/admin/status")
         assert response.status_code == 200
-        assert response.json()["worker"]["available"] is False
+        assert response.json()["worker"]["available"] is (age == 0 and not stopped)
         settings = (await client.get("/api/v1/admin/settings")).json()
         assert settings["revision"] == 5 and settings["active_revision"] == 4
-        assert settings["available"] is False
+        assert settings["available"] is (age == 0 and not stopped)
 
 
 async def test_password_rotation_revokes_old_sessions_without_schema_change(web_config):
