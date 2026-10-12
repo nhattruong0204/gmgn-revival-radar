@@ -1,0 +1,21 @@
+{
+  "anonymous_session": {"authenticated": false, "enabled": false, "csrf_token": null},
+  "preview_request": {
+    "id": "00000000-0000-4000-8000-000000000001", "action": "preview",
+    "desired_action": "settings", "expected_revision": 2, "changes": {"min_holders": 400}
+  },
+  "preview_result": {
+    "id": "00000000-0000-4000-8000-000000000001", "action": "preview",
+    "expected_revision": 2, "status": "succeeded", "created_at": 1800000000,
+    "started_at": 1800000001, "finished_at": 1800000002, "target_revision": null,
+    "result": {
+      "action": "settings", "changes": {"min_holders": 400},
+      "before": {"min_holders": 300}, "after": {"min_holders": 400},
+      "revision": 2, "preview_id": "synthetic-preview", "expires_at": 1800000601
+    }
+  },
+  "confirm_request": {
+    "id": "00000000-0000-4000-8000-000000000002", "action": "confirm",
+    "expected_revision": 2, "preview_id": "synthetic-preview"
+  }
+}

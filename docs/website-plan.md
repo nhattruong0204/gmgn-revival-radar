@@ -2,6 +2,9 @@
 
 Planning date: 11 October 2026. The public website, API, owner authentication and shared controls are now implemented. See [validation](website-validation.md) and [deployment](website-deployment.md). Production HTTPS deployment remains pending.
 
+The completed [#17 foundation](website-foundation.md) documents separate startup,
+contracts and synthetic desktop/mobile state previews.
+
 ## Product and audience
 
 Build a public website where visitors can discover revival candidates, inspect the evidence behind signals, and review observed post-alert outcomes. Add a private admin area where the owner can monitor and control the existing Telegram bot.

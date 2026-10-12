@@ -151,7 +151,7 @@ const alerts: Alert[] = demoObservations
     revision: 4,
     observation: o,
   }));
-export function demoRequest(path: string): unknown {
+function readyRequest(path: string): unknown {
   const url = new URL(path, "https://demo.local"),
     q = url.searchParams;
   if (url.pathname.endsWith("/meta"))
@@ -247,4 +247,83 @@ export function demoRequest(path: string): unknown {
       ),
     } satisfies Outcomes;
   throw new Error("This endpoint is unavailable in the synthetic demo.");
+}
+
+export const previewStates = [
+  "ready",
+  "loading",
+  "empty",
+  "partial",
+  "stale",
+  "error",
+] as const;
+export type PreviewState = (typeof previewStates)[number];
+export function previewState(value: string | null): PreviewState {
+  return previewStates.includes(value as PreviewState)
+    ? (value as PreviewState)
+    : "ready";
+}
+export function demoRequest(
+  path: string,
+  state: PreviewState = "ready",
+): unknown {
+  if (state === "error")
+    throw new Error("Synthetic preview: the data service is unavailable.");
+  const data = structuredClone(readyRequest(path));
+  if (state === "empty") {
+    if (path.includes("/tokens/")) {
+      if (path.includes("/history"))
+        return { ...(data as History), snapshots: [], scores: [], candles: [] };
+      throw new Error("Synthetic preview: no saved evaluation for this token.");
+    }
+    if (path.includes("/radar") || path.includes("/alerts"))
+      return { ...(data as ListResponse<Observation>), items: [], total: 0 };
+  }
+  if (state === "partial" && path.includes("/history")) {
+    return { ...(data as History), candles: [] };
+  }
+  const transform = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(transform);
+    if (!value || typeof value !== "object") return value;
+    const record = value as Record<string, unknown>;
+    if (state === "partial" && "blockers" in record && "token" in record) {
+      const observation = record as unknown as Observation;
+      observation.eligible = false;
+      observation.liquidity = null;
+      observation.confirmation_score = null;
+      observation.blockers = ["Known active mint authority blocks eligibility"];
+      observation.missing_fields = [
+        "liquidity",
+        "freeze_authority",
+        "closed_candles",
+      ];
+      observation.warnings = ["Security coverage is incomplete"];
+      if (observation.token)
+        observation.token = {
+          ...observation.token,
+          liquidity: null,
+          security: {
+            mint_renounced: false,
+            freeze_renounced: null,
+            dangerous: true,
+          },
+        };
+      if (observation.signal)
+        observation.signal = {
+          ...observation.signal,
+          structure: { available: false },
+        };
+    }
+    return Object.fromEntries(
+      Object.entries(record).map(([key, item]) => [
+        key,
+        state === "stale" &&
+        ["timestamp", "last_scan_at"].includes(key) &&
+        typeof item === "number"
+          ? item - 7200
+          : transform(item),
+      ]),
+    );
+  };
+  return transform(data);
 }

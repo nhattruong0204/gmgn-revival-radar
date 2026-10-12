@@ -66,3 +66,62 @@ missing, locked or incompatible databases return a generic `503` without filesys
 paths or internal exceptions. Validation errors omit supplied input values. API
 startup remains available when the database is absent, but observation reads return
 `503` until the scanner has initialized it.
+
+## Owner routes and response contracts
+
+All paths below are under `/api/v1/admin`. Only the session endpoint permits
+anonymous access; status, settings and commands authenticate on the server.
+Owner access is disabled until configured. The API never writes
+`radar-controls.json`; the existing scanner consumes its durable command queue.
+
+| Method and route | Request | Response / responsibility |
+| --- | --- | --- |
+| `GET /session` | Cookie when present | `{authenticated,enabled,csrf_token,expires_at?}`; disabled/anonymous responses have null CSRF |
+| `POST /session` | `{password}` and matching `Origin` | Session response; sets HttpOnly/Secure/SameSite=Strict cookie restricted to `/api/v1/admin`; never returns password |
+| `DELETE /session` | Cookie, origin, `X-CSRF-Token` | `{authenticated:false,csrf_token:null}`; revokes persisted session and cookie |
+| `GET /status` | Cookie | `{worker,health}`; private heartbeat, schedule, scan/delivery diagnostics; `worker.available=false` if disabled or heartbeat exceeds 30 seconds |
+| `GET /settings` | Cookie | `{settings,revision,active_revision,presets,available}`; scanner-published allowlisted settings and saved/active revisions |
+| `POST /commands` | Cookie, origin, CSRF and command object | `202` and persisted command; submission does not establish execution |
+| `GET /commands` | Cookie; `limit` 1–50, default 50 | `{items:[command,...]}` newest first, bound to current owner session |
+| `GET /commands/{uuid}` | Cookie and UUID | One owner-bound command; another session's ID returns `404` |
+
+Commands supply `id` (client UUID for idempotency), `action` (`preview`/`confirm`)
+and optional nonnegative `expected_revision`. A preview supplies `desired_action`
+(`settings`, `reset`, `pause`, `resume`, `scan`, `test`); only settings accepts
+`changes` or a `strict`/`balanced`/`broad` preset. Confirmation supplies the saved
+`preview_id`, with no replacement action or changes.
+
+Command responses contain `id`, `action`, `expected_revision`, `status`,
+`created_at`, nullable `started_at`/`finished_at`/`target_revision` and `result`.
+Internal `owner` and raw request `payload` are omitted. Status moves from `queued`
+to `running`, then `succeeded`, `failed` or `unknown`. Failures use `result.code`
+and `result.message`. Unknown effects must not be blindly replayed. Preview
+results contain normalized `action`, `changes`, `before`, `after`, `revision`,
+`preview_id` and `expires_at`. Previews expire after ten minutes, bound to the
+session, changes and revision. Ordinary strategy changes apply at the next scan;
+results distinguish saved `revision` from `active_revision`. Scan commands use the
+existing scheduler and never start a second scanner.
+
+Owner responses are `Cache-Control: no-store`. Safe errors use `detail`: `401`
+unauthenticated/expired session, `403` origin/CSRF failure, `404` unknown command,
+`409` UUID bound to different input, `422` invalid request, `429` login throttling
+or full queue, `503` owner access/storage/settings unavailable. Login permits ten
+attempts per address per 15 minutes; mutation bodies are limited to 16 KiB.
+Validation errors omit supplied passwords/input values. Stale revisions produce a
+failed worker result, not a successfully applied HTTP submission.
+
+## Synthetic examples and exact shapes
+
+[Public example](examples/website-public.json) shows a valid Radar response with
+unknown historical token/signal detail, a known blocker, observation time and page
+cutoff. [Owner examples](examples/website-admin.json) show disabled login and a
+settings preview/confirmation. Values are illustrative, with no passwords, cookies,
+credentials, Telegram/owner identifiers or real commands. Public models contain
+no private settings or control records; full nullability/defaults are defined in
+`src/revival_radar/web/models.py`.
+
+`GET /meta` returns `chains:[{id,name}]`, not strings. Chart snapshots are
+`{timestamp,price,market_cap}`; scores contain timestamp, overall and dimension
+scores; candles contain timestamp/open/high/low/close. They are not full token
+observations. Timestamps describe saved measurements/candle open times, independently
+of page refresh. Missing/truncated chart evidence and gaps remain explicit.

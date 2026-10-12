@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { demoRequest } from "./demo";
+import { demoRequest, previewState } from "./demo";
 export const DEMO = import.meta.env.VITE_DEMO_MODE === "true";
 export class ApiError extends Error {
   status: number;
@@ -12,7 +12,14 @@ export async function request<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  if (DEMO && !path.includes("/admin/")) return demoRequest(path) as T;
+  if (DEMO && !path.includes("/admin/")) {
+    const state = previewState(
+      new URLSearchParams(window.location.search).get("preview_state"),
+    );
+    if (state === "loading")
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    return demoRequest(path, state) as T;
+  }
   if (DEMO && path.includes("/admin/"))
     throw new ApiError(
       "Owner controls are disabled in the synthetic demo.",
