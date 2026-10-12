@@ -19,6 +19,9 @@ jobs:
       - run: pytest -q
       - run: revival-radar demo --database /tmp/radar-demo.db
       - run: docker build -t revival-radar:ci .
+      - run: docker build --target website -t revival-radar-web:ci .
+      - run: docker run --rm revival-radar-web:ci revival-radar-web --help
+      - run: RADAR_STAGE_WEB_IMAGE=revival-radar-web:ci python scripts/validate_website_container.py
   website:
     runs-on: ubuntu-latest
     defaults:

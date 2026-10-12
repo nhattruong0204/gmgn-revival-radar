@@ -22,6 +22,8 @@ data/*
 .DS_Store
 .wheelhouse/*
 !.wheelhouse/.gitkeep
+.npm-cache/*
+!.npm-cache/.gitkeep
 node_modules/
 web/.vite/
 web/test-results/

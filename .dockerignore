@@ -10,3 +10,7 @@ __pycache__
 *.pem
 *.key
 *.log
+web/node_modules
+web/dist
+web/*.tsbuildinfo
+.npm-cache/_logs

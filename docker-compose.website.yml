@@ -1,0 +1,35 @@
+# Same host and project as docker-compose.yml; never start a second radar service.
+services:
+  web:
+    build:
+      context: .
+      target: website
+    init: true
+    env_file:
+      - path: .env.web
+        format: raw
+    user: "${RADAR_UID:-10001}:${RADAR_GID:-10001}"
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "127.0.0.1:8000:8000"
+    restart: unless-stopped
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/meta', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
