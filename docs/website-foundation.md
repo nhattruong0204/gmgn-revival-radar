@@ -16,8 +16,8 @@ revival-radar-web --host 127.0.0.1 --port 8000
 ```
 
 The API factory and startup do not create/migrate storage or start scanner/provider
-clients. With an absent database, metadata remains available but Radar returns a
-safe 503. For an HTTP 200 data smoke check, create a NEW synthetic database with
+clients. With an absent database, the API process remains available but observation
+endpoints (including metadata) return a safe 503. For an HTTP 200 data smoke check, create a NEW synthetic database with
 `python scripts/seed_website_demo.py /tmp/new-radar-foundation.db`, then restart
 only the API with `DATABASE_PATH=/tmp/new-radar-foundation.db`. `GET /api/v1/radar`
 returns the synthetic REVIVE score 90. The seed explicitly initializes test data;

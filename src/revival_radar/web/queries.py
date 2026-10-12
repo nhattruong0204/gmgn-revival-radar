@@ -11,6 +11,7 @@ from pydantic import ValidationError
 
 from revival_radar.chains import CHAINS
 from revival_radar.models.token import Candle, TokenSnapshot
+from revival_radar.storage.database import SCHEMA_VERSION
 from revival_radar.storage.repository import Repository
 from revival_radar.web.config import WebConfig
 from revival_radar.web.models import (
@@ -45,6 +46,8 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
         deadline = time.monotonic() + config.web_read_timeout_ms / 1000
         db.set_progress_handler(lambda: int(time.monotonic() > deadline), 1000)
         db.execute("BEGIN")
+        if db.execute("PRAGMA user_version").fetchone()[0] != SCHEMA_VERSION:
+            raise sqlite3.DatabaseError("Unsupported public storage schema")
         yield PublicQueries(db)
     finally:
         db.close()
@@ -104,10 +107,27 @@ def observation(value: Mapping, identity: Mapping) -> Observation:
     return Observation.model_validate(fields)
 
 
+def public_field(payload, chain, address, timestamp, score, status, eligible, name):
+    """Search/sort use the same trusted evidence as public serialization."""
+    detail = Repository._market_detail(
+        {
+            "chain": chain,
+            "contract_address": address,
+            "timestamp": timestamp,
+            "score": score,
+            "status": status,
+            "eligible": eligible,
+        },
+        payload,
+    )
+    return detail["token"].get(name) if detail else None
+
+
 class PublicQueries:
     def __init__(self, db: sqlite3.Connection):
         self.db = db
         self.repo = Repository(db)
+        db.create_function("public_field", 8, public_field, deterministic=True)
 
     def last_scan_at(self, until: float) -> float | None:
         row = self.db.execute(
@@ -116,10 +136,16 @@ class PublicQueries:
         return finite(row[0])
 
     def version(self, until: float) -> tuple:
-        # Integer primary-key maxima are cheap and also invalidate cached market/alert views.
+        # A lower-ID pending alert can finish after a newer alert was sent. Its
+        # receipt must invalidate cached lists/outcomes even when MAX(id) is unchanged.
+        # Outcome rows can also arrive without a new snapshot or completed scan.
         row = self.db.execute(
             "SELECT (SELECT MAX(id) FROM token_snapshots),"
-            "(SELECT MAX(id) FROM alerts WHERE delivery_status='sent')"
+            "(SELECT MAX(id) FROM alerts WHERE delivery_status='sent'),"
+            "(SELECT COUNT(*) FROM alerts WHERE delivery_status='sent'),"
+            "(SELECT MAX(rowid) FROM signal_outcomes),"
+            "(SELECT COUNT(*) FROM signal_outcomes),"
+            "(SELECT MAX(fetched_at) FROM enrichment_cache)"
         ).fetchone()
         return (self.last_scan_at(until), *tuple(row))
 
@@ -164,8 +190,8 @@ class PublicQueries:
             escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
             filters.append(
                 "(e.symbol LIKE ? ESCAPE '\\' OR "
-                "json_extract(CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END,"
-                "'$.token.name') LIKE ? ESCAPE '\\' OR instr(e.contract_address,?)>0)"
+                "public_field(st.value,e.chain,e.contract_address,e.timestamp,e.score,"
+                "e.status,e.eligible,'name') LIKE ? ESCAPE '\\' OR instr(e.contract_address,?)>0)"
             )
             arguments.extend((f"%{escaped}%", f"%{escaped}%", search))
         cte = """WITH latest AS (
@@ -186,10 +212,9 @@ class PublicQueries:
             # sort is an enum at the HTTP boundary and additionally checked here.
             if sort not in ("market_cap", "liquidity", "volume_5m"):
                 raise ValueError("Unsupported sort")
-            safe = "CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END"
             sorting = (
-                f"CASE WHEN json_type({safe},'$.token.{sort}') IN ('integer','real') "
-                f"THEN json_extract({safe},'$.token.{sort}') END"
+                "public_field(st.value,e.chain,e.contract_address,e.timestamp,e.score,"
+                f"e.status,e.eligible,'{sort}')"
             )
         if order not in ("asc", "desc"):
             raise ValueError("Unsupported order")
