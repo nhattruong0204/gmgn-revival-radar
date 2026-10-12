@@ -533,12 +533,16 @@ class Repository:
                     PARTITION BY e.contract_address ORDER BY e.timestamp DESC,e.id DESC
                 ) AS latest_position,
                 COUNT(*) OVER (PARTITION BY e.contract_address) AS observations {base}
+        ), competitive_score AS (
+            SELECT COALESCE((SELECT peak_score FROM observations
+                GROUP BY contract_address ORDER BY peak_score DESC LIMIT 1 OFFSET ?),-1)
+                AS minimum
         ), candidates AS MATERIALIZED (
             SELECT o.*,market_evidence_rank(st.value,o.chain,o.contract_address,o.timestamp,
                 o.score,o.status,o.eligible) AS evidence_rank
             FROM observations o
             LEFT JOIN state st ON st.key='telegram:evaluation:' || o.id
-            WHERE o.score=o.peak_score
+            WHERE o.score=o.peak_score AND o.score>=(SELECT minimum FROM competitive_score)
         ), peaks AS (
             SELECT *,ROW_NUMBER() OVER (
                 PARTITION BY contract_address ORDER BY evidence_rank DESC,timestamp DESC,id DESC
@@ -552,7 +556,9 @@ class Repository:
             ) AS latest_id,p.observations FROM top_peaks p
             ORDER BY p.score DESC,p.evidence_rank DESC,
                 p.timestamp DESC,p.contract_address ASC"""
-        ranked = self.db.execute(query, (*params, limit)).fetchall()
+        # Only tokens whose peak score can reach the requested top list need
+        # expensive validated evidence tie-breaks. Keep every boundary-score tie.
+        ranked = self.db.execute(query, (*params, limit - 1, limit)).fetchall()
         totals = self.db.execute(
             "SELECT COUNT(*) AS evaluations,COUNT(DISTINCT e.contract_address) AS unique_tokens,"
             "MIN(e.timestamp) AS first_observation,MAX(s.finished) AS last_finished,"

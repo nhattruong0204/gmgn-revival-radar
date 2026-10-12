@@ -317,3 +317,34 @@ it("keeps high-score risk and saved metrics separate from a later snapshot", asy
   expect(screen.getByText("2×")).toBeTruthy();
   expect(screen.getByText("-5")).toBeTruthy();
 });
+
+it("renders hostile token symbols as text and never displays unrecognized private payloads", async () => {
+  const symbol = '<img src=x onerror="alert(1)">';
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            items: [
+              {
+                ...legacy,
+                symbol,
+                owner_id: "PRIVATE-MARKER",
+                internal_error: "PRIVATE-MARKER",
+              },
+            ],
+            total: 1,
+            page: 1,
+            page_size: 25,
+            as_of: legacy.timestamp,
+            last_scan_at: legacy.timestamp,
+          }),
+        ),
+    ),
+  );
+  const { container } = render(<Radar search="" meta={null} />);
+  await screen.findAllByText(symbol);
+  expect(container.querySelector("img")).toBeNull();
+  expect(container.textContent).not.toContain("PRIVATE-MARKER");
+});

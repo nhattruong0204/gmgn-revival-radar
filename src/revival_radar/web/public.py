@@ -3,7 +3,7 @@ import sqlite3
 import time
 from collections import OrderedDict
 from collections.abc import Callable
-from threading import Lock
+from threading import Condition, Lock
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, HTTPException, Path, Query, Request
@@ -43,6 +43,8 @@ class ResponseCache:
     def __init__(self):
         self.values: OrderedDict[tuple, tuple[float, BaseModel]] = OrderedDict()
         self.lock = Lock()
+        self.filling: set[tuple] = set()
+        self.ready = Condition()
 
     def get(self, key: tuple) -> BaseModel | None:
         with self.lock:
@@ -63,6 +65,26 @@ class ResponseCache:
             self.values.move_to_end(key)
             while len(self.values) > 256:
                 self.values.popitem(last=False)
+
+    def get_or_create(self, key: tuple, create: Callable[[], BaseModel], ttl: int) -> BaseModel:
+        """Coalesce concurrent misses for one saved-data version, not unrelated reads."""
+        if not ttl:
+            return create()
+        with self.ready:
+            while key in self.filling:
+                self.ready.wait()
+            cached = self.get(key)
+            if cached is not None:
+                return cached
+            self.filling.add(key)
+        try:
+            result = create()
+            self.put(key, result, ttl)
+            return result
+        finally:
+            with self.ready:
+                self.filling.remove(key)
+                self.ready.notify_all()
 
 
 def cutoff(request: Request, as_of: float | None) -> float:
@@ -89,18 +111,16 @@ def read[T: BaseModel](
     try:
         with public_reader(request.app.state.config) as queries:
             cache_key = (key, as_of, queries.version(until))
-            cached = request.app.state.public_cache.get(cache_key)
-            if cached is not None:
-                return cached
-            result = query(queries, until)
-            if result is None:
-                raise HTTPException(status_code=404, detail="Saved record not found")
-            request.app.state.public_cache.put(
-                cache_key,
-                result,
-                request.app.state.config.web_cache_seconds,
+
+            def create():
+                result = query(queries, until)
+                if result is None:
+                    raise HTTPException(status_code=404, detail="Saved record not found")
+                return result
+
+            return request.app.state.public_cache.get_or_create(
+                cache_key, create, request.app.state.config.web_cache_seconds
             )
-            return result
     except sqlite3.Error:
         raise HTTPException(
             status_code=503, detail="Saved observations temporarily unavailable"

@@ -60,27 +60,20 @@ and fails any external HTTP attempt. Never present its tokens as live market dat
 
 ## Concurrent read comparison
 
-Run `python scripts/benchmark_website.py`. The gate declared before measurement is
-no scan/read failures, no external HTTP, and median scanner overhead at most
-`max(25% of baseline, 100ms)`. The absolute allowance prevents interpreting noise
-in very short synthetic scans as production latency.
+Run `.venv/bin/python scripts/benchmark_website.py`. The benchmark now uses
+byte-identical initial database copies, 100-token scanner replays, 2,400 saved
+evaluations and six browser clients. The predeclared gate remains zero errors or
+external requests and median scanner overhead at most `max(25% of baseline, 100ms)`.
 
-| Measurement | Result |
-| --- | --- |
-| Scanner workload | Three synthetic tokens; 12 scans in each arm |
-| Browsing workload | Six concurrent clients, 360 total requests |
-| Routes | Radar, Solana reports, outcomes, alerts, metadata |
-| Baseline median scan | 5.49 ms |
-| Median scan while browsing | 56.15 ms |
-| Declared overhead allowance | 100 ms |
-| Public/scan failures | 0 / 0 |
-| External provider requests | 0 |
-| Result | Passed |
+The issue #25 run passed all 672 reads with zero scanner/SQLite errors; scanner
+medians were 526.28ms baseline and 605.86ms loaded against a 131.57ms overhead
+allowance. See [release validation](website-release-validation.md) for the actual
+workload, API latency/query counts, parity/isolation/restore evidence and limits,
+and [raw load results](website-load-results.json) for per-scan measurements.
 
-The benchmark asserts that Radar contains actual saved evaluations before starting
-load. It uses small synthetic data and ASGI transport. It does **not** establish
-production-size performance or Internet/proxy latency. Repeat on a protected copy
-of production data with a production-sized workload before public launch.
+This synthetic ASGI replay does not establish production-size capacity or VPS,
+proxy, Internet or live-provider behavior. Repeat on a protected production copy
+before public launch.
 
 ## Remaining launch work
 

@@ -1,5 +1,6 @@
 import asyncio
 import json
+import sqlite3
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
@@ -234,3 +235,68 @@ async def test_outcomes_keep_missing_prices_out_of_returns_and_match_bot(web, re
         "pending": 1,
         "missed": 0,
     }
+
+
+def test_concurrent_cache_misses_share_one_fill_without_blocking_other_keys():
+    from threading import Barrier, Event
+
+    from pydantic import BaseModel
+
+    from revival_radar.web.public import ResponseCache
+
+    class Value(BaseModel):
+        value: int
+
+    cache = ResponseCache()
+    started, release, barrier = Event(), Event(), Barrier(6)
+    calls = []
+
+    def fill():
+        calls.append(True)
+        started.set()
+        assert release.wait(2)
+        return Value(value=7)
+
+    def read():
+        barrier.wait(timeout=2)
+        return cache.get_or_create(("report", 1), fill, 10)
+
+    with ThreadPoolExecutor(max_workers=7) as pool:
+        futures = [pool.submit(read) for _ in range(6)]
+        try:
+            assert started.wait(2)
+            unrelated = pool.submit(cache.get_or_create, ("meta", 1), lambda: Value(value=9), 10)
+            assert unrelated.result(timeout=1).value == 9
+        finally:
+            release.set()
+        assert [future.result(timeout=2).value for future in futures] == [7] * 6
+    assert len(calls) == 1 and not cache.filling
+    assert cache.get_or_create(("report", 2), lambda: Value(value=8), 10).value == 8
+
+
+def test_failed_cache_fill_releases_waiters_and_does_not_cache_errors():
+    from threading import Event
+
+    from pydantic import BaseModel
+
+    from revival_radar.web.public import ResponseCache
+
+    class Value(BaseModel):
+        value: int
+
+    cache, started, release = ResponseCache(), Event(), Event()
+
+    def fail():
+        started.set()
+        assert release.wait(2)
+        raise sqlite3.OperationalError("synthetic interruption")
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(cache.get_or_create, ("report", 1), fail, 10)
+        assert started.wait(2)
+        second = pool.submit(cache.get_or_create, ("report", 1), lambda: Value(value=8), 10)
+        release.set()
+        with pytest.raises(sqlite3.OperationalError):
+            first.result(timeout=2)
+        assert second.result(timeout=2).value == 8
+    assert not cache.filling
