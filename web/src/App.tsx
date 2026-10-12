@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DEMO, useData, useLocation } from "./api";
+import { DEMO, navigate, useData, useLocation } from "./api";
 import { Icon, Link, Notice } from "./components";
 import { Radar } from "./Radar";
 import { TokenDetail } from "./TokenDetail";
@@ -7,6 +7,7 @@ import { Alerts, Methodology, OutcomePage, Reports } from "./Publications";
 import { Admin } from "./Admin";
 import type { Meta } from "./types";
 import { relative } from "./format";
+import { previewState, previewStates } from "./demo";
 const navigation = [
   ["/", "Radar", "radar"],
   ["/alerts", "Alerts", "alerts"],
@@ -21,7 +22,10 @@ export function App() {
       ? location.slice(location.indexOf("?"))
       : "";
   const [open, setOpen] = useState(false);
-  const meta = useData<Meta>("/api/v1/meta");
+  const state = previewState(new URLSearchParams(search).get("preview_state"));
+  const meta = useData<Meta>(
+    DEMO ? `/api/v1/meta?preview_state=${state}` : "/api/v1/meta",
+  );
   const parts = path.split("/");
   let page;
   if (path === "/") page = <Radar search={search} meta={meta.data} />;
@@ -166,12 +170,30 @@ export function App() {
             <span className="version-badge">V1.0</span>
           </div>
         </header>
-        <main key={path}>
+        <main key={DEMO ? `${path}:${state}` : path}>
           <div className="content-container">
             {DEMO && (
               <Notice tone="warning">
                 <strong>Synthetic demo.</strong> Every token, score and return
                 shown here is sample data. Owner controls are disabled.
+                <label className="preview-selector">
+                  Synthetic preview state
+                  <select
+                    aria-label="Synthetic preview state"
+                    value={state}
+                    onChange={(event) => {
+                      const params = new URLSearchParams(search);
+                      params.set("preview_state", event.target.value);
+                      navigate(`${path}?${params}`);
+                    }}
+                  >
+                    {previewStates.map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </Notice>
             )}
             {page}

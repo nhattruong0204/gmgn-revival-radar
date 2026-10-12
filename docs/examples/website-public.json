@@ -1,0 +1,15 @@
+{
+  "items": [{
+    "id": 1, "timestamp": 1800000000, "chain": "sol",
+    "contract_address": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "symbol": "SAMPLE", "name": "Synthetic contract example",
+    "score": 64, "status": "WATCH", "eligible": false,
+    "liquidity": null, "confirmation_score": null,
+    "blockers": ["Known active mint authority blocks eligibility"],
+    "missing_fields": ["saved_evidence", "liquidity"],
+    "warnings": ["Saved historical detail is unavailable"],
+    "preset": "Balanced", "revision": 2, "token": null, "signal": null
+  }],
+  "total": 1, "page": 1, "page_size": 25,
+  "as_of": 1800000030, "last_scan_at": 1800000010
+}
