@@ -331,6 +331,10 @@ class PublicQueries:
             if self.allow_synthetic
             else " AND b.origin NOT IN ('synthetic','test')"
         )
+        excluded = "'test'" if self.allow_synthetic else "'synthetic','test'"
+        where += f""" AND NOT EXISTS(SELECT 1 FROM state visibility
+            WHERE visibility.key IN ('origin:brief:scan:' || b.id,
+                'origin:brief:evaluation:' || b.id) AND visibility.value IN ({excluded}))"""
         params = (chain, address, until, until, until)
         base = "FROM research_briefs b JOIN research_brief_publications p ON p.brief_id=b.id"
         total = self.db.execute(f"SELECT COUNT(*) {base} WHERE {where}", params).fetchone()[0]

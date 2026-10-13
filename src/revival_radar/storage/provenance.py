@@ -42,9 +42,11 @@ def classify(db: sqlite3.Connection, evidence: bytes) -> dict:
     now = time.time()
     db.execute("BEGIN IMMEDIATE")
     try:
-        record = db.execute(f"SELECT * FROM {TABLES[kind]} WHERE id=?", (identity,)).fetchone()
+        cursor = db.execute(f"SELECT * FROM {TABLES[kind]} WHERE id=?", (identity,))
+        record = cursor.fetchone()
         if record is None:
             raise ValueError("Observation does not exist")
+        fields = dict(zip((column[0] for column in cursor.description), record, strict=True))
         row = db.execute("SELECT value FROM state WHERE key=?", (key,)).fetchone()
         previous = row[0] if row else "unknown"
         result = {"kind": kind, "id": identity, "previous": previous, "origin": origin, "at": now}
@@ -54,6 +56,39 @@ def classify(db: sqlite3.Connection, evidence: bytes) -> dict:
             "value=excluded.value,updated_at=excluded.updated_at",
             (key, origin, now),
         )
+        # Apply read visibility to durable copies without rewriting their saved facts.
+        # UUID markers survive diagnostic pruning and cannot attach to reused row IDs.
+        if (
+            kind in {"scan", "evaluation"}
+            and db.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='research_briefs'"
+            ).fetchone()
+        ):
+            if kind == "scan":
+                copies = db.execute(
+                    "SELECT id FROM research_briefs WHERE scan_id=? AND scan_started_at=?",
+                    (identity, fields["started"]),
+                ).fetchall()
+            else:
+                copies = db.execute(
+                    """SELECT b.id FROM research_briefs b JOIN scan_runs s ON s.id=b.scan_id
+                    AND s.started=b.scan_started_at WHERE b.evaluation_id=? AND b.scan_id=?
+                    AND b.chain=? AND b.contract_address=? AND b.as_of=?""",
+                    (
+                        identity,
+                        fields["scan_id"],
+                        fields["chain"],
+                        fields["contract_address"],
+                        fields["timestamp"],
+                    ),
+                ).fetchall()
+            for copy in copies:
+                db.execute(
+                    "INSERT INTO state(key,value,updated_at) VALUES(?,?,?) "
+                    "ON CONFLICT(key) DO UPDATE SET value=excluded.value,"
+                    "updated_at=excluded.updated_at",
+                    (f"origin:brief:{kind}:{copy[0]}", origin, now),
+                )
         db.execute(
             "INSERT INTO state(key,value,updated_at) VALUES(?,?,?)",
             (

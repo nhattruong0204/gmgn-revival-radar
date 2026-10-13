@@ -376,6 +376,18 @@ class Repository:
             ),
         )
 
+        self.db.execute(
+            """INSERT INTO state(key,value,updated_at)
+            SELECT 'origin:brief:' || CASE WHEN key=? THEN 'scan:' ELSE 'evaluation:' END || ?,
+                value,updated_at FROM state WHERE key IN (?,?)""",
+            (
+                f"origin:scan:{scan_id}",
+                brief.id,
+                f"origin:scan:{scan_id}",
+                f"origin:evaluation:{identity}",
+            ),
+        )
+
     @sqlite_timed
     def finish_scan(self, scan_id: int, report: object, finished: float) -> None:
         metrics = [

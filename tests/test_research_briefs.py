@@ -6,6 +6,7 @@ import pytest
 
 from revival_radar.models.brief import ResearchBrief, build_brief
 from revival_radar.models.signal import RevivalResult
+from revival_radar.storage.provenance import classify
 from revival_radar.web.queries import PublicQueries
 
 from .conftest import changed
@@ -145,3 +146,61 @@ def test_no_backfill_origin_isolation_and_idempotent_retry(repo, token, config, 
     assert repo.db.execute("SELECT COUNT(*) FROM research_briefs").fetchone()[0] == 3
     assert PublicQueries(repo.db).briefs(*token.key, AT + 1, 1, 10).total == 1
     assert PublicQueries(repo.db, allow_synthetic=True).briefs(*token.key, AT + 1, 1, 10).total == 2
+
+
+def test_reviewed_quarantine_follows_archived_uuid_without_rewriting_history(
+    repo, token, config, monkeypatch
+):
+    monkeypatch.setattr("revival_radar.storage.repository.time.time", lambda: AT)
+    data = inputs(token)
+    scan = repo.begin_scan(AT - 10, {})
+    repo.record_evaluation(scan, data["token"], data["result"], config, origin="live")
+    repo.finish_scan(scan, SimpleNamespace(processed=1), AT + 1)
+    query = PublicQueries(repo.db)
+    original = query.briefs(*token.key, AT + 1, 1, 10).items[0]
+
+    def attest(origin):
+        classify(
+            repo.db,
+            json.dumps(
+                {
+                    "kind": "evaluation",
+                    "id": original.evaluation_id,
+                    "origin": origin,
+                    "evidence": "Private reviewed fixture attestation",
+                }
+            ).encode(),
+        )
+
+    classify(
+        repo.db,
+        json.dumps(
+            {"kind": "scan", "id": scan, "origin": "synthetic", "evidence": "Reviewed scan fixture"}
+        ).encode(),
+    )
+    attest("unknown")
+    assert query.briefs(*token.key, AT + 1, 1, 10).total == 0
+    classify(
+        repo.db,
+        json.dumps(
+            {"kind": "scan", "id": scan, "origin": "unknown", "evidence": "Reviewed reversal"}
+        ).encode(),
+    )
+    attest("synthetic")
+    assert query.briefs(*token.key, AT + 1, 1, 10).total == 0
+    attest("unknown")
+    assert query.briefs(*token.key, AT + 1, 1, 10).items == [original]
+    attest("test")
+    repo.prune_diagnostics(AT)
+    assert query.briefs(*token.key, AT + 1, 1, 10).total == 0
+    archived = repo.db.execute(
+        "SELECT payload FROM research_briefs WHERE id=?", (original.id,)
+    ).fetchone()[0]
+    assert ResearchBrief.model_validate_json(archived) == original
+    next_scan = repo.begin_scan(AT + 10, {})
+    repo.record_evaluation(
+        next_scan, changed(token, timestamp=AT + 10), data["result"], config, origin="live"
+    )
+    repo.finish_scan(next_scan, SimpleNamespace(processed=1), AT + 11)
+    public = query.briefs(*token.key, AT + 11, 1, 10)
+    assert public.total == 1 and public.items[0].id != original.id

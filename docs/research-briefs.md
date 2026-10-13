@@ -34,7 +34,11 @@ Evaluation time, actual save time and publication receipt must all precede that
 cutoff. Backdated/newly discovered evidence cannot enter an earlier replay.
 Default reads exclude synthetic/test origins; the existing explicit synthetic
 preview setting admits synthetic versions and retains its warning banner, while
-test records stay excluded. Unknown origin stays explicitly unknown. Browsers
+test records stay excluded. Later reviewed scan/evaluation quarantine follows
+UUID-scoped read-visibility markers, without changing the captured payload.
+Scan and evaluation reviews cannot override each other; markers survive pruning
+and never attach to reused row IDs. Reversal remains audited. Unknown capture
+origin stays explicitly unknown. Browsers
 never write, migrate or trigger a provider call. Reads have the existing deadline,
 rate limits and same-origin boundaries. Versions survive rotating cache,
 evaluation and scan pruning. UPDATE, DELETE and REPLACE are guarded on scanner

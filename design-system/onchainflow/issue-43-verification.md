@@ -7,10 +7,11 @@ The feature branch starts from origin/main. No private VPS audit or deployment.
 
 ## Evidence and gates
 
-- Python: 910 tests passed, including source round trips, bull/bear/watch rules,
+- Python: 911 tests passed, including source round trips, bull/bear/watch rules,
   missing/zero/stale/gapped/duplicate/future evidence, actual archive writes,
   incomplete-scan isolation, backdated availability cutoffs, cache replacement,
-  database immutability/REPLACE guards, provenance isolation, pagination bounds,
+  database immutability/REPLACE guards, durable audited quarantine/reversal and
+  reused-ID isolation, provenance isolation, pagination bounds,
   credential exclusion and read-only API behavior. Ruff check/format passed.
 - Frontend: existing 55 regressions plus four new tests for immutable diffs,
   paired missing/counter-evidence, keyboard source disclosure, distinct empty/error
