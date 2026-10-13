@@ -1,0 +1,71 @@
+{
+  "fixture": "Isolated synthetic saved-data API; not production",
+  "engine": "Chromium",
+  "viewports": [
+    {
+      "width": 320,
+      "sourceOpen": true,
+      "overflow": false,
+      "textOverflow": false,
+      "back": "/?age_hours=72",
+      "errors": [],
+      "external": []
+    },
+    {
+      "width": 390,
+      "sourceOpen": true,
+      "overflow": false,
+      "textOverflow": false,
+      "back": "/?age_hours=72",
+      "errors": [],
+      "external": []
+    },
+    {
+      "width": 768,
+      "sourceOpen": true,
+      "overflow": false,
+      "textOverflow": false,
+      "back": "/?age_hours=72",
+      "errors": [],
+      "external": []
+    },
+    {
+      "width": 1024,
+      "sourceOpen": true,
+      "overflow": false,
+      "textOverflow": false,
+      "back": "/?age_hours=72",
+      "errors": [],
+      "external": []
+    },
+    {
+      "width": 1366,
+      "sourceOpen": true,
+      "overflow": false,
+      "textOverflow": false,
+      "back": "/?age_hours=72",
+      "errors": [],
+      "external": []
+    },
+    {
+      "width": 1920,
+      "sourceOpen": true,
+      "overflow": false,
+      "textOverflow": false,
+      "back": "/?age_hours=72",
+      "errors": [],
+      "external": []
+    }
+  ],
+  "states": [
+    "partial/unknown",
+    "historical",
+    "empty",
+    "error",
+    "loading"
+  ],
+  "limitations": [
+    "No Firefox/WebKit or real mobile hardware",
+    "No whole-site accessibility certification"
+  ]
+}

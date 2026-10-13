@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from revival_radar.runtime_settings import RuntimeSettings
+from revival_radar.storage.database import SCHEMA_VERSION
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts/release_backup.py"
 spec = importlib.util.spec_from_file_location("release_backup", SCRIPT)
@@ -24,7 +25,7 @@ def test_matched_backup_and_staging_preserve_schema_controls_and_private_permiss
     bundle, staged = tmp_path / "bundle", tmp_path / "stage"
     release.create(database, runtime.path, bundle, REVISION, True)
     summary = release.stage(bundle, staged, REVISION)
-    assert summary["integrity"] == "ok" and summary["schema"] == 5
+    assert summary["integrity"] == "ok" and summary["schema"] == SCHEMA_VERSION
     with sqlite3.connect(staged / "database.db") as restored:
         assert (
             restored.execute("SELECT value FROM state WHERE key='fixture:evidence'").fetchone()[0]

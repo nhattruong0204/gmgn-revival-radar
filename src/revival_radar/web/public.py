@@ -14,6 +14,7 @@ from revival_radar.chains import CHAINS
 from revival_radar.web.models import (
     AlertDetail,
     AlertsPage,
+    BriefPage,
     MarketReport,
     Metadata,
     Outcomes,
@@ -194,6 +195,27 @@ def history(
         ("history", chain, address, hours, max_points),
         lambda queries, until: queries.history(chain, address, until, hours, max_points),
     )
+
+
+@router.get("/tokens/{chain}/{address}/briefs", response_model=BriefPage)
+def briefs(
+    request: Request,
+    chain: Chain,
+    address: str,
+    page: Page = 1,
+    page_size: PageSize = 10,
+    as_of: Cutoff = None,
+) -> BriefPage:
+    address = address_for(chain, address)
+    # Publication may occur without a changing cache; read the durable archive directly.
+    until = cutoff(request, as_of)
+    try:
+        with public_reader(request.app.state.config) as queries:
+            return queries.briefs(chain, address, until, page, page_size)
+    except sqlite3.Error:
+        raise HTTPException(
+            status_code=503, detail="Saved briefs temporarily unavailable"
+        ) from None
 
 
 @router.get("/alerts", response_model=AlertsPage)

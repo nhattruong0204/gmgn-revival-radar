@@ -6,6 +6,7 @@ import json
 import re
 import shutil
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 
@@ -15,8 +16,8 @@ def digest(path):
 
 def copy_database(source, destination):
     with (
-        sqlite3.connect(source.resolve().as_uri() + "?mode=ro", uri=True) as original,
-        sqlite3.connect(destination) as target,
+        closing(sqlite3.connect(source.resolve().as_uri() + "?mode=ro", uri=True)) as original,
+        closing(sqlite3.connect(destination)) as target,
     ):
         original.backup(target)
         if target.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
@@ -66,7 +67,7 @@ def stage(bundle, destination, revision):
         shutil.copyfile(bundle / "radar-controls.json", destination / "radar-controls.json")
         (destination / "radar-controls.json").chmod(0o600)
         # SQLite backup preserves schema; never invoke scanner migrations here.
-        with sqlite3.connect(destination / "database.db") as db:
+        with closing(sqlite3.connect(destination / "database.db")) as db:
             version = db.execute("PRAGMA user_version").fetchone()[0]
         return {"revision": revision.lower(), "schema": version, "integrity": "ok"}
     except BaseException:
