@@ -1,3 +1,4 @@
+import json
 import re
 import sqlite3
 import time
@@ -20,7 +21,7 @@ from revival_radar.web.models import (
     TokenDetail,
     TokenHistory,
 )
-from revival_radar.web.queries import PublicQueries, public_reader
+from revival_radar.web.queries import PublicQueries, finite, public_reader
 
 router = APIRouter(prefix="/api/v1", tags=["public"])
 Chain = Literal["sol", "bsc", "base", "robinhood", "arc"]
@@ -119,7 +120,9 @@ def read[T: BaseModel](
                 return result
 
             return request.app.state.public_cache.get_or_create(
-                cache_key, create, request.app.state.config.web_cache_seconds
+                cache_key,
+                create,
+                0 if key[0] == "meta" else request.app.state.config.web_cache_seconds,
             )
     except sqlite3.Error:
         raise HTTPException(
@@ -140,8 +143,12 @@ def radar(
     page: Page = 1,
     page_size: PageSize = 25,
     as_of: Cutoff = None,
+    age_hours: Annotated[int, Query(ge=1, le=168)] = 24,
 ) -> RadarPage:
+    if age_hours not in (1, 4, 24, 72, 168):
+        raise HTTPException(status_code=422, detail="Unsupported observation window")
     filters = dict(
+        age_hours=age_hours,
         chain=chain,
         status=status,
         search=search.strip(),
@@ -255,8 +262,42 @@ def metadata(request: Request, as_of: Cutoff = None) -> Metadata:
                 (chain, until - 7 * 86400, until, until),
             ).fetchone()
         ]
+        worker = {}
+        try:
+            worker = json.loads(queries.repo.get_state("web:worker") or "{}")
+            if not isinstance(worker, dict):
+                worker = {}
+        except (ValueError, TypeError):
+            pass
+        heartbeat = finite(worker.get("heartbeat_at"))
+        fresh = (
+            heartbeat is not None
+            and 0 <= until - heartbeat <= 30
+            and worker.get("stopped_at") is None
+        )
+        collection = worker.get("collection")
+        configured = collection.get("active_chains") if isinstance(collection, dict) else None
+        valid = (
+            isinstance(configured, list)
+            and all(c in CHAINS for c in configured if isinstance(c, str))
+            and all(isinstance(c, str) for c in configured)
+        )
+        status = (
+            "unknown"
+            if not valid
+            else "stale"
+            if not fresh
+            else "current"
+            if configured
+            else "disabled"
+        )
+        active = sorted(set(configured)) if status == "current" else []
         telegram = request.app.state.config.web_telegram_url
         return Metadata(
+            active_chains=[{"id": chain, "name": CHAINS[chain].display_name} for chain in active],
+            collection_status=status,
+            worker_heartbeat_at=heartbeat if heartbeat is not None and heartbeat <= until else None,
+            data_mode="synthetic" if request.app.state.config.web_allow_synthetic_data else "saved",
             chains=[{"id": chain, "name": CHAINS[chain].display_name} for chain in chains],
             telegram_url=telegram if telegram.startswith("https://t.me/") else None,
             as_of=until,

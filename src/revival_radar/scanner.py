@@ -106,6 +106,8 @@ class Scanner:
         self.config, self.source = config, source
         self.repository, self.telegram = repository, telegram
         self.delivery_muted = delivery_muted
+        origin = getattr(source, "observation_origin", "unknown")
+        self.origin = origin if origin in {"live", "synthetic", "test"} else "unknown"
         self.metrics = ScanMetrics()
         self.enrichment = Enrichment(config, source, repository, self.metrics)
         self.configuration = (
@@ -257,7 +259,7 @@ class Scanner:
             except EnrichmentDeferred:
                 self.repository.watch_defer(token)
                 return
-            self.repository.save_snapshot(token)
+            self.repository.save_snapshot(token, origin=self.origin)
         else:
             self._count(report, token.chain, "prefilter_rejected")
             history = self.repository.history(token, self.config.history_observations * 3)
@@ -272,7 +274,7 @@ class Scanner:
             self._count(report, token.chain, "eligible")
         if report.scan_id is not None:
             self.repository.record_evaluation(
-                report.scan_id, token, result, self.config, self.configuration
+                report.scan_id, token, result, self.config, self.configuration, origin=self.origin
             )
         log.info(
             "signal symbol=%s chain=%s score=%d status=%s eligible=%s",
@@ -298,7 +300,9 @@ class Scanner:
         if self.config.alerts_paused or (self.delivery_muted and self.delivery_muted()):
             log.info("alerts paused chain=%s symbol=%s", token.chain, token.symbol)
             return
-        alert_id = self.repository.reserve_alert(token, result, self.config, self.configuration)
+        alert_id = self.repository.reserve_alert(
+            token, result, self.config, self.configuration, origin=self.origin
+        )
         if alert_id is None:
             log.info("alert cooldown chain=%s symbol=%s", token.chain, token.symbol)
             return
@@ -408,7 +412,9 @@ class Scanner:
         started = time.monotonic()
         metric_scope = CURRENT_SCAN.set(self.metrics)
         try:
-            report.scan_id = self.repository.begin_scan(report.started_at, self.configuration)
+            report.scan_id = self.repository.begin_scan(
+                report.started_at, self.configuration, origin=self.origin
+            )
             outcomes = await asyncio.gather(
                 *(self.scan_chain(chain, report) for chain in self.config.chains),
                 return_exceptions=True,
@@ -481,7 +487,7 @@ class Scanner:
                 with self.metrics.measure("market"):
                     token = await self.enrichment.market(seed)
                 # A new poll is required; cached/discovery snapshots never count as checkpoints.
-                self.repository.save_snapshot(token)
+                self.repository.save_snapshot(token, origin=self.origin)
                 self.repository.observe_outcomes(token)
                 self._count(report, token.chain, "outcome_polled")
             except EnrichmentDeferred:

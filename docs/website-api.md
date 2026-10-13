@@ -145,3 +145,10 @@ for arbitrary manual rewrites of old rows. Query deadlines also apply to version
 lookups and validated search/sort work; timeout errors return the generic 503.
 
 Validation and scope evidence are recorded in [public API validation](website-public-api-validation.md).
+
+## Freshness and provenance additions (#41)
+
+See [saved freshness/provenance](data-provenance.md) for exact field semantics,
+24h Radar defaults and `age_hours` windows, historical versus active chain
+coverage, recorded/unknown origin confidence and reversible exclusion policy.
+Existing `/meta.chains` is historical; it is not current worker coverage.

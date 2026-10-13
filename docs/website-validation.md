@@ -56,7 +56,9 @@ The original CLI fixture timestamps are deterministic and can be later than the
 machine's current time. The public API correctly excludes future observations.
 Use `python scripts/seed_website_demo.py /tmp/new-web-demo.db` for browser testing;
 it shifts all fixture times consistently, refuses existing paths, forces dry-run
-and fails any external HTTP attempt. Never present its tokens as live market data.
+and fails any external HTTP attempt. Set `WEB_ALLOW_SYNTHETIC_DATA=true` only
+for this isolated fixture database; the default API excludes marked fixtures.
+Never present its tokens as live market data.
 
 ## Concurrent read comparison
 

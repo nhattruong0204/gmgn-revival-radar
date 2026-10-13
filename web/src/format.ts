@@ -61,6 +61,17 @@ export function dateTime(timestamp: number | null | undefined): string {
     timeStyle: "short",
   });
 }
+export function exactTime(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZoneName: "short",
+  });
+}
 export function humanKey(key: string): string {
   return key.replaceAll("_", " ").replace(/^./, (s) => s.toUpperCase());
 }
@@ -87,6 +98,8 @@ export function radarQuery(search: string): URLSearchParams {
     ),
   );
   query.set("page_size", "25");
+  if (!["1", "4", "24", "72", "168"].includes(query.get("age_hours") ?? ""))
+    query.set("age_hours", "24");
   if (
     !["score", "timestamp", "market_cap", "liquidity", "volume_5m"].includes(
       query.get("sort") ?? "",

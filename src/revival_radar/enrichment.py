@@ -18,6 +18,8 @@ class EnrichmentDeferred(Exception):
 class Enrichment:
     def __init__(self, config, source, repository, metrics):
         self.config, self.source, self.repo, self.metrics = config, source, repository, metrics
+        origin = getattr(source, "observation_origin", "unknown")
+        self.origin = origin if origin in {"live", "synthetic", "test"} else "unknown"
         self.used = {"market": 0, "security": 0, "kline": 0, "helius": 0}
         self.helius_seconds = 0.0
         self.deferred_tokens: set[tuple[str, str]] = set()
@@ -79,7 +81,11 @@ class Enrichment:
         token = await method(token)
         if ttl:
             self.repo.cache_save(
-                "security", token, token.security.model_dump_json(), token.timestamp + ttl
+                "security",
+                token,
+                token.security.model_dump_json(),
+                token.timestamp + ttl,
+                origin=self.origin,
             )
         return token
 
@@ -168,6 +174,7 @@ class Enrichment:
                 token.model_copy(update={"timestamp": evidence.observed_at}),
                 evidence.model_dump_json(),
                 evidence.observed_at + ttl,
+                origin=self.origin,
             )
         return self.apply_mint(token, evidence)
 
@@ -207,6 +214,7 @@ class Enrichment:
                 token,
                 json.dumps({"hour": hour, "candles": [c.model_dump() for c in bars]}),
                 min(now + ttl, (hour + 1) * 3600) if not bars else (hour + 1) * 3600,
+                origin=self.origin,
             )
         return bars
 

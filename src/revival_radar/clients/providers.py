@@ -10,6 +10,8 @@ from revival_radar.models.token import TokenSnapshot
 
 
 class HybridDataSource:
+    observation_origin = "live"
+
     def __init__(self, config: Settings, http: httpx.AsyncClient):
         self.gmgn = GMGNClient(config, http)
         self.helius = HeliusClient(config, http)

@@ -254,6 +254,7 @@ class WebCommandWorker:
             "stopped_at": now if stopped else None,
             "enabled": bool(self.controller.runtime.base.web_controls_enabled),
             "schedule": schedule,
+            "collection": {"active_chains": schedule.get("active_chains")},
         }
         self.repo.set_state("web:worker", json.dumps(snapshot, allow_nan=False), now)
 

@@ -92,12 +92,12 @@ def seed(path, source, config):
         context = {"revision": 1, "preset": "synthetic replay"}
         for round_number in range(HISTORY_SCANS):
             timestamp = now - (HISTORY_SCANS - round_number) * 3600
-            scan = repo.begin_scan(timestamp - 1, context)
+            scan = repo.begin_scan(timestamp - 1, context, origin="synthetic")
             for index, scenario in enumerate(source.data):
                 token = TokenSnapshot(**(scenario["token"] | {"timestamp": timestamp}))
                 signal = RevivalResult(score=50 + index % 50, status="WATCH", eligible=False)
-                repo.save_snapshot(token)
-                repo.record_evaluation(scan, token, signal, config, context)
+                repo.save_snapshot(token, origin="synthetic")
+                repo.record_evaluation(scan, token, signal, config, context, origin="synthetic")
                 if round_number == 0 and index % 5 == 0:
                     # Saved synthetic delivery receipts; never send a real message.
                     alert = repo.reserve_alert(
@@ -105,6 +105,7 @@ def seed(path, source, config):
                         RevivalResult(score=95, status="CONFIRMED_REVIVAL", eligible=True),
                         config.model_copy(update={"dry_run": False}),
                         context,
+                        origin="synthetic",
                     )
                     assert alert is not None
                     repo.finish_alert(alert, "sent")
@@ -119,7 +120,7 @@ def seed(path, source, config):
                         )
             repo.finish_scan(scan, SimpleNamespace(processed=len(source.data)), timestamp + 1)
         for token in source.histories():
-            repo.save_snapshot(token)
+            repo.save_snapshot(token, origin="synthetic")
         return {
             table: db.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
             for table in (
@@ -244,6 +245,7 @@ async def measure(
             settings = config.model_copy(update={"database_path": root / f"{name}.db"})
             app = create_app(
                 WebConfig(
+                    web_allow_synthetic_data=True,
                     database_path=settings.database_path,
                     web_public_rate_limit=10000,
                     web_read_timeout_ms=read_timeout_ms,
@@ -271,6 +273,7 @@ async def measure(
                     os.environ,
                     DATABASE_PATH=str(settings.database_path),
                     WEB_ADMIN_ENABLED="false",
+                    WEB_ALLOW_SYNTHETIC_DATA="true",
                     WEB_PUBLIC_RATE_LIMIT="10000",
                     WEB_READ_TIMEOUT_MS=str(read_timeout_ms),
                 )

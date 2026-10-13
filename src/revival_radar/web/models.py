@@ -1,6 +1,6 @@
 """Explicit public response contracts; stored JSON is never returned wholesale."""
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -109,6 +109,8 @@ class PublicSignal(PublicModel):
 
 
 class Observation(PublicModel):
+    origin: Literal["live", "synthetic", "test", "unknown"] = "unknown"
+    origin_confidence: Literal["recorded", "unknown"] = "unknown"
     id: int
     timestamp: Finite
     chain: str
@@ -156,12 +158,14 @@ class TokenDetail(PublicModel):
 
 
 class SnapshotPoint(PublicModel):
+    origin: Literal["live", "synthetic", "test", "unknown"] = "unknown"
     timestamp: Finite
     price: Finite | None
     market_cap: Finite | None
 
 
 class ScorePoint(PublicModel):
+    origin: Literal["live", "synthetic", "test", "unknown"] = "unknown"
     timestamp: Finite
     score: int
     setup_score: int | None
@@ -170,6 +174,7 @@ class ScorePoint(PublicModel):
 
 
 class TokenHistory(PublicModel):
+    candles_origin: Literal["live", "synthetic", "test", "unknown"] = "unknown"
     snapshots: list[SnapshotPoint]
     scores: list[ScorePoint]
     candles: list[Candle]
@@ -262,6 +267,10 @@ class ChainInfo(PublicModel):
 
 
 class Metadata(PublicModel):
+    active_chains: list[ChainInfo] = Field(default_factory=list)
+    collection_status: Literal["current", "stale", "disabled", "unknown"] = "unknown"
+    worker_heartbeat_at: Finite | None = None
+    data_mode: Literal["saved", "synthetic"] = "saved"
     chains: list[ChainInfo]
     telegram_url: str | None
     as_of: Finite

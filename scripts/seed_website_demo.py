@@ -50,7 +50,7 @@ async def seed(path: Path):
     try:
         repo = Repository(db)
         for token in source.histories():
-            repo.save_snapshot(token)
+            repo.save_snapshot(token, origin="synthetic")
 
         def forbidden(request):
             raise AssertionError("Synthetic website seeding must never use the network")

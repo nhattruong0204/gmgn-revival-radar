@@ -4,6 +4,7 @@ import {
   Avatar,
   Empty,
   Freshness,
+  ObservationStamp,
   Icon,
   Link,
   Loading,
@@ -82,6 +83,12 @@ export function Alerts({ id }: { id?: string }) {
           </p>
           <div className="alert-meta">
             <Stage stage={detail.data.observation?.status ?? "UNKNOWN"} />
+            {detail.data.observation && (
+              <ObservationStamp
+                observation={detail.data.observation}
+                kind="signal"
+              />
+            )}
             <span>Sent {dateTime(detail.data.timestamp)}</span>
             <span>
               {detail.data.preset ?? "Unlabeled strategy"} · revision{" "}
@@ -229,6 +236,12 @@ export function Alerts({ id }: { id?: string }) {
                     </div>
                     <div className="alert-stage">
                       <Stage stage={a.observation?.status ?? "UNKNOWN"} />
+                      {a.observation && (
+                        <ObservationStamp
+                          observation={a.observation}
+                          kind="signal"
+                        />
+                      )}
                     </div>
                     <Score value={a.score} />
                     <span className="muted">{relative(a.timestamp)}</span>
@@ -381,6 +394,7 @@ export function Reports() {
                     </span>
                   </Link>
                   <Stage stage={e.peak.status} />
+                  <ObservationStamp observation={e.peak} />
                   <div className="report-scores">
                     <strong className={e.peak.score >= 75 ? "positive" : ""}>
                       {e.peak.score}

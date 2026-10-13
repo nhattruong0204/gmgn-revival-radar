@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Radar } from "./Radar";
+import { ObservationStamp } from "./components";
 import { TokenDetail, SignalEvidence } from "./TokenDetail";
 import { Alerts } from "./Publications";
 import { chartSegments } from "./chartData";
@@ -347,4 +348,89 @@ it("renders hostile token symbols as text and never displays unrecognized privat
   await screen.findAllByText(symbol);
   expect(container.querySelector("img")).toBeNull();
   expect(container.textContent).not.toContain("PRIVATE-MARKER");
+});
+
+it("keeps collection coverage separate from historical presence and selects history explicitly", async () => {
+  window.history.replaceState(null, "", "/?page=3&chain=sol");
+  render(
+    <Radar
+      search="?page=3&chain=sol"
+      meta={{
+        chains: [{ id: "bsc", name: "BSC" }],
+        active_chains: [{ id: "sol", name: "Solana" }],
+        collection_status: "current",
+        as_of: 1800000010,
+        last_scan_at: legacy.timestamp,
+      }}
+    />,
+  );
+  await screen.findAllByText("LEGACY");
+  expect(paths[0]).toContain("age_hours=24");
+  expect(screen.getByText(/Historical coverage:/).textContent).toContain("BSC");
+  expect(
+    screen.getByText("Current collection").closest(".stat-card")?.textContent,
+  ).toContain("Solana");
+  await userEvent.selectOptions(
+    screen.getByLabelText("Observation window"),
+    "168",
+  );
+  const params = new URLSearchParams(window.location.search);
+  expect(params.get("age_hours")).toBe("168");
+  expect(params.get("chain")).toBe("sol");
+  expect(params.has("page")).toBe(false);
+});
+
+it("does not infer active collection from historical chains", async () => {
+  render(
+    <Radar
+      search=""
+      meta={{
+        chains: [{ id: "sol", name: "Solana" }],
+        collection_status: "stale",
+        as_of: 1800000010,
+        last_scan_at: legacy.timestamp,
+      }}
+    />,
+  );
+  await screen.findAllByText("LEGACY");
+  expect(
+    screen.getByText("Current collection").closest(".stat-card")?.textContent,
+  ).toContain("Unknown");
+  expect(screen.getAllByText("Origin unclassified").length).toBeGreaterThan(0);
+});
+
+it("offers intentional saved history when the recent window is empty", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            items: [],
+            total: 0,
+            page: 1,
+            page_size: 25,
+            last_scan_at: legacy.timestamp,
+          }),
+        ),
+    ),
+  );
+  render(<Radar search="" meta={null} />);
+  const history = await screen.findByRole("link", {
+    name: "Explore saved history",
+  });
+  expect(history.getAttribute("href")).toContain("age_hours=168");
+});
+
+it("defaults invalid age windows safely in URL requests", () => {
+  expect(radarQuery("?age_hours=25").get("age_hours")).toBe("24");
+  expect(radarQuery("?age_hours=72").get("age_hours")).toBe("72");
+});
+
+it("exposes an exact saved timestamp with a timezone and machine-readable time", () => {
+  const { container } = render(<ObservationStamp observation={legacy} />);
+  const time = container.querySelector("time");
+  expect(time?.getAttribute("dateTime")).toBe("2027-01-15T08:00:00.000Z");
+  expect(time?.textContent).toMatch(/:\d{2}:00/);
+  expect(screen.getByText("Origin unclassified")).toBeTruthy();
 });
