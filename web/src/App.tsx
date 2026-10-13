@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DEMO, navigate, useData, useLocation } from "./api";
 import { Icon, Link, Notice } from "./components";
+import { Modal, useSmallScreen } from "./Modal";
 import { Radar } from "./Radar";
 import { TokenDetail } from "./TokenDetail";
 import { Alerts, Methodology, OutcomePage, Reports } from "./Publications";
@@ -10,10 +11,10 @@ import { relative } from "./format";
 import { previewState, previewStates } from "./demo";
 const navigation = [
   ["/", "Radar", "radar"],
-  ["/alerts", "Alerts", "alerts"],
-  ["/reports", "Market reports", "reports"],
-  ["/outcomes", "Signal outcomes", "outcomes"],
-  ["/how-it-works", "How it works", "info"],
+  ["/alerts", "Signals", "alerts"],
+  ["/reports", "Reports", "reports"],
+  ["/outcomes", "Track record", "outcomes"],
+  ["/how-it-works", "Methodology", "info"],
 ];
 export function App() {
   const location = useLocation(),
@@ -22,6 +23,20 @@ export function App() {
       ? location.slice(location.indexOf("?"))
       : "";
   const [open, setOpen] = useState(false);
+  const small = useSmallScreen();
+  const previousPath = useRef(path);
+  useEffect(() => {
+    if (previousPath.current !== path) {
+      setOpen(false);
+      previousPath.current = path;
+      requestAnimationFrame(() =>
+        document.getElementById("research-main")?.focus(),
+      );
+    }
+  }, [path]);
+  useEffect(() => {
+    if (!small) setOpen(false);
+  }, [small]);
   const state = previewState(new URLSearchParams(search).get("preview_state"));
   const meta = useData<Meta>(
     DEMO ? `/api/v1/meta?preview_state=${state}` : "/api/v1/meta",
@@ -67,87 +82,113 @@ export function App() {
       : path.startsWith("/tokens")
         ? "Token detail"
         : "Alert detail");
-  return (
-    <div className="app-shell">
-      <div
-        className={`sidebar-scrim ${open ? "visible" : ""}`}
-        onClick={() => setOpen(false)}
-      />
-      <aside className={`sidebar ${open ? "open" : ""}`}>
-        <Link className="brand" href="/" onClick={() => setOpen(false)}>
-          <img src="/revival-radar.png" alt="" />
-          <span>
-            revival
-            <span>
-              radar<span className="brand-dot">.</span>
-            </span>
-          </span>
-        </Link>
-        <div className="sidebar-section-label">INTELLIGENCE</div>
-        <nav aria-label="Main navigation">
-          {navigation.map(([href, label, icon]) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setOpen(false)}
-              className={`nav-link ${path === href || (href === "/alerts" && path.startsWith("/alerts/")) ? "active" : ""}`}
-            >
-              <Icon name={icon} />
-              <span>{label}</span>
-              {href === "/" && <span className="nav-live-dot" />}
-            </Link>
-          ))}
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="scanner-card">
-            <div className="scanner-card-top">
-              <span className={`status-dot ${meta.error ? "offline" : ""}`} />
-              <strong>
-                {DEMO
-                  ? "Synthetic preview"
-                  : meta.error
-                    ? "Service unavailable"
-                    : "Saved observations"}
-              </strong>
-              <Icon name="radar" size={16} />
-            </div>
-            <p>
-              {meta.data?.last_scan_at
-                ? `Completed scan ${relative(meta.data.last_scan_at)}`
-                : "Awaiting a completed scan"}
-            </p>
-            <div className="scanner-card-decoration">
-              <i />
-              <i />
-              <i />
-            </div>
-          </div>
-          {meta.data?.telegram_url?.startsWith("https://") && (
-            <a
-              className="nav-link telegram-link"
-              href={meta.data.telegram_url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Icon name="alerts" />
-              <span>Open Telegram</span>
-              <Icon name="external" size={14} />
-            </a>
-          )}
+  const navigationContent = (
+    <>
+      {" "}
+      <Link className="brand" href="/" onClick={() => setOpen(false)}>
+        <img src="/revival-radar.png" alt="" />
+        <span>
+          OnchainFlow
+          <span className="brand-tagline">Saved market research</span>
+        </span>
+      </Link>
+      <div className="sidebar-section-label">RESEARCH</div>
+      <nav aria-label="Main navigation">
+        {navigation.map(([href, label, icon]) => (
           <Link
-            className={`nav-link owner-link ${path.startsWith("/admin") ? "active" : ""}`}
-            href="/admin"
+            key={href}
+            href={href}
             onClick={() => setOpen(false)}
+            aria-current={
+              path === href ||
+              (href === "/alerts" && path.startsWith("/alerts/"))
+                ? "page"
+                : undefined
+            }
+            className={`nav-link ${path === href || (href === "/alerts" && path.startsWith("/alerts/")) ? "active" : ""}`}
           >
-            <Icon name="lock" />
-            <span>Owner area</span>
-            <small>PRIVATE</small>
+            <Icon name={icon} />
+            <span>{label}</span>
+            {href === "/" && <span className="nav-live-dot" />}
           </Link>
-          <div className="sidebar-footer">
-            SEE THE SIGNAL. FOLLOW THE EVIDENCE.
+        ))}
+      </nav>
+      <div className="sidebar-bottom">
+        <div className="scanner-card">
+          <div className="scanner-card-top">
+            <span className={`status-dot ${meta.error ? "offline" : ""}`} />
+            <strong>
+              {DEMO
+                ? "Synthetic preview"
+                : meta.error
+                  ? "Service unavailable"
+                  : "Saved observations"}
+            </strong>
+            <Icon name="radar" size={16} />
+          </div>
+          <p>
+            {meta.data?.last_scan_at
+              ? `Completed scan ${relative(meta.data.last_scan_at)}`
+              : "Awaiting a completed scan"}
+          </p>
+          <div className="scanner-card-decoration">
+            <i />
+            <i />
+            <i />
           </div>
         </div>
-      </aside>
+        {meta.data?.telegram_url?.startsWith("https://") && (
+          <a
+            className="nav-link telegram-link"
+            href={meta.data.telegram_url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Icon name="alerts" />
+            <span>Open Telegram</span>
+            <Icon name="external" size={14} />
+          </a>
+        )}
+        <Link
+          className={`nav-link owner-link ${path.startsWith("/admin") ? "active" : ""}`}
+          href="/admin"
+          onClick={() => setOpen(false)}
+        >
+          <Icon name="lock" />
+          <span>Owner area</span>
+          <small>PRIVATE</small>
+        </Link>
+        <div className="sidebar-footer">
+          SEE THE SIGNAL. FOLLOW THE EVIDENCE.
+        </div>
+      </div>
+    </>
+  );
+  return (
+    <div className="app-shell research-surface">
+      <a className="skip-link" href="#research-main">
+        Skip to research content
+      </a>
+      {!small && <aside className="sidebar">{navigationContent}</aside>}
+      {small && open && (
+        <Modal
+          className="navigation-drawer"
+          labelledBy="navigation-title"
+          onDismiss={() => setOpen(false)}
+        >
+          <div className="drawer-heading">
+            <h2 id="navigation-title">Navigation</h2>
+            <button
+              className="icon-button"
+              aria-label="Close navigation"
+              onClick={() => setOpen(false)}
+            >
+              <Icon name="close" />
+            </button>
+          </div>
+          {navigationContent}
+        </Modal>
+      )}
       <div className="workspace">
         {meta.data?.data_mode === "synthetic" && (
           <Notice tone="warning">
@@ -159,6 +200,8 @@ export function App() {
             <button
               className="menu-button"
               aria-label="Open navigation"
+              aria-expanded={open}
+              aria-haspopup="dialog"
               onClick={() => setOpen((v) => !v)}
             >
               <Icon name="menu" />
@@ -175,7 +218,12 @@ export function App() {
             <span className="version-badge">V1.0</span>
           </div>
         </header>
-        <main key={DEMO ? `${path}:${state}` : path}>
+        <main
+          id="research-main"
+          aria-label={title}
+          tabIndex={-1}
+          key={DEMO ? `${path}:${state}` : path}
+        >
           <div className="content-container">
             {DEMO && (
               <Notice tone="warning">
@@ -204,7 +252,7 @@ export function App() {
             {page}
           </div>
           <footer className="page-footer">
-            <span>© {new Date().getFullYear()} Revival Radar</span>
+            <span>© {new Date().getFullYear()} OnchainFlow</span>
             <span>
               Data from saved GMGN observations{" "}
               <span className="footer-dot">·</span>

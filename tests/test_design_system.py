@@ -20,6 +20,7 @@ def ratio(a, b):
 def test_semantic_text_and_focus_contrast():
     css = (ROOT / "web/src/design-tokens.css").read_text()
     tokens = dict(re.findall(r"--research-([\w-]+):\s*(#[0-9a-f]{6});", css))
+    assert ratio(tokens["on-accent"], tokens["accent"]) >= 4.5
     for background in ("bg", "surface"):
         for foreground in ("text", "muted", "accent", "warning", "danger"):
             assert ratio(tokens[foreground], tokens[background]) >= 4.5, (foreground, background)

@@ -11,8 +11,9 @@ Read `design-system/onchainflow/MASTER.md` and the affected page override when
 present. If absent, complete the design-foundation issue before a broad restyle;
 small targeted fixes can use verified domain guidance. Inspect WSL work and the
 actual release base before creating replacements for interrupted changes.
-For #51/#41 the owner waived WSL recovery on 2026-10-13; the merged published
-base and that exception are recorded in the workflow and design master.
+The owner waived unavailable WSL recovery on 2026-10-13 and then requested #40
+from the merged #51/#41 foundation. The published base and exception are recorded
+in the workflow and design master; do not recreate or reset abandoned local work.
 
 Detect the existing stack: React/TypeScript, Vite and CSS. Apply `--stack react`
 for implementation guidance. Skill output is a recommendation: review whether

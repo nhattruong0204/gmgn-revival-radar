@@ -12,3 +12,5 @@ All other tokens and state contracts inherit MASTER. Scope implementation under
 the relevant backlog issue; this contract does not claim that future features ship
 in #51. Verify desktop/mobile, keyboard/touch, loading/empty/stale/partial/error
 and permission states when migrating this surface.
+
+#40 implementation: Mobile starts at the shortlist; collection/scan summaries follow it in a disclosure. Filters and sorting use the shared modal, apply URL changes immediately, and preserve context when returning from a workspace.

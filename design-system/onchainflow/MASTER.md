@@ -3,9 +3,9 @@
 Reviewed 2026-10-13 for #51/#41. This is the source of truth for subsequent
 #40–#50 UI work; page rules extend it only where the page job demands it.
 Implementation: React 19 + TypeScript, Vite, CSS; no framework or chart dependency
-change. Tokens live in `web/src/design-tokens.css`. Radar is the first exemplar;
-#40 owns the remaining typography/shell/component migration. This document does
-not assert that every existing screen already meets the target.
+change. Tokens live in `web/src/design-tokens.css`. Radar was the first exemplar; #40 extends the shared system to the shell, public
+research and owner screens. See `issue-40-verification.md` for measured scope and
+limits; this is not independent whole-site accessibility certification.
 
 ## Product and journeys
 
@@ -48,7 +48,8 @@ Primary skill: UI UX Pro Max, pinned commit
   not a mandate to replace the command execution model.
 
 User explicitly waived recovery of unfinished local WSL work on 2026-10-13 for
-#51/#41. No WSL files were accessed or deleted. Base includes merged PR #38
+#51/#41. No WSL files were accessed or deleted. The owner then requested #40 from this
+published foundation; no abandoned WSL diff was recreated. Base includes merged PR #38
 (launch fixes) and #53 (skill integration). No claim of inspecting private live
 production or of deploying these changes.
 
@@ -59,6 +60,7 @@ production or of deploying these changes.
 | Background/surface | `--research-bg` #0b141d / `--research-surface` #101c26 | Hierarchy, never status |
 | Text/muted | #d9e4ea / #a8b7c4 | Primary facts / metadata, not disabled facts |
 | Accent/focus | #64dda9 | Navigation/action and visible focus, not asset safety |
+| On accent | `--research-on-accent` #0b2318 | Text on mint action buttons; distinct from text on dark surfaces |
 | Warning/danger | #e5bb73 / #ef9292 | Missing/stale evidence or error, always with text |
 | Control border | #607584 | Visible actionable boundary; decorative panel borders may be subtler |
 | Spacing | 4, 8, 12, 16, 24px | Compact rows and progressively larger grouping |
@@ -70,6 +72,10 @@ fallback. Body/explanations 16px, research controls/body 14px, tables 13px,
 secondary numeric/metadata 12px minimum, headings 28/20px. Dense exceptions are
 intentional for comparison, never tiny instructions or authentication errors.
 Use tabular figures for comparisons; exact units/timestamps must remain visible.
+Named `--research-type-*` tokens use rem units (body 0.875, metadata 0.75,
+table 0.8125, title 1.75, heading 1.25, value 1.5) so user text sizing scales them.
+SVG chart labels use 12px at a minimum 960px SVG width inside a named scrolling
+region; the full data table and exact timestamps scale with the text setting.
 Fonts and provenance: `web/public/fonts/OFL-DM-Sans.txt` and `fonts/README.md`.
 No external font request; existing CSP remains authoritative.
 
@@ -86,14 +92,14 @@ region; the whole page must not overflow.
 
 | Pattern | Required behavior | Implementation / next consumer |
 | --- | --- | --- |
-| Filters | Visible names; URL-backed selection; reset pagination; explain window; search submit/clear; mobile drawer preserves the same controls | Radar / #40 |
+| Filters | Native modal on mobile (immediate URL changes, Show results closes); visible names; URL-backed selection; reset pagination; explain window; search submit/clear; mobile drawer preserves the same controls | Radar / #40 |
 | Table/mobile cards | Same identity, timestamp, origin, evidence and principal workspace link; stable sort/pagination; no hidden mobile facts | Radar / #40 |
 | ObservationStamp | Visible exact evaluation time, relative age, historical label after 24h, recorded/fixture/unclassified origin; never infer source from score | Shared component, Radar/TokenDetail/Publications |
 | Freshness/coverage | Worker heartbeat, scan completion and per-row observation are separate; fresh worker never changes old evidence | #41 API and docs/data-provenance.md |
 | Evidence disclosure | Summary then support/counter-evidence/missing fields, source and timestamp; unavailable values stay unknown | SignalEvidence / #42/#43 |
 | Chart inspection | Accessible name/units, keyboard/touch inspection, direct legend and table fallback; closed-candle time separate from evaluation | ObservedChart / #42 |
 | Form/error | Controlled fields, persistent visible label, linked field error plus summary/focus for multiple errors; retain input on failure | Owner controls / #40/#46 |
-| Dialog | Name, focus entry/trap/return, Escape/cancel, exact before/after, explicit consequential action; no outside click confirms | Existing tested owner preview / #40 |
+| Dialog | Shared native Modal with background isolation and original-trigger capture before async owner requests; name, focus entry/trap/return, Escape/cancel, exact before/after, explicit consequential action; no outside click confirms | Existing tested owner preview / #40 |
 | Action/history | Submitted/queued/running/succeeded/failed/uncertain distinct; restore by durable id; refresh history before retrying uncertain actions | Owner commands / #48 |
 
 Shared states:

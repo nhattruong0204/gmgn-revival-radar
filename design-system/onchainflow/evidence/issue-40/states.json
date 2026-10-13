@@ -1,0 +1,10 @@
+{
+  "passed": [
+    "loading",
+    "retained-data-error",
+    "empty",
+    "partial",
+    "stale",
+    "offline"
+  ]
+}

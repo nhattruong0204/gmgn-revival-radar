@@ -12,7 +12,9 @@ query/index/cache and operations changes were reviewed and merged into main on
 2026-10-13 before #51/#41 implementation. The owner explicitly waived recovery
 of unfinished WSL work for these issues because WSL is unavailable. No local WSL
 files were accessed or deleted. #52 can track remaining deployment reconciliation;
-this waiver permits #51/#41 to proceed from published source. Do not claim to have
+this waiver permits work from published source. The owner next requested #40
+from the reviewed #51/#41 foundation (merged PR #54); its evidence is in
+`design-system/onchainflow/issue-40-verification.md`. Do not claim to have
 inspected or updated the private production deployment from this environment.
 
 ## Use the pinned skill

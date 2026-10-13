@@ -1,0 +1,50 @@
+[
+  {
+    "width": 320,
+    "height": 844,
+    "pages": 7,
+    "reflow": true,
+    "text_min": 12,
+    "candidate_chart_above_fold": true
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "pages": 7,
+    "reflow": true,
+    "text_min": 12,
+    "candidate_chart_above_fold": true
+  },
+  {
+    "width": 768,
+    "height": 900,
+    "pages": 7,
+    "reflow": true,
+    "text_min": 12,
+    "candidate_chart_above_fold": true
+  },
+  {
+    "width": 1024,
+    "height": 900,
+    "pages": 7,
+    "reflow": true,
+    "text_min": 12,
+    "candidate_chart_above_fold": true
+  },
+  {
+    "width": 1366,
+    "height": 768,
+    "pages": 7,
+    "reflow": true,
+    "text_min": 12,
+    "candidate_chart_above_fold": true
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "pages": 7,
+    "reflow": true,
+    "text_min": 12,
+    "candidate_chart_above_fold": true
+  }
+]

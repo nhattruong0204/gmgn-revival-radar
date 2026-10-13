@@ -110,3 +110,17 @@ export function radarQuery(search: string): URLSearchParams {
     query.set("order", "desc");
   return query;
 }
+
+export function researchLink(path: string): string {
+  const context = window.location.pathname + window.location.search;
+  return `${path}?return_to=${encodeURIComponent(context)}`;
+}
+export function researchReturn(): string {
+  const value = new URLSearchParams(window.location.search).get("return_to");
+  return value &&
+    /^(?:\/(?:\?|$)|\/(?:reports|outcomes)(?:\?|$)|\/alerts(?:\/[1-9]\d*)?(?:\?|$))/.test(
+      value,
+    )
+    ? value
+    : "/";
+}
