@@ -32,6 +32,7 @@ import type {
   Report,
 } from "./types";
 import { SignalEvidence } from "./TokenDetail";
+import { ResearchBrief } from "./ResearchBrief";
 export function Alerts({ id }: { id?: string }) {
   const location = useLocation();
   const params = new URLSearchParams(location.split("?")[1]);
@@ -166,7 +167,21 @@ export function Alerts({ id }: { id?: string }) {
             </section>
           )}
           {detail.data.observation ? (
-            <SignalEvidence observation={detail.data.observation} />
+            <>
+              <SignalEvidence observation={detail.data.observation} />
+              <details className="research-disclosure">
+                <summary>Separate research brief archive</summary>
+                <p>
+                  These versions may be later than the alert. They do not
+                  replace its original evidence above.
+                </p>
+                <ResearchBrief
+                  key={detail.data.id}
+                  chain={detail.data.chain}
+                  address={detail.data.contract_address}
+                />
+              </details>
+            </>
           ) : (
             <Notice tone="warning">
               Original evidence is unavailable for this legacy alert. It has not

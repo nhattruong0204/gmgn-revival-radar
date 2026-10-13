@@ -181,6 +181,8 @@ function readyRequest(path: string): unknown {
     );
     return list(items, q);
   }
+  if (url.pathname.endsWith("/briefs"))
+    return { items: [], total: 0, page: 1, page_size: 10, as_of: now };
   if (url.pathname.includes("/tokens/")) {
     const address = url.pathname.split("/")[5];
     const o = demoObservations.find((v) => v.contract_address === address);

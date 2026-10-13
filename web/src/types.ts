@@ -1,4 +1,54 @@
 export type JsonRecord = Record<string, unknown>;
+export interface BriefClaim {
+  key: string;
+  text: string;
+  source_id: string;
+  field: string;
+  value: number | boolean | string | null;
+}
+export interface ResearchBrief {
+  id: string;
+  brief_version: string;
+  evaluation_id: number;
+  scan_id: number;
+  chain: string;
+  contract_address: string;
+  as_of: number;
+  saved_at: number;
+  origin: string;
+  strategy: string | null;
+  strategy_revision: number | null;
+  score_version: string | null;
+  outcome: "bull" | "bear" | "watch";
+  support: BriefClaim[];
+  counter_evidence: BriefClaim[];
+  unresolved: BriefClaim[];
+  scenarios: Array<{
+    kind: string;
+    text: string;
+    source_id: string;
+    field: string;
+    level: number | null;
+  }>;
+  sources: Array<{
+    id: string;
+    kind: string;
+    observed_at: number;
+    fetched_at: number | null;
+    expires_at: number | null;
+    origin: string;
+    coverage: string;
+    values: Record<string, number | boolean | string | null>;
+    candles: Candle[];
+  }>;
+}
+export interface BriefPage {
+  items: ResearchBrief[];
+  total: number;
+  page: number;
+  page_size: number;
+  as_of: number;
+}
 export interface Security {
   top10_ratio?: number | null;
   dev_ratio?: number | null;

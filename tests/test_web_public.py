@@ -17,6 +17,22 @@ NOW = 1_800_000_000
 SECRET = "private-owner-credential-marker"
 
 
+async def test_brief_api_cutoff_bounds_and_saved_only_reads(web, repo, token, config):
+    client, _ = web
+    observe(repo, token, config, timestamp=NOW - 100)
+    path = f"/api/v1/tokens/sol/{token.contract_address}/briefs"
+    before = repo.db.total_changes
+    result = await client.get(path)
+    assert result.status_code == 200 and result.json()["total"] == 1
+    brief = result.json()["items"][0]
+    assert brief["strategy_revision"] == 4 and brief["outcome"] == "watch"
+    assert SECRET not in result.text
+    assert (await client.get(path + f"?as_of={NOW - 101}")).json()["items"] == []
+    for query in ("as_of=nan", f"as_of={NOW + 1}", "page=0", "page_size=101"):
+        assert (await client.get(path + "?" + query)).status_code == 422
+    assert repo.db.total_changes == before
+
+
 def observe(repo, token, config, *, timestamp=NOW - 100, score=88, finished=True, **values):
     snapshot = changed(token, timestamp=timestamp)
     context = {

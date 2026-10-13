@@ -1,0 +1,11 @@
+{
+  "base_commit": "ea1dc2e0270b473494d4c944d095c48a910a0946",
+  "base_js_gzip_bytes": 97441,
+  "current_js_gzip_bytes": 99503,
+  "increase_bytes": 2062,
+  "increase_gate_bytes": 10240,
+  "comparison_update_max_ms": 32.89999999990687,
+  "interaction_gate_ms": 100,
+  "method": "Local Chromium performance.now to two animation frames after selecting a saved comparison; no production timing",
+  "passed": true
+}

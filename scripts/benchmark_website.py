@@ -155,6 +155,7 @@ async def measure(
     read_pause=0.05,
     replay_wait=REPLAY_WAIT_SECONDS,
     read_timeout_ms=1500,
+    include_briefs=False,
 ):
     with tempfile.TemporaryDirectory(prefix="radar-web-load-") as directory:
         root = Path(directory)
@@ -261,6 +262,8 @@ async def measure(
                 "/radar?sort=market_cap&search=",
                 f"/tokens/sol/{address}/history",
             ]
+            if include_briefs:
+                routes[5] = f"/tokens/sol/{address}/briefs"
             durations = []
             api = None
             transport = httpx.ASGITransport(app=app)
@@ -434,6 +437,11 @@ if __name__ == "__main__":
     parser.add_argument("--read-pause-seconds", type=float, default=0.05)
     parser.add_argument("--replay-wait-seconds", type=float, default=REPLAY_WAIT_SECONDS)
     parser.add_argument("--read-timeout-ms", type=int, default=1500)
+    parser.add_argument(
+        "--include-briefs",
+        action="store_true",
+        help="Replace the duplicate radar route with brief archive reads; same gates",
+    )
     args = parser.parse_args()
     if not 0.05 <= args.read_pause_seconds <= 5:
         parser.error("read pause must be between 0.05 and 5 seconds")
@@ -451,6 +459,7 @@ if __name__ == "__main__":
                 args.read_pause_seconds,
                 args.replay_wait_seconds,
                 args.read_timeout_ms,
+                args.include_briefs,
             )
         )
     )

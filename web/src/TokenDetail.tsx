@@ -17,6 +17,7 @@ import {
 } from "./components";
 import { ObservedChart } from "./Chart";
 import { CandleWorkspace } from "./CandleWorkspace";
+import { ResearchBrief } from "./ResearchBrief";
 import {
   chains,
   compact,
@@ -426,6 +427,7 @@ export function TokenDetail({
               {marketMetrics}
             </details>
           )}
+          <ResearchBrief key={encoded} chain={chain} address={address} />
           <section className="panel">
             <h2>Returning activity</h2>
             <p className="small muted">

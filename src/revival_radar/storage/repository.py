@@ -5,6 +5,7 @@ from collections import Counter
 from math import isfinite
 from statistics import median
 from typing import Any
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from pydantic import ValidationError
@@ -13,6 +14,7 @@ from revival_radar.analysis.acceleration import fresh_history
 from revival_radar.analysis.filters import first_pass
 from revival_radar.config import Settings
 from revival_radar.metrics import sqlite_timed
+from revival_radar.models.brief import build_brief
 from revival_radar.models.signal import RevivalResult, has_returning_activity
 from revival_radar.models.token import TokenSnapshot
 from revival_radar.storage.database import SNAPSHOT_FIELDS
@@ -21,6 +23,7 @@ from revival_radar.storage.database import SNAPSHOT_FIELDS
 class Repository:
     def __init__(self, db: sqlite3.Connection):
         self.db = db
+        self.research_briefs_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 6
         # Connection-local and read-only: a report never trusts unvalidated JSON
         # sub-scores for ranking. Re-registering on a reused connection is safe.
         db.create_function(
@@ -309,6 +312,69 @@ class Repository:
                 WHERE id=? AND finished IS NULL""",
                 (scan_id, scan_id),
             )
+            self._save_research_brief(
+                identity, scan_id, token, result, blockers, missing, configuration, origin
+            )
+
+    def _save_research_brief(
+        self, identity, scan_id, token, result, blockers, missing, configuration, origin
+    ):
+        # Old-schema migration fixtures and rollback readers never fabricate versions.
+        if not self.research_briefs_enabled:
+            return
+        # Idempotent scanner write; browser connections remain query-only.
+        started = self.db.execute(
+            "SELECT started FROM scan_runs WHERE id=?", (scan_id,)
+        ).fetchone()[0]
+        if self.db.execute(
+            """SELECT 1 FROM research_briefs WHERE scan_id=?
+            AND evaluation_id=? AND scan_started_at=?""",
+            (scan_id, identity, started),
+        ).fetchone():
+            return
+        cache = self.db.execute(
+            """SELECT * FROM enrichment_cache WHERE chain=?
+            AND contract_address=? AND kind LIKE 'kline:1h:%' AND fetched_at<=?
+            ORDER BY fetched_at DESC,kind DESC LIMIT 1""",
+            (*token.key, token.timestamp),
+        ).fetchone()
+        cache_origin = (
+            self.get_state(f"origin:cache:{token.chain}:{token.contract_address}:{cache['kind']}")
+            if cache
+            else "unknown"
+        )
+        cache_origin = cache_origin if cache_origin in {"live", "synthetic", "test"} else "unknown"
+        if origin not in {"synthetic", "test"} and cache_origin in {"synthetic", "test"}:
+            cache, cache_origin = None, "unknown"
+        brief = build_brief(
+            identity=identity,
+            scan_id=scan_id,
+            scan_started_at=started,
+            token=token,
+            result=result,
+            blockers=blockers,
+            missing=missing,
+            configuration=configuration,
+            origin=origin,
+            cache=cache,
+            cache_origin=cache_origin,
+            saved_at=max(time.time(), token.timestamp),
+            brief_id=uuid4().hex,
+        )
+        self.db.execute(
+            "INSERT INTO research_briefs VALUES (?,?,?,?,?,?,?,?,?,?)",
+            (
+                brief.id,
+                scan_id,
+                identity,
+                *token.key,
+                brief.as_of,
+                brief.saved_at,
+                origin,
+                brief.model_dump_json(),
+                started,
+            ),
+        )
 
     @sqlite_timed
     def finish_scan(self, scan_id: int, report: object, finished: float) -> None:
@@ -329,6 +395,14 @@ class Repository:
                 WHERE id=? AND finished IS NULL""",
                 (finished, finished, *metrics, *counts, keys, scan_id),
             )
+            if self.research_briefs_enabled:
+                self.db.execute(
+                    """INSERT OR IGNORE INTO research_brief_publications
+                SELECT b.id,MAX(b.saved_at,?,?) FROM research_briefs b JOIN scan_runs s
+                ON s.id=b.scan_id AND s.started=b.scan_started_at
+                WHERE b.scan_id=? AND s.finished IS NOT NULL""",
+                    (finished, time.time(), scan_id),
+                )
 
     def persist_scan_metrics(self, scan_id: int, report: object) -> None:
         """Final metric persistence is excluded from the measured scan's operations."""

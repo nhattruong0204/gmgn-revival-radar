@@ -73,7 +73,7 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
         db.execute("BEGIN")
         if db.execute("PRAGMA user_version").fetchone()[0] != SCHEMA_VERSION:
             raise sqlite3.DatabaseError("Unsupported public storage schema")
-        yield PublicQueries(db)
+        yield PublicQueries(db, allow_synthetic=config.web_allow_synthetic_data)
     finally:
         db.close()
 
@@ -151,8 +151,9 @@ def public_field(payload, chain, address, timestamp, score, status, eligible, na
 
 
 class PublicQueries:
-    def __init__(self, db: sqlite3.Connection):
+    def __init__(self, db: sqlite3.Connection, *, allow_synthetic: bool = False):
         self.db = db
+        self.allow_synthetic = allow_synthetic
         self.repo = Repository(db)
         db.create_function("public_field", 8, public_field, deterministic=True)
 
@@ -317,6 +318,33 @@ class PublicQueries:
             as_of=until,
             last_scan_at=self.last_scan_at(until),
             links=CHAINS[chain].links(address),
+        )
+
+    def briefs(self, chain: str, address: str, until: float, page: int, page_size: int):
+        from revival_radar.models.brief import ResearchBrief
+        from revival_radar.web.models import BriefPage
+
+        where = """b.chain=? AND b.contract_address=? AND b.as_of<=? AND b.saved_at<=?
+            AND p.published_at<=?"""
+        where += (
+            " AND b.origin != 'test'"
+            if self.allow_synthetic
+            else " AND b.origin NOT IN ('synthetic','test')"
+        )
+        params = (chain, address, until, until, until)
+        base = "FROM research_briefs b JOIN research_brief_publications p ON p.brief_id=b.id"
+        total = self.db.execute(f"SELECT COUNT(*) {base} WHERE {where}", params).fetchone()[0]
+        rows = self.db.execute(
+            f"""SELECT b.payload {base} WHERE {where}
+            ORDER BY b.saved_at DESC,b.id DESC LIMIT ? OFFSET ?""",
+            (*params, page_size, (page - 1) * page_size),
+        ).fetchall()
+        return BriefPage(
+            items=[ResearchBrief.model_validate_json(row[0]) for row in rows],
+            total=total,
+            page=page,
+            page_size=page_size,
+            as_of=until,
         )
 
     def history(

@@ -14,7 +14,7 @@ TEXT_FIELDS = {
     "asset_classification_reason",
 }
 SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in {"security", "data_warnings"}]
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 
 def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
@@ -23,6 +23,8 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
     db.row_factory = sqlite3.Row
     db.execute(f"PRAGMA busy_timeout={int(busy_timeout_ms)}")
     db.execute("PRAGMA journal_mode=WAL")
+    # REPLACE must obey immutable archive delete guards as well as explicit DELETE.
+    db.execute("PRAGMA recursive_triggers=ON")
     try:
         # Recheck the version under the lock, so concurrent startups migrate only once.
         db.execute("BEGIN IMMEDIATE")
@@ -55,6 +57,8 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             _migrate_outcomes(db)
         if version < 5:
             _migrate_web_controls(db)
+        if version < 6:
+            _migrate_research_briefs(db)
         # An additive query index is compatible with existing schema-4/rollback readers.
         db.execute("""CREATE INDEX IF NOT EXISTS evaluations_chain_time
             ON evaluations(chain,timestamp DESC,id DESC)""")
@@ -71,6 +75,26 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
         db.close()
         raise
     return db
+
+
+def _migrate_research_briefs(db: sqlite3.Connection) -> None:
+    # No historical backfill: mutable legacy caches cannot establish old versions.
+    db.execute("""CREATE TABLE IF NOT EXISTS research_briefs (
+        id TEXT PRIMARY KEY, scan_id INTEGER NOT NULL, evaluation_id INTEGER NOT NULL,
+        chain TEXT NOT NULL, contract_address TEXT NOT NULL, as_of REAL NOT NULL,
+        saved_at REAL NOT NULL, origin TEXT NOT NULL, payload TEXT NOT NULL,
+        scan_started_at REAL NOT NULL, UNIQUE(scan_id,evaluation_id,scan_started_at)
+    )""")
+    db.execute("""CREATE INDEX IF NOT EXISTS research_briefs_token
+        ON research_briefs(chain,contract_address,saved_at DESC,id)""")
+    db.execute("""CREATE TABLE IF NOT EXISTS research_brief_publications (
+        brief_id TEXT PRIMARY KEY, published_at REAL NOT NULL
+    )""")
+    for table in ("research_briefs", "research_brief_publications"):
+        for operation in ("UPDATE", "DELETE"):
+            db.execute(f"""CREATE TRIGGER IF NOT EXISTS {table}_no_{operation.lower()}
+                BEFORE {operation} ON {table}
+                BEGIN SELECT RAISE(ABORT,'Research versions are immutable'); END""")
 
 
 def _migrate_diagnostics(db: sqlite3.Connection) -> None:

@@ -2428,3 +2428,55 @@ textarea,
 .candle-hollow {
   fill: #101c26;
 }
+/* Saved research uses the shared tokens and native controls. */
+.brief-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-block: 16px;
+}
+.brief-controls label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+.brief-controls select {
+  max-width: 100%;
+  min-height: 44px;
+  background: var(--research-surface);
+  color: var(--research-text);
+  border: 1px solid var(--research-control-border);
+  border-radius: 6px;
+  padding: 8px;
+}
+.brief-evidence {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.research-brief li {
+  margin-block: 12px;
+  overflow-wrap: anywhere;
+}
+.research-brief pre {
+  max-width: 100%;
+  overflow: auto;
+  font-size: var(--research-type-metadata);
+}
+.research-brief h3 {
+  font-size: var(--research-type-heading);
+}
+.research-brief section[id] {
+  scroll-margin-top: 80px;
+}
+.research-brief a {
+  display: inline-block;
+  min-height: 24px;
+}
+@media (max-width: 900px) {
+  .brief-evidence {
+    grid-template-columns: 1fr;
+  }
+}

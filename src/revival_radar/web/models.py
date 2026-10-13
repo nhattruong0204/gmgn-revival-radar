@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from revival_radar.models.brief import ResearchBrief
 from revival_radar.models.token import Candle
 
 Finite = Annotated[float, Field(allow_inf_nan=False)]
@@ -26,6 +27,14 @@ class PublicSecurity(PublicModel):
     liquidity_burned: bool | None = None
     dangerous: bool | None = None
     flags: list[str] = Field(default_factory=list)
+
+
+class BriefPage(PublicModel):
+    items: list[ResearchBrief]
+    total: int
+    page: int
+    page_size: int
+    as_of: Finite
 
 
 class PublicToken(PublicModel):
