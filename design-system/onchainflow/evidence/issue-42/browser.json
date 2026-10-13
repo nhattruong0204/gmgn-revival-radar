@@ -1,0 +1,168 @@
+{
+  "actual_saved_api": [
+    {
+      "width": 320,
+      "height": 844,
+      "keyboard": true,
+      "touch": true,
+      "drag": true,
+      "range_buttons": true,
+      "csv_parity": true,
+      "plotted_ohlcv_api_parity": true,
+      "text_resize200": true,
+      "reflow320_css": true,
+      "axis_text_min": 12,
+      "external_requests": [],
+      "range167_update_ms": 31.799999997019768,
+      "inspection_update_ms": 11.5
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "keyboard": true,
+      "touch": true,
+      "drag": true,
+      "range_buttons": true,
+      "csv_parity": true,
+      "plotted_ohlcv_api_parity": true,
+      "text_resize200": true,
+      "reflow320_css": true,
+      "axis_text_min": 12,
+      "external_requests": [],
+      "range167_update_ms": 30.599999994039536,
+      "inspection_update_ms": 19.299999997019768
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "keyboard": true,
+      "touch": true,
+      "drag": true,
+      "range_buttons": true,
+      "csv_parity": true,
+      "plotted_ohlcv_api_parity": true,
+      "text_resize200": true,
+      "reflow320_css": true,
+      "axis_text_min": 12,
+      "external_requests": [],
+      "range167_update_ms": 34.599999994039536,
+      "inspection_update_ms": 12.200000002980232
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "keyboard": true,
+      "touch": true,
+      "drag": true,
+      "range_buttons": true,
+      "csv_parity": true,
+      "plotted_ohlcv_api_parity": true,
+      "text_resize200": true,
+      "reflow320_css": true,
+      "axis_text_min": 12,
+      "external_requests": [],
+      "range167_update_ms": 28.900000005960464,
+      "inspection_update_ms": 16.30000001192093
+    },
+    {
+      "width": 768,
+      "height": 900,
+      "keyboard": true,
+      "touch": true,
+      "drag": true,
+      "range_buttons": true,
+      "csv_parity": true,
+      "plotted_ohlcv_api_parity": true,
+      "text_resize200": true,
+      "reflow320_css": true,
+      "axis_text_min": 12,
+      "external_requests": [],
+      "range167_update_ms": 25.900000005960464,
+      "inspection_update_ms": 19.799999997019768
+    },
+    {
+      "width": 1024,
+      "height": 900,
+      "keyboard": true,
+      "touch": true,
+      "drag": true,
+      "range_buttons": true,
+      "csv_parity": true,
+      "plotted_ohlcv_api_parity": true,
+      "text_resize200": true,
+      "reflow320_css": true,
+      "axis_text_min": 12,
+      "external_requests": [],
+      "range167_update_ms": 27.700000002980232,
+      "inspection_update_ms": 23.600000008940697
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "keyboard": true,
+      "touch": true,
+      "drag": true,
+      "range_buttons": true,
+      "csv_parity": true,
+      "plotted_ohlcv_api_parity": true,
+      "text_resize200": true,
+      "reflow320_css": true,
+      "axis_text_min": 12,
+      "external_requests": [],
+      "range167_update_ms": 26.80000001192093,
+      "inspection_update_ms": 19.5
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "keyboard": true,
+      "touch": true,
+      "drag": true,
+      "range_buttons": true,
+      "csv_parity": true,
+      "plotted_ohlcv_api_parity": true,
+      "text_resize200": true,
+      "reflow320_css": true,
+      "axis_text_min": 12,
+      "external_requests": [],
+      "range167_update_ms": 26.5,
+      "inspection_update_ms": 13.299999997019768
+    }
+  ],
+  "controlled_states": [
+    {
+      "state": "stale",
+      "passed": true
+    },
+    {
+      "state": "partial",
+      "passed": true
+    },
+    {
+      "state": "missing_volume",
+      "passed": true
+    },
+    {
+      "state": "zero_baseline",
+      "passed": true
+    },
+    {
+      "state": "empty",
+      "passed": true
+    },
+    {
+      "state": "error",
+      "passed": true
+    },
+    {
+      "state": "slow_loading",
+      "passed": true
+    },
+    {
+      "state": "offline_retains_saved_view",
+      "passed": true
+    }
+  ],
+  "browser": "Chromium",
+  "private_live_site_tested": false
+}

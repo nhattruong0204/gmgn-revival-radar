@@ -1,0 +1,48 @@
+{
+  "pairs": [
+    {
+      "role": "axis/metadata text",
+      "foreground": "#a8b7c4",
+      "background": "#101c26",
+      "ratio": 8.416482412769328,
+      "minimum": 4.5
+    },
+    {
+      "role": "button text",
+      "foreground": "#c2d1d9",
+      "background": "#15232d",
+      "ratio": 10.239731614013058,
+      "minimum": 4.5
+    },
+    {
+      "role": "grid/control border",
+      "foreground": "#607584",
+      "background": "#101c26",
+      "ratio": 3.5975548789684284,
+      "minimum": 3
+    },
+    {
+      "role": "rising candle",
+      "foreground": "#64dda9",
+      "background": "#101c26",
+      "ratio": 10.243516131572033,
+      "minimum": 3
+    },
+    {
+      "role": "falling candle",
+      "foreground": "#ef9292",
+      "background": "#101c26",
+      "ratio": 7.562371716037147,
+      "minimum": 3
+    },
+    {
+      "role": "boundary",
+      "foreground": "#e5bb73",
+      "background": "#101c26",
+      "ratio": 9.610300668849048,
+      "minimum": 3
+    }
+  ],
+  "scope": "Reviewed CSS color pairs; excludes disabled controls. No independent whole-site accessibility certification.",
+  "passed": true
+}

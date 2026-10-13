@@ -303,3 +303,32 @@ async def test_rate_limit_and_no_request_values_in_validation_error(web):
     assert error.headers["cache-control"] == "no-store"
     too_big = await client.post("/api/v1/admin/session", content="x" * 16385)
     assert too_big.status_code == 413
+
+
+async def test_candle_history_retains_usd_volume_and_unknown_without_open_bars(
+    web, repo, token, config
+):
+    client, _ = web
+    observe(repo, token, config, timestamp=NOW - 7200, score=70)
+    bars = [
+        {
+            "timestamp": NOW - hours * 3600,
+            "open": 1,
+            "high": 3,
+            "low": 1,
+            "close": 2,
+            "volume_usd": volume,
+        }
+        for hours, volume in ((3, None), (2, 0), (1, 125.75), (0, 999))
+    ]
+    repo.cache_save(
+        "kline:1h:168",
+        changed(token, timestamp=NOW - 50),
+        json.dumps({"candles": bars}),
+        NOW + 3600,
+    )
+    result = (await client.get(f"/api/v1/tokens/sol/{token.contract_address}/history")).json()
+    assert [bar["volume_usd"] for bar in result["candles"]] == [None, 0, 125.75]
+    assert [bar["close"] for bar in result["candles"]] == [2, 2, 2]
+    assert all(bar["timestamp"] + 3600 <= result["as_of"] for bar in result["candles"])
+    assert result["candles_origin"] == "unknown"

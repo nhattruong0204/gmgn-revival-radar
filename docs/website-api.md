@@ -152,3 +152,45 @@ See [saved freshness/provenance](data-provenance.md) for exact field semantics,
 24h Radar defaults and `age_hours` windows, historical versus active chain
 coverage, recorded/unknown origin confidence and reversible exclusion policy.
 Existing `/meta.chains` is historical; it is not current worker coverage.
+
+## Saved candle workspace contract (#42)
+
+History is a read-only view of the latest scanner-owned `kline:1h:*` cache
+available by `as_of`; it does not fetch a provider, retain every prior cache
+version, or guarantee a permanent archive. Its query horizon is 1–168 hours and
+at most 1,000 returned points; actual retention/coverage may be shorter. Supported
+candle timeframe is **3,600 seconds only**. Each bar carries Unix-second **start**
+time, positive finite `open/high/low/close`, and optional nonnegative `volume_usd`.
+Null volume means unavailable, zero means observed zero. Price quote currency and
+provider identity were not retained in these caches: the workspace explicitly
+labels them unrecorded, rather than inferring a provider from `candles_origin`.
+Origin describes live/synthetic/test/unclassified provenance, not accuracy.
+
+The server sorts saved bars and requires `since < timestamp` and
+`timestamp + 3600 <= as_of`. Acquisition `candles_fetched_at` and cache expiry
+`candles_expires_at` are separate from bar closure and evaluation times. A current
+worker or page refresh cannot make old candles current. UI defensively excludes
+open/future/invalid bars and all bars with duplicate timestamps; no interpolation
+fills missing candles or volume. Ranges unsupported by available history are
+disabled. Visible gaps are blank, and counts compare saved bars with the selected
+hourly window. `truncated` remains visible above the workspace.
+
+The displayed range low/high are descriptive observed extrema, **not predictive
+support/resistance**. Boundaries require at least 12 consecutive bars and 100%
+coverage of the selected hourly window. They are disabled when cache expiry is
+unknown/elapsed or the last closed bar is at least two hours behind `as_of`.
+Relative volume uses the preceding 24 consecutive hourly USD volumes (excluding
+the inspected bar), 24/24 valid samples and a positive arithmetic mean. Missing,
+gapped, zero-mean or stale evidence gives unknown; snapshots' overlapping rolling
+five-minute volumes never enter this calculation. Display prices use ten significant
+digits, axes rounded/scientific values; full stored numeric values are available
+in the table's `data` attributes and UTC CSV. Screen times include browser timezone.
+Existing chain/address-specific external links allow separate market follow-up;
+external charts do not replace saved research evidence.
+
+The HTML OHLCV fallback pages 25 rows at a time; range changes reset pagination.
+CSV exports **all** visible-range bars, independently of the table page. Preset
+24h/3d/7d buttons require enough retained history; “All saved” uses the actual
+available start/end rather than promising seven complete days. With the existing
+strict `since` boundary and an open current hour, a seven-day query commonly
+contains 167 closed hourly bars, so the full 7d preset can remain disabled.
