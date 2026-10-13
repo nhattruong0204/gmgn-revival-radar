@@ -14,7 +14,7 @@ TEXT_FIELDS = {
     "asset_classification_reason",
 }
 SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in {"security", "data_warnings"}]
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 
 def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
@@ -59,6 +59,8 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             _migrate_web_controls(db)
         if version < 6:
             _migrate_research_briefs(db)
+        if version < 7:
+            _migrate_research_outcomes(db)
         # An additive query index is compatible with existing schema-4/rollback readers.
         db.execute("""CREATE INDEX IF NOT EXISTS evaluations_chain_time
             ON evaluations(chain,timestamp DESC,id DESC)""")
@@ -75,6 +77,32 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
         db.close()
         raise
     return db
+
+
+def _migrate_research_outcomes(db: sqlite3.Connection) -> None:
+    # Additive receipts only: legacy knowledge/brief associations stay unknown.
+    db.execute("""CREATE TABLE IF NOT EXISTS research_alert_facts (
+        alert_id INTEGER PRIMARY KEY, saved_at REAL NOT NULL, payload TEXT NOT NULL,
+        score_version TEXT, brief_id TEXT, initial_price REAL
+    )""")
+    db.execute("""CREATE TABLE IF NOT EXISTS research_delivery_receipts (
+        alert_id INTEGER PRIMARY KEY, sent_at REAL NOT NULL
+    )""")
+    db.execute("""CREATE TABLE IF NOT EXISTS research_checkpoint_facts (
+        alert_id INTEGER NOT NULL, horizon_hours INTEGER NOT NULL,
+        recorded_at REAL NOT NULL, due_at REAL NOT NULL, observed_at REAL NOT NULL,
+        price REAL, market_cap REAL, return_pct REAL, origin TEXT NOT NULL,
+        PRIMARY KEY(alert_id,horizon_hours)
+    )""")
+    for table in (
+        "research_alert_facts",
+        "research_delivery_receipts",
+        "research_checkpoint_facts",
+    ):
+        for operation in ("UPDATE", "DELETE"):
+            db.execute(f"""CREATE TRIGGER IF NOT EXISTS {table}_no_{operation.lower()}
+                BEFORE {operation} ON {table}
+                BEGIN SELECT RAISE(ABORT,'Research evidence is immutable'); END""")
 
 
 def _migrate_research_briefs(db: sqlite3.Connection) -> None:

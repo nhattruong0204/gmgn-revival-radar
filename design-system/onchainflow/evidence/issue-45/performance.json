@@ -1,0 +1,11 @@
+{
+  "base_commit": "97fdd082e9a7fbae33ffacf82ad2157bc3d335bb",
+  "base_js_gzip_bytes": 99503,
+  "current_js_gzip_bytes": 102652,
+  "increase_bytes": 3149,
+  "increase_gate_bytes": 10240,
+  "two_frame_filter_settle_max_ms": 23.09999999962747,
+  "interaction_gate_ms": 100,
+  "scope": "Local 36-alert/three-cohort Chromium fixture; two frames after modal opened, not production/main-thread worst-case certification",
+  "passed": true
+}

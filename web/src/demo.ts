@@ -181,6 +181,39 @@ function readyRequest(path: string): unknown {
     );
     return list(items, q);
   }
+  if (url.pathname.endsWith("/track-record"))
+    return {
+      methodology_version: "checkpoint-cohort-v1",
+      since: now - 7 * 86400,
+      as_of: now,
+      filters: {},
+      definition:
+        "Synthetic preview has no confirmed sent alerts; no returns are fabricated.",
+      exclusions: ["No real observations in this fixture preview"],
+      limitations: ["Not trading performance"],
+      summary: {
+        total: 0,
+        observed: 0,
+        returns_available: 0,
+        positive: 0,
+        negative: 0,
+        zero: 0,
+        missing_price: 0,
+        unresolved: 0,
+        pending: 0,
+        missed: 0,
+        median_return_pct: null,
+        positive_rate_pct: null,
+        small_sample: true,
+        comparable: true,
+        distribution: [],
+      },
+      cohorts: [],
+      items: [],
+      page: 1,
+      page_size: 25,
+      total: 0,
+    };
   if (url.pathname.endsWith("/briefs"))
     return { items: [], total: 0, page: 1, page_size: 10, as_of: now };
   if (url.pathname.includes("/tokens/")) {

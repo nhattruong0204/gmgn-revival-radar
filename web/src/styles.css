@@ -429,6 +429,12 @@ h3 {
 }
 .stat-label svg {
   color: var(--research-muted);
+  flex-shrink: 0;
+}
+.stat-label span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .stat-value {
   font-family: "DM Sans", sans-serif;
@@ -2478,5 +2484,97 @@ textarea,
 @media (max-width: 900px) {
   .brief-evidence {
     grid-template-columns: 1fr;
+  }
+}
+
+.cohort-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: end;
+}
+.cohort-filters .select-field {
+  display: grid;
+  max-width: 100%;
+  min-width: 0;
+  gap: 8px;
+}
+.cohort-filters select {
+  max-width: 100%;
+  min-height: 44px;
+  background: var(--research-surface);
+  color: var(--research-text);
+  border: 1px solid var(--research-control-border);
+  border-radius: 6px;
+  padding: 8px;
+}
+.checkpoint-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.checkpoint-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+  font-size: var(--research-type-table);
+}
+.checkpoint-table caption {
+  text-align: left;
+  padding: 12px;
+}
+.checkpoint-table th,
+.checkpoint-table td {
+  padding: 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--research-control-border);
+}
+.checkpoint-table td {
+  max-width: 260px;
+  overflow-wrap: anywhere;
+}
+.checkpoint-table a {
+  display: inline-block;
+  min-height: 24px;
+}
+.return-distribution {
+  display: grid;
+  gap: 8px;
+}
+.distribution-bin {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) 2fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  min-height: 44px;
+  background: var(--research-surface);
+  color: var(--research-text);
+  border: 1px solid var(--research-control-border);
+  border-radius: 6px;
+  text-align: left;
+}
+.distribution-bin[aria-pressed="true"] {
+  border-color: var(--research-accent);
+}
+.distribution-track {
+  display: block;
+  height: 8px;
+}
+.distribution-track i {
+  display: block;
+  height: 100%;
+  background: var(--research-accent);
+}
+@media (max-width: 600px) {
+  .cohort-filters .select-field {
+    width: 100%;
+  }
+  .distribution-bin {
+    grid-template-columns: 1fr auto;
+  }
+  .distribution-track {
+    grid-row: 2;
+    grid-column: 1 / -1;
   }
 }

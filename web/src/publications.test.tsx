@@ -110,29 +110,41 @@ it("opens distinct peak/latest risks and preserves report windows and coverage",
 });
 it("uses the known-return denominator and keeps null medians unknown", async () => {
   respond({
+    methodology_version: "checkpoint-cohort-v1",
     since: 100,
-    until: 200,
-    horizons: Object.fromEntries(
-      [1, 6, 24, 72].map((h) => [
-        String(h),
-        {
-          observed: 3,
-          returns_available: 2,
-          positive: 1,
-          median_return_pct: null,
-          pending: 4,
-          missed: 5,
-        },
-      ]),
-    ),
+    as_of: 200,
+    filters: {},
+    definition: "Saved delivered alerts",
+    exclusions: [],
+    limitations: [],
+    cohorts: [],
+    items: [],
+    page: 2,
+    page_size: 25,
+    total: 12,
+    summary: {
+      total: 12,
+      observed: 3,
+      returns_available: 2,
+      positive: 1,
+      negative: 1,
+      zero: 0,
+      missing_price: 1,
+      unresolved: 0,
+      pending: 4,
+      missed: 5,
+      median_return_pct: null,
+      positive_rate_pct: 50,
+      small_sample: true,
+      comparable: true,
+      distribution: [],
+    },
   });
   const { container } = render(<OutcomePage />);
-  await screen.findAllByText("50%");
-  expect(screen.getAllByText("(1 / 2)")).toHaveLength(4);
-  expect(container.querySelector(".outcome-value span")?.className).toBe(
-    "muted",
-  );
-  expect(screen.getAllByText("5")).toHaveLength(4);
+  await screen.findByText(/Positive 1 \/ 2/);
+  expect(container.textContent).toContain("Positive-return rate: 50%");
+  expect(container.textContent).toContain("Pending: 4 · Missed: 5");
+  expect(container.textContent).not.toContain("+0.00%");
 });
 it("does not invent a zero denominator on a failed outcome request", async () => {
   respond({ detail: "Saved observations temporarily unavailable" }, 503);

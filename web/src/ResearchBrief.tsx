@@ -62,16 +62,18 @@ export function ResearchBrief({
   chain,
   address,
   asOf,
+  versionId,
 }: {
   chain: string;
   address: string;
   asOf?: number;
+  versionId?: string;
 }) {
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<Brief | null>(null);
   const [compare, setCompare] = useState<Brief | null>(null);
   const feed = useData<BriefPage>(
-    `/api/v1/tokens/${encodeURIComponent(chain)}/${encodeURIComponent(address)}/briefs?page=${page}&page_size=10${asOf == null ? "" : `&as_of=${asOf}`}`,
+    `/api/v1/tokens/${encodeURIComponent(chain)}/${encodeURIComponent(address)}/briefs?page=${page}&page_size=10${asOf == null ? "" : `&as_of=${asOf}`}${versionId ? `&version_id=${encodeURIComponent(versionId)}` : ""}`,
   );
   const versions = feed.data?.items ?? [];
   const current = selected ?? versions[0];

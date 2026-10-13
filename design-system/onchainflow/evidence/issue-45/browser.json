@@ -1,0 +1,308 @@
+{
+  "fixture": "New synthetic schema-seven saved-data API, no actual deliveries or providers",
+  "engine": "Chromium",
+  "viewports": [
+    {
+      "width": 320,
+      "focus": true,
+      "overflow": false,
+      "textOverflow": false,
+      "csv_rows": 36,
+      "counts": {
+        "total": 36,
+        "observed": 32,
+        "returns_available": 24,
+        "positive": 8,
+        "negative": 8,
+        "zero": 8,
+        "missing_price": 8,
+        "unresolved": 0,
+        "pending": 2,
+        "missed": 2,
+        "median_return_pct": null,
+        "positive_rate_pct": null,
+        "small_sample": false,
+        "comparable": false,
+        "distribution": [
+          {
+            "label": "Below -50%",
+            "count": 0
+          },
+          {
+            "label": "-50% to below 0%",
+            "count": 8
+          },
+          {
+            "label": "Exactly 0%",
+            "count": 8
+          },
+          {
+            "label": "Above 0% through 50%",
+            "count": 0
+          },
+          {
+            "label": "Above 50%",
+            "count": 8
+          }
+        ]
+      },
+      "source_context_preserved": true,
+      "errors": [],
+      "external": []
+    },
+    {
+      "width": 390,
+      "focus": true,
+      "overflow": false,
+      "textOverflow": false,
+      "csv_rows": 36,
+      "counts": {
+        "total": 36,
+        "observed": 32,
+        "returns_available": 24,
+        "positive": 8,
+        "negative": 8,
+        "zero": 8,
+        "missing_price": 8,
+        "unresolved": 0,
+        "pending": 2,
+        "missed": 2,
+        "median_return_pct": null,
+        "positive_rate_pct": null,
+        "small_sample": false,
+        "comparable": false,
+        "distribution": [
+          {
+            "label": "Below -50%",
+            "count": 0
+          },
+          {
+            "label": "-50% to below 0%",
+            "count": 8
+          },
+          {
+            "label": "Exactly 0%",
+            "count": 8
+          },
+          {
+            "label": "Above 0% through 50%",
+            "count": 0
+          },
+          {
+            "label": "Above 50%",
+            "count": 8
+          }
+        ]
+      },
+      "source_context_preserved": true,
+      "errors": [],
+      "external": []
+    },
+    {
+      "width": 768,
+      "focus": true,
+      "overflow": false,
+      "textOverflow": false,
+      "csv_rows": 36,
+      "counts": {
+        "total": 36,
+        "observed": 32,
+        "returns_available": 24,
+        "positive": 8,
+        "negative": 8,
+        "zero": 8,
+        "missing_price": 8,
+        "unresolved": 0,
+        "pending": 2,
+        "missed": 2,
+        "median_return_pct": null,
+        "positive_rate_pct": null,
+        "small_sample": false,
+        "comparable": false,
+        "distribution": [
+          {
+            "label": "Below -50%",
+            "count": 0
+          },
+          {
+            "label": "-50% to below 0%",
+            "count": 8
+          },
+          {
+            "label": "Exactly 0%",
+            "count": 8
+          },
+          {
+            "label": "Above 0% through 50%",
+            "count": 0
+          },
+          {
+            "label": "Above 50%",
+            "count": 8
+          }
+        ]
+      },
+      "source_context_preserved": true,
+      "errors": [],
+      "external": []
+    },
+    {
+      "width": 1024,
+      "focus": true,
+      "overflow": false,
+      "textOverflow": false,
+      "csv_rows": 36,
+      "counts": {
+        "total": 36,
+        "observed": 32,
+        "returns_available": 24,
+        "positive": 8,
+        "negative": 8,
+        "zero": 8,
+        "missing_price": 8,
+        "unresolved": 0,
+        "pending": 2,
+        "missed": 2,
+        "median_return_pct": null,
+        "positive_rate_pct": null,
+        "small_sample": false,
+        "comparable": false,
+        "distribution": [
+          {
+            "label": "Below -50%",
+            "count": 0
+          },
+          {
+            "label": "-50% to below 0%",
+            "count": 8
+          },
+          {
+            "label": "Exactly 0%",
+            "count": 8
+          },
+          {
+            "label": "Above 0% through 50%",
+            "count": 0
+          },
+          {
+            "label": "Above 50%",
+            "count": 8
+          }
+        ]
+      },
+      "source_context_preserved": true,
+      "errors": [],
+      "external": []
+    },
+    {
+      "width": 1366,
+      "focus": true,
+      "overflow": false,
+      "textOverflow": false,
+      "csv_rows": 36,
+      "counts": {
+        "total": 36,
+        "observed": 32,
+        "returns_available": 24,
+        "positive": 8,
+        "negative": 8,
+        "zero": 8,
+        "missing_price": 8,
+        "unresolved": 0,
+        "pending": 2,
+        "missed": 2,
+        "median_return_pct": null,
+        "positive_rate_pct": null,
+        "small_sample": false,
+        "comparable": false,
+        "distribution": [
+          {
+            "label": "Below -50%",
+            "count": 0
+          },
+          {
+            "label": "-50% to below 0%",
+            "count": 8
+          },
+          {
+            "label": "Exactly 0%",
+            "count": 8
+          },
+          {
+            "label": "Above 0% through 50%",
+            "count": 0
+          },
+          {
+            "label": "Above 50%",
+            "count": 8
+          }
+        ]
+      },
+      "source_context_preserved": true,
+      "errors": [],
+      "external": []
+    },
+    {
+      "width": 1920,
+      "focus": true,
+      "overflow": false,
+      "textOverflow": false,
+      "csv_rows": 36,
+      "counts": {
+        "total": 36,
+        "observed": 32,
+        "returns_available": 24,
+        "positive": 8,
+        "negative": 8,
+        "zero": 8,
+        "missing_price": 8,
+        "unresolved": 0,
+        "pending": 2,
+        "missed": 2,
+        "median_return_pct": null,
+        "positive_rate_pct": null,
+        "small_sample": false,
+        "comparable": false,
+        "distribution": [
+          {
+            "label": "Below -50%",
+            "count": 0
+          },
+          {
+            "label": "-50% to below 0%",
+            "count": 8
+          },
+          {
+            "label": "Exactly 0%",
+            "count": 8
+          },
+          {
+            "label": "Above 0% through 50%",
+            "count": 0
+          },
+          {
+            "label": "Above 50%",
+            "count": 8
+          }
+        ]
+      },
+      "source_context_preserved": true,
+      "errors": [],
+      "external": []
+    }
+  ],
+  "states": [
+    "negative/zero",
+    "missing price",
+    "pending/missed",
+    "mixed cohorts",
+    "legacy unknown",
+    "empty",
+    "error",
+    "loading"
+  ],
+  "limits": [
+    "No Firefox/WebKit/assistive technology/real device certification",
+    "No production audit or migration"
+  ]
+}

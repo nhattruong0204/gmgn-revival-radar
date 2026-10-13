@@ -24,15 +24,10 @@ import {
   researchLink,
   researchReturn,
 } from "./format";
-import type {
-  Alert,
-  AlertDetail,
-  ListResponse,
-  Outcomes,
-  Report,
-} from "./types";
+import type { Alert, AlertDetail, ListResponse, Report } from "./types";
 import { SignalEvidence } from "./TokenDetail";
 import { ResearchBrief } from "./ResearchBrief";
+import { CheckpointTable } from "./TrackRecord";
 export function Alerts({ id }: { id?: string }) {
   const location = useLocation();
   const params = new URLSearchParams(location.split("?")[1]);
@@ -102,7 +97,19 @@ export function Alerts({ id }: { id?: string }) {
                 kind="signal"
               />
             )}
-            <span>Sent {dateTime(detail.data.timestamp)}</span>
+            <span>Alert observation {dateTime(detail.data.timestamp)}</span>
+            <span>
+              Capture recorded{" "}
+              {detail.data.recorded_at == null
+                ? "unknown (legacy)"
+                : dateTime(detail.data.recorded_at)}
+            </span>
+            <span>
+              Delivery confirmed{" "}
+              {detail.data.confirmed_at == null
+                ? "first confirmation time unknown (legacy)"
+                : dateTime(detail.data.confirmed_at)}
+            </span>
             <span>
               {detail.data.preset ?? "Unlabeled strategy"} · revision{" "}
               {detail.data.revision ?? "unknown"}
@@ -165,6 +172,24 @@ export function Alerts({ id }: { id?: string }) {
                 </div>
               </div>
             </section>
+          )}
+          {(detail.data.checkpoint_research?.length ?? 0) > 0 && (
+            <section className="panel">
+              <h2>Saved checkpoint coverage</h2>
+              <CheckpointTable items={detail.data.checkpoint_research!} />
+            </section>
+          )}
+          {detail.data.original_brief_id ? (
+            <ResearchBrief
+              chain={detail.data.chain}
+              address={detail.data.contract_address}
+              versionId={detail.data.original_brief_id}
+            />
+          ) : (
+            <Notice>
+              There is no supported original brief association for this alert.
+              The later archive is separate; no association was reconstructed.
+            </Notice>
           )}
           {detail.data.observation ? (
             <>
@@ -511,155 +536,7 @@ export function Reports() {
     </>
   );
 }
-export function OutcomePage() {
-  const location = useLocation();
-  const selected = Number(
-    new URLSearchParams(location.split("?")[1]).get("days"),
-  );
-  const days = [1, 3, 7].includes(selected) ? selected : 7;
-  const setDays = (value: number) => navigate(`/outcomes?days=${value}`);
-  const { data, error, loading, refresh } = useData<Outcomes>(
-    `/api/v1/outcomes?days=${days}`,
-  );
-  return (
-    <>
-      <PageHeading
-        eyebrow="FOLLOW THE OBSERVATIONS"
-        title="Signal outcomes"
-        description="What saved market observations show after confirmed sent alerts."
-        action={
-          <label className="select-field">
-            <span>Alert window</span>
-            <select
-              value={days}
-              onChange={(e) => setDays(Number(e.target.value))}
-            >
-              <option value={1}>Last day</option>
-              <option value={3}>Last 3 days</option>
-              <option value={7}>Last 7 days</option>
-            </select>
-          </label>
-        }
-      />
-      <Notice>
-        These are observed signal returns, not trade P&amp;L. Only available
-        recorded prices enter the median and positive-return rate. Pending and
-        missed observations are shown separately.
-      </Notice>
-      {error && (
-        <Notice tone="error">
-          {error}{" "}
-          <button className="text-button" onClick={refresh}>
-            Try again
-          </button>
-        </Notice>
-      )}
-      {loading && !data ? (
-        <Loading />
-      ) : data &&
-        !Object.values(data.horizons).every(
-          (v) => v.observed + v.pending + v.missed === 0,
-        ) ? (
-        <div className="outcome-grid">
-          {[1, 6, 24, 72].map((h) => {
-            const v = data?.horizons[String(h)];
-            return (
-              <section className="panel outcome-card" key={h}>
-                <div className="outcome-heading">
-                  <span className="horizon-chip">+{h}h</span>
-                  <Icon name="outcomes" />
-                </div>
-                <div className="outcome-value">
-                  <span
-                    className={
-                      v?.median_return_pct == null
-                        ? "muted"
-                        : v.median_return_pct >= 0
-                          ? "positive"
-                          : "danger"
-                    }
-                  >
-                    {percent(v?.median_return_pct, false, true)}
-                  </span>
-                  <small>Median observed return</small>
-                </div>
-                <div className="outcome-meter">
-                  <i
-                    style={{
-                      width: `${v?.returns_available ? (v.positive / v.returns_available) * 100 : 0}%`,
-                    }}
-                  />
-                </div>
-                <dl>
-                  <div>
-                    <dt>Positive returns</dt>
-                    <dd>
-                      {v?.returns_available
-                        ? percent(v.positive / v.returns_available, true)
-                        : "—"}{" "}
-                      <small>
-                        ({v?.positive ?? "—"} / {v?.returns_available ?? "—"})
-                      </small>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Recorded observations</dt>
-                    <dd>{v?.observed ?? "—"}</dd>
-                  </div>
-                  <div>
-                    <dt>Returns available</dt>
-                    <dd>{v?.returns_available ?? "—"}</dd>
-                  </div>
-                  <div>
-                    <dt>Pending horizon</dt>
-                    <dd>{v?.pending ?? "—"}</dd>
-                  </div>
-                  <div>
-                    <dt>Missed observations</dt>
-                    <dd className={v?.missed ? "warning-text" : ""}>
-                      {v?.missed ?? "—"}
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-            );
-          })}
-        </div>
-      ) : null}
-      {!loading && !data && (
-        <Empty title="Outcome data unavailable">
-          Retry to load stored checkpoint counts. No returns have been assumed.
-        </Empty>
-      )}
-      {data &&
-        Object.values(data.horizons).every(
-          (v) => v.observed + v.pending + v.missed === 0,
-        ) && (
-          <Empty title="No confirmed signal outcomes in this window">
-            Choose another cohort window or wait for confirmed signals.
-          </Empty>
-        )}
-      <section className="panel methodology-note">
-        <h2>Reading these results</h2>
-        <p>
-          The scanner samples tokens over time. A saved price around a supported
-          horizon is used to compare with the alert-time price. No observation
-          means no return calculation; gaps are never filled with an assumed
-          price.
-        </p>
-        <p>
-          Small samples, changing strategy revisions and incomplete token
-          coverage limit comparisons. Use the counts alongside every percentage.
-        </p>
-        {data && (
-          <div className="small muted">
-            Alert cohort: {dateTime(data.since)} — {dateTime(data.until)}
-          </div>
-        )}
-      </section>
-    </>
-  );
-}
+export { TrackRecordPage as OutcomePage } from "./TrackRecord";
 export function Methodology() {
   return (
     <>

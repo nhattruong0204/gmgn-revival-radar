@@ -7,7 +7,7 @@ from collections.abc import Callable
 from threading import Condition, Lock
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException, Path, Query, Request
+from fastapi import APIRouter, HTTPException, Path, Query, Request, Response
 from pydantic import BaseModel
 
 from revival_radar.chains import CHAINS
@@ -21,6 +21,7 @@ from revival_radar.web.models import (
     RadarPage,
     TokenDetail,
     TokenHistory,
+    TrackRecord,
 )
 from revival_radar.web.queries import PublicQueries, finite, public_reader
 
@@ -205,13 +206,14 @@ def briefs(
     page: Page = 1,
     page_size: PageSize = 10,
     as_of: Cutoff = None,
+    version_id: Annotated[str | None, Query(pattern=r"^[a-f0-9]{32}$")] = None,
 ) -> BriefPage:
     address = address_for(chain, address)
     # Publication may occur without a changing cache; read the durable archive directly.
     until = cutoff(request, as_of)
     try:
         with public_reader(request.app.state.config) as queries:
-            return queries.briefs(chain, address, until, page, page_size)
+            return queries.briefs(chain, address, until, page, page_size, version_id)
     except sqlite3.Error:
         raise HTTPException(
             status_code=503, detail="Saved briefs temporarily unavailable"
@@ -327,3 +329,73 @@ def metadata(request: Request, as_of: Cutoff = None) -> Metadata:
         )
 
     return read(request, as_of, ("meta",), result)
+
+
+@router.get("/track-record", response_model=TrackRecord)
+@router.get("/track-record/export", response_model=None)
+def track_record(
+    request: Request,
+    days: Annotated[int, Query(ge=1, le=365)] = 7,
+    horizon: Annotated[int, Query(ge=1, le=72)] = 24,
+    chain: Chain | None = None,
+    preset: Literal["Strict", "Balanced", "Broad", "Custom", "unknown"] | None = None,
+    revision: Annotated[str | None, Query(pattern=r"^(unknown|[0-9]{1,9})$")] = None,
+    score_version: Annotated[str | None, Query(max_length=100)] = None,
+    origin: Literal["live", "unknown", "synthetic"] | None = None,
+    knowledge: Literal["recorded", "legacy_unknown"] | None = None,
+    cohort: Annotated[str | None, Query(pattern=r"^[a-f0-9]{16}$")] = None,
+    checkpoint: Literal["return", "missing_price", "unresolved", "pending", "missed"] | None = None,
+    bucket: Annotated[int | None, Query(ge=0, le=4)] = None,
+    page: Page = 1,
+    page_size: PageSize = 25,
+    as_of: Cutoff = None,
+) -> TrackRecord | Response:
+    from revival_radar.web.research_export import export_track_record
+
+    until = cutoff(request, as_of)
+    if horizon not in (1, 6, 24, 72):
+        raise HTTPException(status_code=422, detail="Unsupported checkpoint horizon")
+    filters = dict(
+        chain=chain,
+        preset=preset,
+        revision=revision,
+        score_version=score_version,
+        origin=origin,
+        knowledge=knowledge,
+        cohort=cohort,
+        checkpoint=checkpoint,
+        bucket=bucket,
+    )
+    exporting = request.url.path.endswith("/export")
+    if not exporting:
+        return read(
+            request,
+            as_of,
+            ("track-record", days, horizon, *filters.values(), page, page_size),
+            lambda queries, at: queries.track_record(at, days, horizon, filters, page, page_size),
+        )
+    try:
+        with public_reader(request.app.state.config) as queries:
+            data = queries.track_record(
+                until,
+                days,
+                horizon,
+                filters,
+                1 if exporting else page,
+                10000 if exporting else page_size,
+            )
+        if exporting:
+            return Response(
+                export_track_record(data),
+                media_type="text/csv; charset=utf-8",
+                headers={
+                    "Content-Disposition": 'attachment; filename="saved-checkpoints.csv"',
+                    "Cache-Control": "no-store",
+                },
+            )
+        return data
+    except sqlite3.Error:
+        raise HTTPException(
+            status_code=503,
+            detail="Saved cohort temporarily unavailable; retry or narrow the alert window",
+        ) from None
