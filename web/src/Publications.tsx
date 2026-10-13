@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useData } from "./api";
+import { navigate, useData, useLocation } from "./api";
 import {
   Avatar,
   Empty,
@@ -22,6 +21,8 @@ import {
   relative,
   shortAddress,
   tokenPath,
+  researchLink,
+  researchReturn,
 } from "./format";
 import type {
   Alert,
@@ -32,7 +33,13 @@ import type {
 } from "./types";
 import { SignalEvidence } from "./TokenDetail";
 export function Alerts({ id }: { id?: string }) {
-  const [page, setPage] = useState(1);
+  const location = useLocation();
+  const params = new URLSearchParams(location.split("?")[1]);
+  const page = Math.min(
+    10000,
+    Math.max(1, Math.trunc(Number(params.get("page"))) || 1),
+  );
+  const setPage = (value: number) => navigate(`/alerts?page=${value}`);
   const feed = useData<ListResponse<Alert>>(
     !id ? `/api/v1/alerts?page=${page}&page_size=25` : null,
   );
@@ -65,6 +72,11 @@ export function Alerts({ id }: { id?: string }) {
           )
         }
       />
+      {id && (
+        <Link className="back-link" href={researchReturn()}>
+          ← Back to research
+        </Link>
+      )}
       {source.error && (
         <Notice tone="error">
           {source.error}{" "}
@@ -96,7 +108,9 @@ export function Alerts({ id }: { id?: string }) {
             </span>
             <Link
               className="external-link"
-              href={tokenPath(detail.data.chain, detail.data.contract_address)}
+              href={researchLink(
+                tokenPath(detail.data.chain, detail.data.contract_address),
+              )}
             >
               Current token observation
               <Icon name="arrow" size={15} />
@@ -215,7 +229,7 @@ export function Alerts({ id }: { id?: string }) {
                 {feed.data.items.map((a) => (
                   <Link
                     key={a.id}
-                    href={`/alerts/${a.id}`}
+                    href={researchLink(`/alerts/${a.id}`)}
                     className="alert-row"
                   >
                     <div className="alert-symbol">
@@ -254,14 +268,14 @@ export function Alerts({ id }: { id?: string }) {
                 <div className="pagination">
                   <button
                     disabled={page === 1}
-                    onClick={() => setPage((v) => v - 1)}
+                    onClick={() => setPage(page - 1)}
                   >
                     ←
                   </button>
                   <span>Page {page}</span>
                   <button
                     disabled={page * 25 >= feed.data.total}
-                    onClick={() => setPage((v) => v + 1)}
+                    onClick={() => setPage(page + 1)}
                   >
                     →
                   </button>
@@ -279,7 +293,12 @@ export function Alerts({ id }: { id?: string }) {
   );
 }
 export function Reports() {
-  const [hours, setHours] = useState(24);
+  const location = useLocation();
+  const selected = Number(
+    new URLSearchParams(location.split("?")[1]).get("hours"),
+  );
+  const hours = [1, 4, 12, 24, 72, 168].includes(selected) ? selected : 24;
+  const setHours = (value: number) => navigate(`/reports?hours=${value}`);
   const { data, error, loading, refresh } = useData<Report>(
     `/api/v1/reports?hours=${hours}`,
   );
@@ -327,30 +346,6 @@ export function Reports() {
           revisions before interpreting changes in scores.
         </Notice>
       )}
-      <div className="stats-grid">
-        <Stat
-          label="Evaluations"
-          value={compact(data?.evaluations)}
-          detail="In completed scans"
-        />
-        <Stat
-          label="Unique tokens"
-          value={compact(data?.unique_tokens)}
-          detail="Observed in this window"
-        />
-        <Stat
-          label="Completed scans"
-          value={compact(data?.completed_scans)}
-          detail={`${data?.incomplete_scans ?? "—"} incomplete scans excluded`}
-          icon="check"
-        />
-        <Stat
-          label="Latest completion"
-          value={relative(data?.last_finished)}
-          detail={data?.timezone ?? "Saved source timezone"}
-          icon="clock"
-        />
-      </div>
       <section className="panel report-panel">
         <div className="panel-header">
           <div>
@@ -385,7 +380,9 @@ export function Reports() {
                   </span>
                   <Link
                     className="token-link"
-                    href={tokenPath(e.peak.chain, e.peak.contract_address)}
+                    href={researchLink(
+                      tokenPath(e.peak.chain, e.peak.contract_address),
+                    )}
                   >
                     <Avatar observation={e.peak} />
                     <span>
@@ -409,7 +406,9 @@ export function Reports() {
                   <Link
                     className="detail-link"
                     aria-label={`View ${e.peak.symbol}`}
-                    href={tokenPath(e.peak.chain, e.peak.contract_address)}
+                    href={researchLink(
+                      tokenPath(e.peak.chain, e.peak.contract_address),
+                    )}
                   >
                     <Icon name="chevron" />
                   </Link>
@@ -467,11 +466,43 @@ export function Reports() {
           establish continuous performance.
         </div>
       </section>
+      <details className="research-disclosure">
+        <summary>Report window & collection totals</summary>
+        <div className="stats-grid">
+          <Stat
+            label="Evaluations"
+            value={compact(data?.evaluations)}
+            detail="In completed scans"
+          />
+          <Stat
+            label="Unique tokens"
+            value={compact(data?.unique_tokens)}
+            detail="Observed in this window"
+          />
+          <Stat
+            label="Completed scans"
+            value={compact(data?.completed_scans)}
+            detail={`${data?.incomplete_scans ?? "—"} incomplete scans excluded`}
+            icon="check"
+          />
+          <Stat
+            label="Latest completion"
+            value={relative(data?.last_finished)}
+            detail={data?.timezone ?? "Saved source timezone"}
+            icon="clock"
+          />
+        </div>
+      </details>
     </>
   );
 }
 export function OutcomePage() {
-  const [days, setDays] = useState(7);
+  const location = useLocation();
+  const selected = Number(
+    new URLSearchParams(location.split("?")[1]).get("days"),
+  );
+  const days = [1, 3, 7].includes(selected) ? selected : 7;
+  const setDays = (value: number) => navigate(`/outcomes?days=${value}`);
   const { data, error, loading, refresh } = useData<Outcomes>(
     `/api/v1/outcomes?days=${days}`,
   );
@@ -510,7 +541,10 @@ export function OutcomePage() {
       )}
       {loading && !data ? (
         <Loading />
-      ) : (
+      ) : data &&
+        !Object.values(data.horizons).every(
+          (v) => v.observed + v.pending + v.missed === 0,
+        ) ? (
         <div className="outcome-grid">
           {[1, 6, 24, 72].map((h) => {
             const v = data?.horizons[String(h)];
@@ -576,7 +610,7 @@ export function OutcomePage() {
             );
           })}
         </div>
-      )}
+      ) : null}
       {!loading && !data && (
         <Empty title="Outcome data unavailable">
           Retry to load stored checkpoint counts. No returns have been assumed.
@@ -621,7 +655,7 @@ export function Methodology() {
       />
       <div className="method-hero">
         <div className="method-radar">
-          <img src="/revival-radar.png" alt="Revival Radar" />
+          <img src="/revival-radar.png" alt="" />
         </div>
         <div>
           <span className="eyebrow">FIND THE COMEBACK</span>
@@ -631,9 +665,9 @@ export function Methodology() {
             to returning activity.
           </h2>
           <p>
-            Revival Radar tracks established tokens after a deep decline. It
-            looks for a mature base, renewed participation and market structure
-            that supports a potential revival.
+            OnchainFlow tracks established tokens after a deep decline. It looks
+            for a mature base, renewed participation and market structure that
+            supports a potential revival.
           </p>
         </div>
       </div>

@@ -23,12 +23,14 @@ const latest = {
   blockers: ["Latest risk"],
   missing_fields: ["Latest candles"],
 };
-beforeEach(() =>
+beforeEach(() => {
+  window.history.replaceState(null, "", "/");
+  vi.stubGlobal("scrollTo", vi.fn());
   Object.defineProperty(document, "hidden", {
     configurable: true,
     value: false,
-  }),
-);
+  });
+});
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -137,7 +139,8 @@ it("does not invent a zero denominator on a failed outcome request", async () =>
   render(<OutcomePage />);
   await screen.findByRole("heading", { name: "Outcome data unavailable" });
   expect(screen.queryByText("(0 / 0)")).toBeNull();
-  expect(screen.getAllByText("(— / —)")).toHaveLength(4);
+  expect(screen.queryByText("(— / —)")).toBeNull();
+  expect(screen.getByText(/No returns have been assumed/)).toBeTruthy();
 });
 it("explains all stages and the heuristic meaning of scores", () => {
   render(<Methodology />);

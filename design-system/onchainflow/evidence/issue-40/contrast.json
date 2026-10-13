@@ -1,0 +1,86 @@
+[
+  {
+    "page": "radar",
+    "width": 390,
+    "measured_text_nodes": 86,
+    "contrast_pass": true
+  },
+  {
+    "page": "token",
+    "width": 390,
+    "measured_text_nodes": 135,
+    "contrast_pass": true
+  },
+  {
+    "page": "signals",
+    "width": 390,
+    "measured_text_nodes": 13,
+    "contrast_pass": true
+  },
+  {
+    "page": "reports",
+    "width": 390,
+    "measured_text_nodes": 414,
+    "contrast_pass": true
+  },
+  {
+    "page": "outcomes",
+    "width": 390,
+    "measured_text_nodes": 15,
+    "contrast_pass": true
+  },
+  {
+    "page": "methodology",
+    "width": 390,
+    "measured_text_nodes": 38,
+    "contrast_pass": true
+  },
+  {
+    "page": "owner",
+    "width": 390,
+    "measured_text_nodes": 11,
+    "contrast_pass": true
+  },
+  {
+    "page": "radar",
+    "width": 1366,
+    "measured_text_nodes": 114,
+    "contrast_pass": true
+  },
+  {
+    "page": "token",
+    "width": 1366,
+    "measured_text_nodes": 144,
+    "contrast_pass": true
+  },
+  {
+    "page": "signals",
+    "width": 1366,
+    "measured_text_nodes": 25,
+    "contrast_pass": true
+  },
+  {
+    "page": "reports",
+    "width": 1366,
+    "measured_text_nodes": 432,
+    "contrast_pass": true
+  },
+  {
+    "page": "outcomes",
+    "width": 1366,
+    "measured_text_nodes": 27,
+    "contrast_pass": true
+  },
+  {
+    "page": "methodology",
+    "width": 1366,
+    "measured_text_nodes": 50,
+    "contrast_pass": true
+  },
+  {
+    "page": "owner",
+    "width": 1366,
+    "measured_text_nodes": 23,
+    "contrast_pass": true
+  }
+]

@@ -12,3 +12,5 @@ All other tokens and state contracts inherit MASTER. Scope implementation under
 the relevant backlog issue; this contract does not claim that future features ship
 in #51. Verify desktop/mobile, keyboard/touch, loading/empty/stale/partial/error
 and permission states when migrating this surface.
+
+#40 implementation: The chart precedes activity summaries. Mobile keeps the score, full chain/contract and exact evaluation timestamp prominent; market metrics follow the chart in a disclosure. Score dimensions/components have one disclosure; duplicated component-reason strings are omitted from narrative support, while counter-evidence stays visible. Chart values have a named scrolling/data-table fallback.

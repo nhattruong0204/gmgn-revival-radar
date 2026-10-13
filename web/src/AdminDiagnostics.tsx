@@ -21,7 +21,12 @@ export function PreviewChanges({ result }: { result?: JsonRecord | null }) {
     (key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]),
   );
   return keys.length ? (
-    <div className="admin-table-wrap">
+    <div
+      className="admin-table-wrap"
+      role="region"
+      aria-label="Saved owner data table"
+      tabIndex={0}
+    >
       <table className="radar-table">
         <thead>
           <tr>
@@ -119,7 +124,12 @@ export function AdminDiagnostics({ status }: { status: AdminStatus | null }) {
       <section className="panel">
         <h2>Recent scan history</h2>
         {history.length ? (
-          <div className="admin-table-wrap">
+          <div
+            className="admin-table-wrap"
+            role="region"
+            aria-label="Saved owner data table"
+            tabIndex={0}
+          >
             <table className="radar-table">
               <thead>
                 <tr>
@@ -156,7 +166,12 @@ export function AdminDiagnostics({ status }: { status: AdminStatus | null }) {
       <section className="panel">
         <h2>Best candidates and near misses</h2>
         {candidates.length ? (
-          <div className="admin-table-wrap">
+          <div
+            className="admin-table-wrap"
+            role="region"
+            aria-label="Saved owner data table"
+            tabIndex={0}
+          >
             <table className="radar-table">
               <thead>
                 <tr>

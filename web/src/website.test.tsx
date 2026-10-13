@@ -211,7 +211,9 @@ it("exposes the exact contract and reports clipboard failures", async () => {
   );
   expect(screen.getByText(/Copy failed/)).toBeTruthy();
   expect(screen.getByText(legacy.contract_address)).toBeTruthy();
-  expect(screen.getByText(/Saved evaluation observed/)).toBeTruthy();
+  expect(
+    document.querySelector(".observation-stamp time")?.getAttribute("dateTime"),
+  ).toBe("2027-01-15T08:00:00.000Z");
 });
 
 it("lets keyboard users inspect actual chart points", () => {
@@ -443,4 +445,27 @@ it("exposes an exact saved timestamp with a timezone and machine-readable time",
   expect(time?.getAttribute("dateTime")).toBe("2027-01-15T08:00:00.000Z");
   expect(time?.textContent).toMatch(/:\d{2}:00/);
   expect(screen.getByText("Origin unclassified")).toBeTruthy();
+});
+
+it("deduplicates saved component reasons while retaining narrative and counter-evidence", () => {
+  const { container } = render(
+    <SignalEvidence
+      observation={{
+        ...legacy,
+        blockers: ["No breakout", "No breakout"],
+        warnings: ["No breakout", "Sparse candles"],
+        signal: {
+          components: { drawdown: 10 },
+          reasons: ["drawdown: +10", "Saved independent support"],
+        },
+      }}
+    />,
+  );
+  expect(screen.getByText("Saved independent support")).toBeTruthy();
+  expect(screen.queryByText("drawdown: +10")).toBeNull();
+  expect(screen.getAllByText("No breakout")).toHaveLength(1);
+  expect(screen.getByText("Sparse candles")).toBeTruthy();
+  const breakdown = container.querySelector("details.score-disclosure");
+  expect(breakdown?.getAttribute("open")).toBeNull();
+  expect(breakdown?.textContent).toContain("+10");
 });

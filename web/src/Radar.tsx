@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Modal, useSmallScreen } from "./Modal";
 import { navigate, useData } from "./api";
 import {
   Avatar,
@@ -20,12 +21,15 @@ import {
   dateTime,
   percent,
   radarQuery,
+  researchLink,
   relative,
   shortAddress,
   tokenPath,
 } from "./format";
 import type { ListResponse, Meta, Observation } from "./types";
 export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
+  const small = useSmallScreen();
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const q = radarQuery(search),
     [draft, setDraft] = useState(q.get("search") ?? "");
   useEffect(() => {
@@ -61,10 +65,172 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
   const otherChains = Object.entries(chains).filter(
     ([id]) => ![...activeChains, ...historicalChains].some((c) => c.id === id),
   );
+  const filterControls = (
+    <div className="filters">
+      <label className="select-field">
+        <span>Observation window</span>
+        <select
+          aria-label="Observation window"
+          value={q.get("age_hours") ?? "24"}
+          onChange={(e) => change("age_hours", e.target.value)}
+        >
+          <option value="1">Last hour</option>
+          <option value="4">Last 4 hours</option>
+          <option value="24">Last 24 hours</option>
+          <option value="72">History: 3 days</option>
+          <option value="168">History: 7 days</option>
+        </select>
+      </label>
+      <form
+        className="search-box"
+        onSubmit={(e) => {
+          e.preventDefault();
+          change("search", draft);
+        }}
+      >
+        <label className="search-label" htmlFor="radar-search">
+          Search
+        </label>
+        <input
+          id="radar-search"
+          aria-label="Search tokens"
+          placeholder="Search token or contract address"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+        />
+        {draft && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => {
+              setDraft("");
+              change("search", "");
+            }}
+          >
+            <Icon name="close" size={15} />
+          </button>
+        )}
+        <button className="search-submit" type="submit">
+          Search
+        </button>
+      </form>
+      <label className="select-field">
+        <span>Chain coverage</span>
+        <select
+          aria-label="Filter chain"
+          value={q.get("chain") ?? ""}
+          onChange={(e) => change("chain", e.target.value)}
+        >
+          <option value="">All chains</option>
+          {activeChains.length > 0 && (
+            <optgroup label="Current collection">
+              {activeChains.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          {historicalChains.length > 0 && (
+            <optgroup label="Saved coverage (last 7 days)">
+              {historicalChains.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          {otherChains.length > 0 && (
+            <optgroup label="Coverage unconfirmed">
+              {otherChains.map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </optgroup>
+          )}
+        </select>
+      </label>
+      <label className="select-field">
+        <span>Stage</span>
+        <select
+          aria-label="Filter stage"
+          value={q.get("status") ?? ""}
+          onChange={(e) => change("status", e.target.value)}
+        >
+          <option value="">Watch & above</option>
+          <option value="STRONG_REVIVAL">Strong revival</option>
+          <option value="CONFIRMED_REVIVAL">Confirmed revival</option>
+          <option value="REVIVING">Reviving</option>
+          <option value="EARLY_REVIVAL">Early revival</option>
+          <option value="WATCH">Watch</option>
+          <option value="IGNORE">Below watch</option>
+        </select>
+      </label>
+      <label className="select-field">
+        <span>Minimum score</span>
+        <select
+          aria-label="Minimum score"
+          value={q.get("min_score") ?? "40"}
+          onChange={(e) => change("min_score", e.target.value)}
+        >
+          {Array.from(
+            new Set([
+              0,
+              40,
+              50,
+              60,
+              65,
+              70,
+              75,
+              80,
+              90,
+              Number(q.get("min_score")),
+            ]),
+          )
+            .sort((a, b) => a - b)
+            .map((s) => (
+              <option key={s} value={s}>
+                {s === 0 ? "Any score" : `${s}+`}
+              </option>
+            ))}
+        </select>
+      </label>
+      <label className="select-field">
+        <span>Sort by</span>
+        <select
+          aria-label="Sort candidates"
+          value={`${q.get("sort")}:${q.get("order")}`}
+          onChange={(event) => {
+            const [sort, order] = event.target.value.split(":");
+            const next = new URLSearchParams(search);
+            next.set("sort", sort);
+            next.set("order", order);
+            next.delete("page");
+            navigate(`/?${next}`);
+          }}
+        >
+          {[
+            "score",
+            "timestamp",
+            "market_cap",
+            "liquidity",
+            "volume_5m",
+          ].flatMap((field) =>
+            ["desc", "asc"].map((order) => (
+              <option key={`${field}:${order}`} value={`${field}:${order}`}>
+                {field.replaceAll("_", " ")} {order === "desc" ? "↓" : "↑"}
+              </option>
+            )),
+          )}
+        </select>
+      </label>
+    </div>
+  );
   return (
     <div className="research-surface">
       <PageHeading
-        eyebrow="THE COMEBACK STARTS HERE"
+        eyebrow="SAVED MARKET RESEARCH"
         title="Revival radar"
         description="Inspect saved evidence, freshness and counter-evidence."
         action={
@@ -78,59 +244,6 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
           </button>
         }
       />
-      <Notice>
-        Historical coverage:{" "}
-        {meta?.chains?.map((c) => c.name).join(" · ") || "No saved chains"}. A
-        fresh scanner heartbeat does not refresh an older evaluation. Legacy
-        origin stays unclassified.
-      </Notice>
-      <div className="stats-grid">
-        <Stat
-          label="Matching candidates"
-          value={data ? data.total : "—"}
-          detail="In the scanner’s tracked universe"
-        />
-        <Stat
-          label="Confirmed on this page"
-          value={
-            data
-              ? items.filter((o) =>
-                  ["CONFIRMED_REVIVAL", "STRONG_REVIVAL"].includes(o.status),
-                ).length
-              : "—"
-          }
-          detail="Chart evidence + returning activity"
-          icon="check"
-          tone="positive"
-        />
-        <Stat
-          label="Current collection"
-          value={
-            meta?.collection_status === "current"
-              ? (meta.active_chains?.length ?? 0)
-              : meta?.collection_status === "disabled"
-                ? 0
-                : "Unknown"
-          }
-          detail={
-            meta?.collection_status === "current"
-              ? meta.active_chains?.map((c) => c.name).join(" · ") ||
-                "No enabled chains"
-              : meta?.collection_status === "disabled"
-                ? "Collection disabled"
-                : meta?.collection_status === "stale"
-                  ? "Worker heartbeat stale; history is separate"
-                  : "Current coverage unknown; history is separate"
-          }
-          icon="outcomes"
-        />
-        <Stat
-          label="Last completed scan"
-          value={relative(data?.last_scan_at ?? meta?.last_scan_at)}
-          detail="Scan completion; rows retain their own times"
-          icon="clock"
-        />
-      </div>
       <div className="radar-panel">
         <div className="panel-header">
           <div>
@@ -147,163 +260,49 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
             refreshed={refreshedAt}
           />
         </div>
-        <div className="filters">
-          <label className="select-field">
-            <span>Observation window</span>
-            <select
-              aria-label="Observation window"
-              value={q.get("age_hours") ?? "24"}
-              onChange={(e) => change("age_hours", e.target.value)}
+        {small ? (
+          <div className="filter-toolbar">
+            <button
+              className="button button-secondary"
+              aria-haspopup="dialog"
+              aria-expanded={filtersOpen}
+              onClick={() => setFiltersOpen(true)}
             >
-              <option value="1">Last hour</option>
-              <option value="4">Last 4 hours</option>
-              <option value="24">Last 24 hours</option>
-              <option value="72">History: 3 days</option>
-              <option value="168">History: 7 days</option>
-            </select>
-          </label>
-          <form
-            className="search-box"
-            onSubmit={(e) => {
-              e.preventDefault();
-              change("search", draft);
-            }}
-          >
-            <Icon name="search" />
-            <input
-              aria-label="Search tokens"
-              placeholder="Search token or contract address"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-            />
-            {draft && (
-              <button
-                type="button"
-                aria-label="Clear search"
-                onClick={() => {
-                  setDraft("");
-                  change("search", "");
-                }}
-              >
-                <Icon name="close" size={15} />
-              </button>
-            )}
-            <button className="search-submit" type="submit">
-              Search
+              Filters & sort
             </button>
-          </form>
-          <label className="select-field">
-            <span>Chain coverage</span>
-            <select
-              aria-label="Filter chain"
-              value={q.get("chain") ?? ""}
-              onChange={(e) => change("chain", e.target.value)}
+            <span>
+              {q.get("age_hours")}h · {q.get("chain") || "All chains"} · score{" "}
+              {q.get("min_score")}+
+            </span>
+          </div>
+        ) : (
+          filterControls
+        )}
+        {small && filtersOpen && (
+          <Modal
+            className="filter-drawer"
+            labelledBy="filters-title"
+            onDismiss={() => setFiltersOpen(false)}
+          >
+            <div className="drawer-heading">
+              <h2 id="filters-title">Filter saved observations</h2>
+              <button
+                className="icon-button"
+                aria-label="Close filters"
+                onClick={() => setFiltersOpen(false)}
+              >
+                <Icon name="close" />
+              </button>
+            </div>
+            {filterControls}
+            <button
+              className="button button-primary"
+              onClick={() => setFiltersOpen(false)}
             >
-              <option value="">All chains</option>
-              {activeChains.length > 0 && (
-                <optgroup label="Current collection">
-                  {activeChains.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-              {historicalChains.length > 0 && (
-                <optgroup label="Saved coverage (last 7 days)">
-                  {historicalChains.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-              {otherChains.length > 0 && (
-                <optgroup label="Coverage unconfirmed">
-                  {otherChains.map(([id, name]) => (
-                    <option key={id} value={id}>
-                      {name}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-            </select>
-          </label>
-          <label className="select-field">
-            <span>Stage</span>
-            <select
-              aria-label="Filter stage"
-              value={q.get("status") ?? ""}
-              onChange={(e) => change("status", e.target.value)}
-            >
-              <option value="">Watch & above</option>
-              <option value="STRONG_REVIVAL">Strong revival</option>
-              <option value="CONFIRMED_REVIVAL">Confirmed revival</option>
-              <option value="REVIVING">Reviving</option>
-              <option value="EARLY_REVIVAL">Early revival</option>
-              <option value="WATCH">Watch</option>
-              <option value="IGNORE">Below watch</option>
-            </select>
-          </label>
-          <label className="select-field">
-            <span>Minimum score</span>
-            <select
-              aria-label="Minimum score"
-              value={q.get("min_score") ?? "40"}
-              onChange={(e) => change("min_score", e.target.value)}
-            >
-              {Array.from(
-                new Set([
-                  0,
-                  40,
-                  50,
-                  60,
-                  65,
-                  70,
-                  75,
-                  80,
-                  90,
-                  Number(q.get("min_score")),
-                ]),
-              )
-                .sort((a, b) => a - b)
-                .map((s) => (
-                  <option key={s} value={s}>
-                    {s === 0 ? "Any score" : `${s}+`}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label className="select-field">
-            <span>Sort by</span>
-            <select
-              aria-label="Sort candidates"
-              value={`${q.get("sort")}:${q.get("order")}`}
-              onChange={(event) => {
-                const [sort, order] = event.target.value.split(":");
-                const next = new URLSearchParams(search);
-                next.set("sort", sort);
-                next.set("order", order);
-                next.delete("page");
-                navigate(`/?${next}`);
-              }}
-            >
-              {[
-                "score",
-                "timestamp",
-                "market_cap",
-                "liquidity",
-                "volume_5m",
-              ].flatMap((field) =>
-                ["desc", "asc"].map((order) => (
-                  <option key={`${field}:${order}`} value={`${field}:${order}`}>
-                    {field.replaceAll("_", " ")} {order === "desc" ? "↓" : "↑"}
-                  </option>
-                )),
-              )}
-            </select>
-          </label>
-        </div>
+              Show results
+            </button>
+          </Modal>
+        )}
         {error && (
           <Notice tone="error">
             {error}{" "}
@@ -338,7 +337,12 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
           </Empty>
         ) : (
           <>
-            <div className="radar-table-wrap">
+            <div
+              className="radar-table-wrap"
+              role="region"
+              aria-label="Saved candidates table"
+              tabIndex={0}
+            >
               <table className="radar-table">
                 <thead>
                   <tr>
@@ -391,7 +395,9 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
                       <td>
                         <Link
                           className="token-link"
-                          href={tokenPath(o.chain, o.contract_address)}
+                          href={researchLink(
+                            tokenPath(o.chain, o.contract_address),
+                          )}
                         >
                           <Avatar observation={o} />
                           <span>
@@ -446,7 +452,9 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
                         <Link
                           className="detail-link"
                           aria-label={`View ${o.symbol}`}
-                          href={tokenPath(o.chain, o.contract_address)}
+                          href={researchLink(
+                            tokenPath(o.chain, o.contract_address),
+                          )}
                         >
                           <Icon name="chevron" size={16} />
                         </Link>
@@ -460,7 +468,7 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
               {items.map((o) => (
                 <Link
                   key={`${o.chain}:${o.contract_address}`}
-                  href={tokenPath(o.chain, o.contract_address)}
+                  href={researchLink(tokenPath(o.chain, o.contract_address))}
                   className="token-card"
                 >
                   <div className="token-card-header">
@@ -547,6 +555,62 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
           )}
         </div>
       </div>
+      <details className="research-disclosure coverage-details">
+        <summary>Collection coverage & scan context</summary>
+        <Notice>
+          Historical coverage:{" "}
+          {meta?.chains?.map((c) => c.name).join(" · ") || "No saved chains"}. A
+          fresh scanner heartbeat does not refresh an older evaluation. Legacy
+          origin stays unclassified.
+        </Notice>
+        <div className="stats-grid">
+          <Stat
+            label="Matching candidates"
+            value={data ? data.total : "—"}
+            detail="In the scanner’s tracked universe"
+          />
+          <Stat
+            label="Confirmed on this page"
+            value={
+              data
+                ? items.filter((o) =>
+                    ["CONFIRMED_REVIVAL", "STRONG_REVIVAL"].includes(o.status),
+                  ).length
+                : "—"
+            }
+            detail="Chart evidence + returning activity"
+            icon="check"
+            tone="positive"
+          />
+          <Stat
+            label="Current collection"
+            value={
+              meta?.collection_status === "current"
+                ? (meta.active_chains?.length ?? 0)
+                : meta?.collection_status === "disabled"
+                  ? 0
+                  : "Unknown"
+            }
+            detail={
+              meta?.collection_status === "current"
+                ? meta.active_chains?.map((c) => c.name).join(" · ") ||
+                  "No enabled chains"
+                : meta?.collection_status === "disabled"
+                  ? "Collection disabled"
+                  : meta?.collection_status === "stale"
+                    ? "Worker heartbeat stale; history is separate"
+                    : "Current coverage unknown; history is separate"
+            }
+            icon="outcomes"
+          />
+          <Stat
+            label="Last completed scan"
+            value={relative(data?.last_scan_at ?? meta?.last_scan_at)}
+            detail="Scan completion; rows retain their own times"
+            icon="clock"
+          />
+        </div>
+      </details>
       <div className="bottom-note">
         <Icon name="info" size={16} />
         <span>

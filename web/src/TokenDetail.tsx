@@ -1,10 +1,10 @@
 import { useState } from "react";
+import { useSmallScreen } from "./Modal";
 import { useData } from "./api";
 import {
   Avatar,
   Empty,
   EvidenceList,
-  Freshness,
   ObservationStamp,
   Icon,
   Link,
@@ -25,6 +25,7 @@ import {
   percent,
   price,
   shortAddress,
+  researchReturn,
 } from "./format";
 import type { History, Observation, TokenResponse } from "./types";
 export function SignalEvidence({
@@ -34,25 +35,16 @@ export function SignalEvidence({
 }) {
   const security = o.token?.security,
     structure = o.signal?.structure;
+  const componentReasons = new Set(
+    Object.entries(o.signal?.components ?? {}).map(
+      ([name, points]) => `${name}:${points >= 0 ? "+" : ""}${points}`,
+    ),
+  );
+  const narrativeReasons = [...new Set(o.signal?.reasons ?? [])].filter(
+    (reason) => !componentReasons.has(reason.replaceAll(" ", "")),
+  );
   return (
     <>
-      <div className="dimension-grid">
-        {[
-          ["Setup", o.setup_score, "Base maturity and recovery conditions"],
-          ["Trigger", o.trigger_score, "Returning market activity"],
-          [
-            "Confirmation",
-            o.confirmation_score,
-            "Closed-candle structural evidence",
-          ],
-        ].map(([label, value, description]) => (
-          <div className="dimension" key={String(label)}>
-            <span>{label}</span>
-            <Score value={value as number | null | undefined} large />
-            <p>{description}</p>
-          </div>
-        ))}
-      </div>
       <div className="detail-grid">
         <section className="panel">
           <div className="section-heading">
@@ -60,20 +52,9 @@ export function SignalEvidence({
             <h2>Why it’s on the radar</h2>
           </div>
           <EvidenceList
-            items={o.signal?.reasons}
-            empty="No reasons were saved with this observation."
+            items={narrativeReasons}
+            empty="No narrative reasons were saved. Inspect the saved rule contributions in the score breakdown below."
           />
-          <div className="components-list">
-            {Object.entries(o.signal?.components ?? {}).map(([key, v]) => (
-              <div key={key}>
-                <span>{humanKey(key)}</span>
-                <strong>
-                  {v > 0 ? "+" : ""}
-                  {v}
-                </strong>
-              </div>
-            ))}
-          </div>
         </section>
         <section className="panel">
           <div className="section-heading">
@@ -81,10 +62,15 @@ export function SignalEvidence({
             <h2>Risk & data coverage</h2>
           </div>
           {o.blockers.length > 0 && (
-            <EvidenceList items={o.blockers} tone="danger" />
+            <EvidenceList items={[...new Set(o.blockers)]} tone="danger" />
           )}
           {o.warnings.length > 0 && (
-            <EvidenceList items={o.warnings} tone="warning-text" />
+            <EvidenceList
+              items={[...new Set(o.warnings)].filter(
+                (w) => !o.blockers.includes(w),
+              )}
+              tone="warning-text"
+            />
           )}
           {o.missing_fields.length > 0 && (
             <div className="missing-fields">
@@ -140,6 +126,37 @@ export function SignalEvidence({
           </p>
         </section>
       </div>
+      <details className="panel research-disclosure score-disclosure">
+        <summary>Score breakdown and components</summary>
+        <div className="dimension-grid">
+          {[
+            ["Setup", o.setup_score, "Base maturity and recovery conditions"],
+            ["Trigger", o.trigger_score, "Returning market activity"],
+            [
+              "Confirmation",
+              o.confirmation_score,
+              "Closed-candle structural evidence",
+            ],
+          ].map(([label, value, description]) => (
+            <div className="dimension" key={String(label)}>
+              <span>{label}</span>
+              <Score value={value as number | null | undefined} large />
+              <p>{description}</p>
+            </div>
+          ))}
+        </div>
+        <div className="components-list">
+          {Object.entries(o.signal?.components ?? {}).map(([key, v]) => (
+            <div key={key}>
+              <span>{humanKey(key)}</span>
+              <strong>
+                {v > 0 ? "+" : ""}
+                {v}
+              </strong>
+            </div>
+          ))}
+        </div>
+      </details>
       <section className="panel">
         <div className="section-heading">
           <Icon name="outcomes" />
@@ -195,8 +212,9 @@ export function TokenDetail({
   chain: string;
   address: string;
 }) {
+  const small = useSmallScreen();
   const encoded = `${encodeURIComponent(chain)}/${encodeURIComponent(address)}`;
-  const { data, error, loading, refresh, refreshedAt } = useData<TokenResponse>(
+  const { data, error, loading, refresh } = useData<TokenResponse>(
     `/api/v1/tokens/${encoded}`,
   );
   const history = useData<History>(
@@ -208,10 +226,42 @@ export function TokenDetail({
     [copied, setCopied] = useState(false),
     [copyError, setCopyError] = useState(false);
   const o = data?.observation;
+  const marketMetrics = o ? (
+    <div className="stats-grid">
+      <Stat
+        label="Revival score"
+        value={
+          <>
+            <span className="positive">{o.score}</span>
+            <small> / 100</small>
+          </>
+        }
+        detail="Observed evidence, not a probability"
+      />
+      <Stat
+        label="Market cap"
+        value={compact(o.market_cap, true)}
+        detail={`${percent(o.drawdown_from_ath, true)} below ATH`}
+        icon="outcomes"
+      />
+      <Stat
+        label="Liquidity"
+        value={compact(o.liquidity, true)}
+        detail={`${compact(o.holders)} holders`}
+        icon="reports"
+      />
+      <Stat
+        label="5m activity"
+        value={compact(o.volume_5m, true)}
+        detail={`${compact(o.tx_5m)} transactions · ${percent(o.token?.price_change_1h, false, true)} price / 1h`}
+        icon="bolt"
+      />
+    </div>
+  ) : null;
   return (
     <>
-      <Link className="back-link" href="/">
-        <span>←</span> Back to radar
+      <Link className="back-link" href={researchReturn()}>
+        <span>←</span> Back to research
       </Link>
       {error && (
         <Notice tone="error">
@@ -237,6 +287,7 @@ export function TokenDetail({
               <div className="token-title-badge">
                 <Avatar observation={o} />
                 <Stage stage={o.status} />
+                {small && <Score value={o.score} />}
                 <ObservationStamp observation={o} />
               </div>
             }
@@ -247,7 +298,10 @@ export function TokenDetail({
               manually.
             </Notice>
           )}
-          <p className="contract-address">{o.contract_address}</p>
+          <p className="contract-address">
+            <span>{chains[o.chain] ?? o.chain}</span> ·{" "}
+            <span>{o.contract_address}</span>
+          </p>
           <div className="token-meta-row">
             <button
               className="address-button"
@@ -269,11 +323,7 @@ export function TokenDetail({
               <Icon name={copied ? "check" : "copy"} size={15} />
               <span>{copied ? "Copied" : "Copy address"}</span>
             </button>
-            <Freshness
-              label="Saved evaluation observed"
-              observed={o.timestamp}
-              refreshed={refreshedAt}
-            />
+
             <span className="config-pill">
               {o.preset ?? "Unlabeled strategy"} · rev {o.revision ?? "unknown"}
             </span>
@@ -298,79 +348,13 @@ export function TokenDetail({
               blockers before interpreting the score.
             </Notice>
           )}
-          <div className="stats-grid">
-            <Stat
-              label="Revival score"
-              value={
-                <>
-                  <span className="positive">{o.score}</span>
-                  <small> / 100</small>
-                </>
-              }
-              detail="Overall saved evaluation"
-            />
-            <Stat
-              label="Market cap"
-              value={compact(o.market_cap, true)}
-              detail={`${percent(o.drawdown_from_ath, true)} below ATH`}
-              icon="outcomes"
-            />
-            <Stat
-              label="Liquidity"
-              value={compact(o.liquidity, true)}
-              detail={`${compact(o.holders)} holders`}
-              icon="reports"
-            />
-            <Stat
-              label="5m activity"
-              value={compact(o.volume_5m, true)}
-              detail={`${compact(o.tx_5m)} transactions · ${percent(o.token?.price_change_1h, false, true)} price / 1h`}
-              icon="bolt"
-            />
-          </div>
+          {!small && marketMetrics}
           {history.data?.truncated && (
             <Notice tone="warning">
               History is limited to the latest saved points. Earlier
               observations in this window are omitted.
             </Notice>
           )}
-          <section className="panel">
-            <h2>Returning activity</h2>
-            <p className="small muted">
-              Ratios use the saved evaluation’s matching-window baseline.
-              Missing activity evidence remains unknown.
-            </p>
-            <div className="structure-grid">
-              <div>
-                <span>5m volume acceleration</span>
-                <strong>
-                  {typeof o.signal?.acceleration?.volume_acceleration_5m ===
-                  "number"
-                    ? `${number(o.signal.acceleration.volume_acceleration_5m, 2)}×`
-                    : "Unknown"}
-                </strong>
-              </div>
-              <div>
-                <span>5m transaction acceleration</span>
-                <strong>
-                  {typeof o.signal?.acceleration?.tx_acceleration_5m ===
-                  "number"
-                    ? `${number(o.signal.acceleration.tx_acceleration_5m, 2)}×`
-                    : "Unknown"}
-                </strong>
-              </div>
-              <div>
-                <span>Returning activity observed</span>
-                <strong>
-                  {o.signal?.returning_activity == null
-                    ? "Unknown"
-                    : o.signal.returning_activity
-                      ? "Yes"
-                      : "No"}
-                </strong>
-              </div>
-            </div>
-          </section>
           <section className="panel chart-panel">
             <div className="panel-header">
               <div>
@@ -457,6 +441,49 @@ export function TokenDetail({
                 {dateTime(history.data.candles_expires_at)}
               </p>
             ) : null}
+          </section>
+          {small && (
+            <details className="research-disclosure">
+              <summary>Saved market metrics</summary>
+              {marketMetrics}
+            </details>
+          )}
+          <section className="panel">
+            <h2>Returning activity</h2>
+            <p className="small muted">
+              Ratios use the saved evaluation’s matching-window baseline.
+              Missing activity evidence remains unknown.
+            </p>
+            <div className="structure-grid">
+              <div>
+                <span>5m volume acceleration</span>
+                <strong>
+                  {typeof o.signal?.acceleration?.volume_acceleration_5m ===
+                  "number"
+                    ? `${number(o.signal.acceleration.volume_acceleration_5m, 2)}×`
+                    : "Unknown"}
+                </strong>
+              </div>
+              <div>
+                <span>5m transaction acceleration</span>
+                <strong>
+                  {typeof o.signal?.acceleration?.tx_acceleration_5m ===
+                  "number"
+                    ? `${number(o.signal.acceleration.tx_acceleration_5m, 2)}×`
+                    : "Unknown"}
+                </strong>
+              </div>
+              <div>
+                <span>Returning activity observed</span>
+                <strong>
+                  {o.signal?.returning_activity == null
+                    ? "Unknown"
+                    : o.signal.returning_activity
+                      ? "Yes"
+                      : "No"}
+                </strong>
+              </div>
+            </div>
           </section>
           <SignalEvidence observation={o} />
           {data?.latest_market &&

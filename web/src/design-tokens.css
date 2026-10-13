@@ -12,6 +12,7 @@
   --research-text: #d9e4ea;
   --research-muted: #a8b7c4;
   --research-accent: #64dda9;
+  --research-on-accent: #0b2318;
   --research-warning: #e5bb73;
   --research-danger: #ef9292;
   --research-focus: #64dda9;
@@ -24,11 +25,17 @@
   --research-space-4: 16px;
   --research-space-6: 24px;
   --research-motion: 150ms;
+  --research-type-body: 0.875rem;
+  --research-type-metadata: 0.75rem;
+  --research-type-table: 0.8125rem;
+  --research-type-title: 1.75rem;
+  --research-type-heading: 1.25rem;
+  --research-type-value: 1.5rem;
 }
 .research-surface {
   --muted: var(--research-muted);
   color: var(--research-text);
-  font-size: 14px;
+  font-size: var(--research-type-body);
   line-height: 1.5;
   font-variant-numeric: tabular-nums;
 }
@@ -37,11 +44,11 @@
 .research-surface .panel-header p,
 .research-surface .stat-detail {
   color: var(--research-muted);
-  font-size: 12px;
+  font-size: var(--research-type-metadata);
 }
 .research-surface .radar-table,
 .research-surface .radar-table th {
-  font-size: 13px;
+  font-size: var(--research-type-table);
 }
 .research-surface .radar-table-wrap {
   position: relative;
@@ -50,7 +57,7 @@
 .research-surface .stage,
 .research-surface .risk-label,
 .research-surface .freshness {
-  font-size: 12px;
+  font-size: var(--research-type-metadata);
 }
 .research-surface button,
 .research-surface input,
@@ -59,7 +66,7 @@
 }
 .research-surface button {
   min-width: 44px;
-  font-size: 14px;
+  font-size: var(--research-type-body);
 }
 .research-surface .filters input,
 .research-surface .filters select,
@@ -84,11 +91,11 @@
 .research-surface .radar-table th,
 .research-surface .stat-label {
   color: var(--research-muted);
-  font-size: 12px;
+  font-size: var(--research-type-metadata);
 }
 .research-surface .chain-label {
   color: var(--research-muted) !important;
-  font-size: 12px !important;
+  font-size: 0.75rem !important;
 }
 .research-surface .radar-table th button {
   font-size: inherit;
@@ -96,7 +103,7 @@
 .research-surface .select-field select,
 .research-surface .search-box input,
 .research-surface .search-box .search-submit {
-  font-size: 14px;
+  font-size: var(--research-type-body);
 }
 .research-surface .search-box input:focus-visible,
 .research-surface .search-box button:focus-visible,
@@ -105,33 +112,33 @@
 }
 .workspace > .notice {
   color: var(--research-warning);
-  font-size: 14px;
+  font-size: var(--research-type-body);
 }
 .research-surface .notice,
 .research-surface .page-heading p {
-  font-size: 16px;
+  font-size: 1rem;
 }
 .research-surface .page-heading h1 {
-  font-size: 28px;
+  font-size: var(--research-type-title);
 }
 .research-surface .stat-card {
   padding: 12px;
 }
 .research-surface .stat-value {
-  font-size: 24px;
+  font-size: var(--research-type-value);
 }
 .research-surface .filters {
   gap: 8px;
 }
 .observation-stamp {
   display: block;
-  font-size: 12px;
+  font-size: var(--research-type-metadata);
   color: var(--research-muted);
   white-space: normal;
 }
 .origin-note {
   display: block;
-  font-size: 12px;
+  font-size: var(--research-type-metadata);
 }
 .research-surface .research-history-link {
   text-decoration: underline;

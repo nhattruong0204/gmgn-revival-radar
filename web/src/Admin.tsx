@@ -10,6 +10,7 @@ import {
   PageHeading,
   Stat,
 } from "./components";
+import { Modal } from "./Modal";
 import { AdminDiagnostics, PreviewChanges } from "./AdminDiagnostics";
 import { dateTime, humanKey, relative } from "./format";
 import type {
@@ -376,16 +377,12 @@ export function Admin({ section }: { section: string }) {
     [last, setLast] = useState<Command | null>(null),
     [controller, setController] = useState<AbortController | null>(null);
   const [now, setNow] = useState(() => Date.now() / 1000);
-  const dialog = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!preview) return;
     setNow(Date.now() / 1000);
     const timer = setInterval(() => setNow(Date.now() / 1000), 1000);
-    const previous = document.activeElement as HTMLElement | null;
-    dialog.current?.querySelector<HTMLButtonElement>("button")?.focus();
     return () => {
       clearInterval(timer);
-      previous?.focus();
     };
   }, [preview]);
   const reviewed = preview?.command.result;
@@ -434,11 +431,13 @@ export function Admin({ section }: { section: string }) {
     setLast(settled);
     return settled;
   };
+  const previewTrigger = useRef<HTMLElement | null>(null);
   const makePreview = async (
     action: DesiredAction,
     changes?: JsonRecord,
     preset?: string,
   ) => {
+    previewTrigger.current = document.activeElement as HTMLElement | null;
     setBusy(true);
     setError(null);
     setPreview(null);
@@ -777,97 +776,72 @@ export function Admin({ section }: { section: string }) {
         )}
       </section>
       {preview && (
-        <div
-          className="modal-backdrop"
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !busy) setPreview(null);
-          }}
+        <Modal
+          className="confirmation-modal"
+          returnFocus={previewTrigger.current}
+          labelledBy="confirmation-title"
+          dismissible={!busy}
+          onDismiss={() => setPreview(null)}
         >
-          <section
-            className="confirmation-modal"
-            ref={dialog}
-            onKeyDown={(e) => {
-              if (e.key === "Escape" && !busy) setPreview(null);
-              if (e.key !== "Tab") return;
-              const buttons =
-                dialog.current?.querySelectorAll<HTMLButtonElement>(
-                  "button:not(:disabled)",
-                );
-              if (!buttons?.length) return;
-              const first = buttons[0],
-                last = buttons[buttons.length - 1];
-              if (e.shiftKey && document.activeElement === first) {
-                e.preventDefault();
-                last.focus();
-              } else if (!e.shiftKey && document.activeElement === last) {
-                e.preventDefault();
-                first.focus();
-              }
-            }}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="confirmation-title"
-          >
-            <div className="modal-header">
-              <span className="eyebrow">BOT-VALIDATED PREVIEW</span>
-              <button
-                className="icon-button"
-                aria-label="Close preview"
-                disabled={busy}
-                onClick={() => setPreview(null)}
-              >
-                <Icon name="close" />
-              </button>
-            </div>
-            <h2 id="confirmation-title">
-              Confirm{" "}
-              {preview.action === "test"
-                ? "test alert"
-                : humanKey(preview.action).toLowerCase()}
-              ?
-            </h2>
-            <p>
-              {preview.action === "test"
-                ? "This sends one synthetic test message to your private Telegram chat."
-                : preview.action === "reset"
-                  ? "The saved runtime overrides will be reset after this confirmation."
-                  : preview.action === "settings"
-                    ? "Ordinary strategy changes take effect on the next scan. Historical signals keep their original evidence."
-                    : "The running bot will execute this saved preview."}
-            </p>
-            <p>
-              Reviewed revision {String(reviewed?.revision ?? "unknown")} ·
-              Expires {dateTime(reviewed?.expires_at as number)}
-            </p>
-            <PreviewChanges result={reviewed} />
-            {(expired || conflicting) && (
-              <Notice tone="warning">
-                {expired
-                  ? "This preview expired."
-                  : "Settings changed since this preview."}
-                Cancel and request a fresh preview before confirming.
-              </Notice>
-            )}
-            {error && <Notice tone="error">{error}</Notice>}
-            <div className="modal-actions">
-              <button
-                className="button button-secondary"
-                disabled={busy}
-                onClick={() => setPreview(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className="button button-primary"
-                disabled={busy || expired || Boolean(conflicting)}
-                onClick={() => void confirm()}
-              >
-                {busy ? "Waiting for bot…" : "Confirm action"}
-                <Icon name="check" size={16} />
-              </button>
-            </div>
-          </section>
-        </div>
+          <div className="modal-header">
+            <span className="eyebrow">BOT-VALIDATED PREVIEW</span>
+            <button
+              className="icon-button"
+              aria-label="Close preview"
+              disabled={busy}
+              onClick={() => setPreview(null)}
+            >
+              <Icon name="close" />
+            </button>
+          </div>
+          <h2 id="confirmation-title">
+            Confirm{" "}
+            {preview.action === "test"
+              ? "test alert"
+              : humanKey(preview.action).toLowerCase()}
+            ?
+          </h2>
+          <p>
+            {preview.action === "test"
+              ? "This sends one synthetic test message to your private Telegram chat."
+              : preview.action === "reset"
+                ? "The saved runtime overrides will be reset after this confirmation."
+                : preview.action === "settings"
+                  ? "Ordinary strategy changes take effect on the next scan. Historical signals keep their original evidence."
+                  : "The running bot will execute this saved preview."}
+          </p>
+          <p>
+            Reviewed revision {String(reviewed?.revision ?? "unknown")} ·
+            Expires {dateTime(reviewed?.expires_at as number)}
+          </p>
+          <PreviewChanges result={reviewed} />
+          {(expired || conflicting) && (
+            <Notice tone="warning">
+              {expired
+                ? "This preview expired."
+                : "Settings changed since this preview."}
+              Cancel and request a fresh preview before confirming.
+            </Notice>
+          )}
+          {error && <Notice tone="error">{error}</Notice>}
+          <div className="modal-actions">
+            <button
+              className="button button-secondary"
+              disabled={busy}
+              onClick={() => setPreview(null)}
+            >
+              Cancel
+            </button>
+            <button
+              className="button button-primary"
+              disabled={busy || expired || Boolean(conflicting)}
+              onClick={() => void confirm()}
+            >
+              {busy ? "Waiting for bot…" : "Confirm action"}
+              <Icon name="check" size={16} />
+            </button>
+          </div>
+        </Modal>
       )}
     </>
   );

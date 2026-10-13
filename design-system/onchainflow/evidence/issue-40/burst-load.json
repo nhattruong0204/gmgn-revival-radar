@@ -1,0 +1,101 @@
+{
+  "gate": {
+    "relative_scan_overhead": 0.25,
+    "absolute_scan_overhead_seconds": 0.1
+  },
+  "tokens_per_scan": 100,
+  "scans_per_arm": 8,
+  "identical_initial_database": true,
+  "initial_rows": {
+    "token_snapshots": 2800,
+    "evaluations": 2400,
+    "scan_runs": 24,
+    "state": 7688,
+    "alerts": 20,
+    "signal_outcomes": 10
+  },
+  "production_copy": false,
+  "separate_api_process": true,
+  "replay_wait_per_provider_operation_seconds": 0.005,
+  "clients": 6,
+  "read_pause_seconds": 0.05,
+  "read_timeout_ms": 1500,
+  "public_requests": 672,
+  "http_statuses": {
+    "200": 672
+  },
+  "external_requests": 0,
+  "scan_errors": 0,
+  "scans_completed_while_reading": 8,
+  "baseline_scan_seconds": [
+    0.5840190140006598,
+    0.5776260980055667,
+    0.5850124949938618,
+    0.5271379290061304,
+    0.49525993700081017,
+    0.49533245198836084,
+    0.5096522019885015,
+    0.4826361159939552
+  ],
+  "loaded_scan_seconds": [
+    0.623613217001548,
+    0.6527721460006433,
+    0.6208354410046013,
+    0.5647813419927843,
+    0.5368916379957227,
+    0.5157217780069914,
+    0.5761540640087333,
+    0.5197488160047214
+  ],
+  "baseline_median_seconds": 0.518395065497316,
+  "loaded_median_seconds": 0.5704677030007588,
+  "allowed_overhead_seconds": 0.129598766374329,
+  "api_latency_seconds": {
+    "/outcomes": {
+      "count": 96,
+      "median": 0.014696322003146634,
+      "p95": 0.06721344699326437,
+      "max": 0.12845780300267506
+    },
+    "/meta": {
+      "count": 96,
+      "median": 0.014611152502766345,
+      "p95": 0.054583835997618735,
+      "max": 0.11451673199189827
+    },
+    "/alerts": {
+      "count": 96,
+      "median": 0.015566116504487582,
+      "p95": 0.07625321099476423,
+      "max": 0.11028442499809898
+    },
+    "/radar": {
+      "count": 96,
+      "median": 0.016608805999567267,
+      "p95": 0.12346482700377237,
+      "max": 0.16828341600194108
+    },
+    "/radar?sort=market_cap&search=": {
+      "count": 96,
+      "median": 0.016274219000479206,
+      "p95": 0.12862892499833833,
+      "max": 0.14312680400325917
+    },
+    "/reports?hours=24": {
+      "count": 96,
+      "median": 0.01635525350138778,
+      "p95": 0.20297501700406428,
+      "max": 0.26632407800934743
+    },
+    "/tokens/sol/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2/history": {
+      "count": 96,
+      "median": 0.015190669997537043,
+      "p95": 0.06593872199300677,
+      "max": 0.08018377999542281
+    }
+  },
+  "read_sql_statements": {},
+  "read_sqlite_errors": {},
+  "passed": true,
+  "limitations": "Current scans use synthetic identities and mocked provider waits, even when retained history comes from a production copy. Separate-process mode uses loopback HTTP without SQL tracing; otherwise transport is in-process ASGI. Neither mode measures live provider quotas or Internet/TLS/proxy latency."
+}
