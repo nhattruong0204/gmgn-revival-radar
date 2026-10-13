@@ -422,11 +422,16 @@ def test_two_connections_claim_each_command_only_once(repo):
 
 
 async def test_worker_publishes_only_allowlisted_settings_and_current_schedule(worker):
-    worker.controller.schedule_provider = lambda: {"running": True, "next_due": None}
+    worker.controller.schedule_provider = lambda: {
+        "running": True,
+        "next_due": None,
+        "active_chains": ["sol", "base"],
+    }
     worker.publish(1100)
     snapshot = json.loads(worker.repo.get_state("web:worker"))
     assert snapshot["heartbeat_at"] == 1100 and snapshot["enabled"] is True
     assert snapshot["schedule"]["running"] is True
+    assert snapshot["collection"]["active_chains"] == ["sol", "base"]
     assert snapshot["revision"] == 0 and snapshot["active_revision"] == 0
     assert set(snapshot["presets"]) == {"strict", "balanced", "broad"}
     assert "fixture-" not in json.dumps(snapshot)
@@ -458,7 +463,9 @@ async def test_service_web_worker_runs_while_scan_awaits_and_changes_next_scan(
                 scan_started.set()
                 await settings_saved.wait()
                 assert self.config.alert_score_threshold == 75
+                assert self.config.chains == ["sol"]
             else:
+                assert self.config.chains == ["sol", "base"]
                 raise Finished
 
     class FakeControls:
@@ -476,7 +483,13 @@ async def test_service_web_worker_runs_while_scan_awaits_and_changes_next_scan(
             OWNER,
             "preview",
             "preview",
-            {"desired_action": "settings", "changes": {"alert_score_threshold": 65}},
+            {
+                "desired_action": "settings",
+                "changes": {
+                    "alert_score_threshold": 65,
+                    "enabled_chains": "sol,base",
+                },
+            },
             0,
         )
         while store.get(OWNER, "preview")["status"] != "succeeded":
@@ -487,6 +500,8 @@ async def test_service_web_worker_runs_while_scan_awaits_and_changes_next_scan(
             await asyncio.sleep(0.01)
         snapshot = json.loads(repo.get_state("web:worker"))
         assert snapshot["schedule"]["running"] is True
+        assert runtime.effective().chains == ["sol", "base"]
+        assert snapshot["collection"]["active_chains"] == ["sol"]
         settings_saved.set()
 
     monkeypatch.setattr(service, "Scanner", FakeScanner)

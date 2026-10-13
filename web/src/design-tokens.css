@@ -1,0 +1,148 @@
+/* Reviewed OnchainFlow system: design-system/onchainflow/MASTER.md */
+@font-face {
+  font-family: "DM Sans";
+  src: url("/fonts/dm-sans-latin-variable.woff2") format("woff2");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --research-bg: #0b141d;
+  --research-surface: #101c26;
+  --research-text: #d9e4ea;
+  --research-muted: #a8b7c4;
+  --research-accent: #64dda9;
+  --research-warning: #e5bb73;
+  --research-danger: #ef9292;
+  --research-focus: #64dda9;
+  --research-control-border: #607584;
+  --research-radius-control: 6px;
+  --research-radius-panel: 12px;
+  --research-space-1: 4px;
+  --research-space-2: 8px;
+  --research-space-3: 12px;
+  --research-space-4: 16px;
+  --research-space-6: 24px;
+  --research-motion: 150ms;
+}
+.research-surface {
+  --muted: var(--research-muted);
+  color: var(--research-text);
+  font-size: 14px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.research-surface .muted,
+.research-surface small,
+.research-surface .panel-header p,
+.research-surface .stat-detail {
+  color: var(--research-muted);
+  font-size: 12px;
+}
+.research-surface .radar-table,
+.research-surface .radar-table th {
+  font-size: 13px;
+}
+.research-surface .radar-table-wrap {
+  position: relative;
+}
+.research-surface .stage-badge,
+.research-surface .stage,
+.research-surface .risk-label,
+.research-surface .freshness {
+  font-size: 12px;
+}
+.research-surface button,
+.research-surface input,
+.research-surface select {
+  min-height: 44px;
+}
+.research-surface button {
+  min-width: 44px;
+  font-size: 14px;
+}
+.research-surface .filters input,
+.research-surface .filters select,
+.research-surface .search-box {
+  border-color: var(--research-control-border);
+}
+.research-surface .select-field {
+  border-color: var(--research-control-border);
+}
+.research-surface .select-field > span,
+.research-surface .token-link small,
+.research-surface .freshness small,
+.research-surface .eyebrow,
+.research-surface .panel-footer,
+.research-surface .token-card-footer,
+.research-surface .token-card-metrics small,
+.research-surface .score > small,
+.research-surface .table-subtext,
+.research-surface .risk-disclaimer,
+.research-surface .count-pill,
+.research-surface .search-box input::placeholder,
+.research-surface .radar-table th,
+.research-surface .stat-label {
+  color: var(--research-muted);
+  font-size: 12px;
+}
+.research-surface .chain-label {
+  color: var(--research-muted) !important;
+  font-size: 12px !important;
+}
+.research-surface .radar-table th button {
+  font-size: inherit;
+}
+.research-surface .select-field select,
+.research-surface .search-box input,
+.research-surface .search-box .search-submit {
+  font-size: 14px;
+}
+.research-surface .search-box input:focus-visible,
+.research-surface .search-box button:focus-visible,
+.research-surface .select-field select:focus-visible {
+  outline: 2px solid var(--research-focus) !important;
+}
+.workspace > .notice {
+  color: var(--research-warning);
+  font-size: 14px;
+}
+.research-surface .notice,
+.research-surface .page-heading p {
+  font-size: 16px;
+}
+.research-surface .page-heading h1 {
+  font-size: 28px;
+}
+.research-surface .stat-card {
+  padding: 12px;
+}
+.research-surface .stat-value {
+  font-size: 24px;
+}
+.research-surface .filters {
+  gap: 8px;
+}
+.observation-stamp {
+  display: block;
+  font-size: 12px;
+  color: var(--research-muted);
+  white-space: normal;
+}
+.origin-note {
+  display: block;
+  font-size: 12px;
+}
+.research-surface .research-history-link {
+  text-decoration: underline;
+}
+.research-surface :focus-visible {
+  outline: 2px solid var(--research-focus);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .research-surface * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

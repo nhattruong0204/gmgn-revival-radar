@@ -8,6 +8,7 @@ import {
   Link,
   Loading,
   Notice,
+  ObservationStamp,
   PageHeading,
   Score,
   Stage,
@@ -52,12 +53,20 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
     navigate(`/?${next}`);
   };
   const items = data?.items ?? [];
+  const activeChains =
+    meta?.collection_status === "current" ? (meta.active_chains ?? []) : [];
+  const historicalChains = (meta?.chains ?? []).filter(
+    (c) => !activeChains.some((a) => a.id === c.id),
+  );
+  const otherChains = Object.entries(chains).filter(
+    ([id]) => ![...activeChains, ...historicalChains].some((c) => c.id === id),
+  );
   return (
-    <>
+    <div className="research-surface">
       <PageHeading
         eyebrow="THE COMEBACK STARTS HERE"
         title="Revival radar"
-        description="Find returning activity. Follow the evidence."
+        description="Inspect saved evidence, freshness and counter-evidence."
         action={
           <button
             className="button button-secondary"
@@ -69,6 +78,12 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
           </button>
         }
       />
+      <Notice>
+        Historical coverage:{" "}
+        {meta?.chains?.map((c) => c.name).join(" · ") || "No saved chains"}. A
+        fresh scanner heartbeat does not refresh an older evaluation. Legacy
+        origin stays unclassified.
+      </Notice>
       <div className="stats-grid">
         <Stat
           label="Matching candidates"
@@ -89,18 +104,30 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
           tone="positive"
         />
         <Stat
-          label="Chain coverage"
-          value={meta?.chains?.length ?? "—"}
+          label="Current collection"
+          value={
+            meta?.collection_status === "current"
+              ? (meta.active_chains?.length ?? 0)
+              : meta?.collection_status === "disabled"
+                ? 0
+                : "Unknown"
+          }
           detail={
-            meta?.chains?.map((c) => c.name).join(" · ") ??
-            "Saved observations only"
+            meta?.collection_status === "current"
+              ? meta.active_chains?.map((c) => c.name).join(" · ") ||
+                "No enabled chains"
+              : meta?.collection_status === "disabled"
+                ? "Collection disabled"
+                : meta?.collection_status === "stale"
+                  ? "Worker heartbeat stale; history is separate"
+                  : "Current coverage unknown; history is separate"
           }
           icon="outcomes"
         />
         <Stat
           label="Last completed scan"
           value={relative(data?.last_scan_at ?? meta?.last_scan_at)}
-          detail="Observation time, independent of refresh"
+          detail="Scan completion; rows retain their own times"
           icon="clock"
         />
       </div>
@@ -111,7 +138,9 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
               Discover candidates{" "}
               <span className="count-pill">{data?.total ?? "—"}</span>
             </h2>
-            <p>Latest saved evaluation per token</p>
+            <p>
+              Latest saved evaluation per token · {q.get("age_hours")}h window
+            </p>
           </div>
           <Freshness
             observed={data?.last_scan_at ?? meta?.last_scan_at}
@@ -119,6 +148,20 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
           />
         </div>
         <div className="filters">
+          <label className="select-field">
+            <span>Observation window</span>
+            <select
+              aria-label="Observation window"
+              value={q.get("age_hours") ?? "24"}
+              onChange={(e) => change("age_hours", e.target.value)}
+            >
+              <option value="1">Last hour</option>
+              <option value="4">Last 4 hours</option>
+              <option value="24">Last 24 hours</option>
+              <option value="72">History: 3 days</option>
+              <option value="168">History: 7 days</option>
+            </select>
+          </label>
           <form
             className="search-box"
             onSubmit={(e) => {
@@ -150,21 +193,40 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
             </button>
           </form>
           <label className="select-field">
-            <span>Chain</span>
+            <span>Chain coverage</span>
             <select
               aria-label="Filter chain"
               value={q.get("chain") ?? ""}
               onChange={(e) => change("chain", e.target.value)}
             >
               <option value="">All chains</option>
-              {(
-                meta?.chains ??
-                Object.entries(chains).map(([id, name]) => ({ id, name }))
-              ).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {activeChains.length > 0 && (
+                <optgroup label="Current collection">
+                  {activeChains.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {historicalChains.length > 0 && (
+                <optgroup label="Saved coverage (last 7 days)">
+                  {historicalChains.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {otherChains.length > 0 && (
+                <optgroup label="Coverage unconfirmed">
+                  {otherChains.map(([id, name]) => (
+                    <option key={id} value={id}>
+                      {name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </label>
           <label className="select-field">
@@ -247,7 +309,7 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
             {error}{" "}
             {data
               ? "The last loaded observations are still visible."
-              : "No live data is being shown."}{" "}
+              : "No saved observations are available."}{" "}
             <button className="text-button" onClick={refresh}>
               Try again
             </button>
@@ -263,6 +325,13 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
                 : "No candidates match these filters"
             }
           >
+            <Link
+              className="research-history-link"
+              href="/?age_hours=168&min_score=0&include_ignore=true"
+            >
+              Explore saved history
+            </Link>{" "}
+            ·{" "}
             {error
               ? "Connect the API and refresh to view saved scanner observations."
               : "Try a lower minimum score, another stage, or a different token search."}
@@ -340,6 +409,7 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
                         </Link>
                       </td>
                       <td>
+                        <ObservationStamp observation={o} />
                         <Stage stage={o.status} />
                         {o.eligible === false && (
                           <span className="risk-label">Blocked by filters</span>
@@ -406,6 +476,7 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
                     </div>
                     <Score value={o.score} />
                   </div>
+                  <ObservationStamp observation={o} />
                   <Stage stage={o.status} />
                   <div className="token-card-metrics">
                     <div>
@@ -484,6 +555,6 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
           signal.
         </span>
       </div>
-    </>
+    </div>
   );
 }

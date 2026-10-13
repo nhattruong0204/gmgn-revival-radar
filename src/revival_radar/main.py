@@ -109,7 +109,7 @@ async def execute(args: argparse.Namespace, config: Settings) -> int:
             )
             if args.command == "demo":
                 for snapshot in source.histories():
-                    repo.save_snapshot(snapshot)
+                    repo.save_snapshot(snapshot, origin="synthetic")
             if args.command == "inspect":
                 seed = TokenSnapshot(chain=args.chain, contract_address=args.contract)
                 # Find current discovery ATH cap if the token is listed; never invent it.

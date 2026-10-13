@@ -1,6 +1,6 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { navigate } from "./api";
-import { dateTime, humanKey, relative, stageName } from "./format";
+import { dateTime, exactTime, humanKey, relative, stageName } from "./format";
 import type { Observation } from "./types";
 export function Link({
   href = "",
@@ -359,5 +359,34 @@ export function JsonGrid({
     </dl>
   ) : (
     <p className="muted">No saved worker data available.</p>
+  );
+}
+
+export function ObservationStamp({
+  observation,
+  kind = "evaluation",
+}: {
+  observation: Observation;
+  kind?: "evaluation" | "signal";
+}) {
+  const historical = Date.now() / 1000 - observation.timestamp > 86400;
+  return (
+    <span
+      className="observation-stamp"
+      title={exactTime(observation.timestamp)}
+    >
+      {historical ? `Historical ${kind}` : `Saved ${kind}`} ·{" "}
+      {relative(observation.timestamp)} ·{" "}
+      <time dateTime={new Date(observation.timestamp * 1000).toISOString()}>
+        {exactTime(observation.timestamp)}
+      </time>
+      <span className="origin-note">
+        {observation.origin === "live"
+          ? "Live-source origin recorded"
+          : observation.origin === "synthetic" || observation.origin === "test"
+            ? "Fixture origin"
+            : "Origin unclassified"}
+      </span>
+    </span>
   );
 }

@@ -223,6 +223,7 @@ async def run_service(runtime: RuntimeSettings, repo: Repository, http: httpx.As
                 config.alert_score_threshold,
             )
             scan_requested.clear()
+            schedule["active_chains"] = config.chains
             schedule["running"] = True
             schedule["next_due"] = None
             try:

@@ -45,6 +45,8 @@ export interface Signal {
   };
 }
 export interface Observation extends Token {
+  origin?: "live" | "synthetic" | "test" | "unknown";
+  origin_confidence?: "recorded" | "unknown";
   id: number;
   score: number;
   status: string;
@@ -69,6 +71,10 @@ export interface ListResponse<T> {
   last_scan_at: number | null;
 }
 export interface Meta {
+  active_chains?: Array<{ id: string; name: string }>;
+  collection_status?: "current" | "stale" | "disabled" | "unknown";
+  worker_heartbeat_at?: number | null;
+  data_mode?: "saved" | "synthetic";
   chains: Array<{ id: string; name: string }>;
   telegram_url?: string | null;
   as_of: number;
@@ -89,12 +95,18 @@ export interface Candle {
   close: number;
 }
 export interface History {
+  candles_origin?: "live" | "synthetic" | "test" | "unknown";
   snapshots: Array<{
+    origin?: "live" | "synthetic" | "test" | "unknown";
     timestamp: number;
     price: number | null;
     market_cap: number | null;
   }>;
-  scores: Array<{ timestamp: number; score: number }>;
+  scores: Array<{
+    origin?: "live" | "synthetic" | "test" | "unknown";
+    timestamp: number;
+    score: number;
+  }>;
   candles: Candle[];
   candles_fetched_at: number | null;
   candles_expires_at: number | null;

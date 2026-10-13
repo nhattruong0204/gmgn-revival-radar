@@ -7,6 +7,8 @@ from revival_radar.models.token import Candle, TokenSnapshot
 class DemoSource:
     """Deterministic synthetic scenarios; no network and no real token endorsements."""
 
+    observation_origin = "synthetic"
+
     def __init__(self):
         self.data = json.loads(
             files("revival_radar").joinpath("fixtures/scenarios.json").read_text()

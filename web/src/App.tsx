@@ -149,6 +149,11 @@ export function App() {
         </div>
       </aside>
       <div className="workspace">
+        {meta.data?.data_mode === "synthetic" && (
+          <Notice tone="warning">
+            Synthetic fixture data — no live market observations.
+          </Notice>
+        )}
         <header className="topbar">
           <div className="breadcrumb">
             <button

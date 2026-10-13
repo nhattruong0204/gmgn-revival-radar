@@ -5,6 +5,7 @@ import {
   Empty,
   EvidenceList,
   Freshness,
+  ObservationStamp,
   Icon,
   Link,
   Loading,
@@ -236,6 +237,7 @@ export function TokenDetail({
               <div className="token-title-badge">
                 <Avatar observation={o} />
                 <Stage stage={o.status} />
+                <ObservationStamp observation={o} />
               </div>
             }
           />

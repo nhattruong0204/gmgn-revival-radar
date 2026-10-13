@@ -1,0 +1,67 @@
+{
+  "checks": [
+    {
+      "width": 320,
+      "overflow": false,
+      "font": "local DM Sans",
+      "window_target_height": 44,
+      "keyboard_focus": true,
+      "reduced_motion": true
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "font": "local DM Sans",
+      "window_target_height": 44,
+      "keyboard_focus": true,
+      "reduced_motion": true
+    },
+    {
+      "width": 768,
+      "overflow": false,
+      "font": "local DM Sans",
+      "window_target_height": 44,
+      "keyboard_focus": true,
+      "reduced_motion": true
+    },
+    {
+      "width": 1024,
+      "overflow": false,
+      "font": "local DM Sans",
+      "window_target_height": 44,
+      "keyboard_focus": true,
+      "reduced_motion": true
+    },
+    {
+      "width": 1366,
+      "overflow": false,
+      "font": "local DM Sans",
+      "window_target_height": 44,
+      "keyboard_focus": true,
+      "reduced_motion": true
+    },
+    {
+      "width": 1440,
+      "overflow": false,
+      "font": "local DM Sans",
+      "window_target_height": 44,
+      "keyboard_focus": true,
+      "reduced_motion": true
+    },
+    {
+      "width": 1920,
+      "overflow": false,
+      "font": "local DM Sans",
+      "window_target_height": 44,
+      "keyboard_focus": true,
+      "reduced_motion": true
+    }
+  ],
+  "states": [
+    "empty",
+    "error",
+    "partial"
+  ],
+  "zoom": "200%",
+  "before_after_screenshots": true
+}

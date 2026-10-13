@@ -13,6 +13,7 @@ class WebConfig(BaseSettings):
     web_host: str = "127.0.0.1"
     web_port: int = Field(default=8000, ge=1, le=65535)
     web_read_timeout_ms: int = Field(default=1500, ge=100, le=10000)
+    web_allow_synthetic_data: bool = False
     web_cache_seconds: int = Field(default=10, ge=0, le=60)
     web_admin_password_hash: SecretStr = SecretStr("")
     web_cookie_secure: bool = True

@@ -28,16 +28,36 @@ class Repository:
         )
 
     @sqlite_timed
-    def save_snapshot(self, token: TokenSnapshot) -> None:
+    def save_snapshot(self, token: TokenSnapshot, *, origin: str = "unknown") -> None:
         data = token.model_dump(mode="json")
         data["discovery_source"] = ",".join(sorted(token.discovery_source))
         names = ",".join(SNAPSHOT_FIELDS) + ",payload"
         values = [data[f] for f in SNAPSHOT_FIELDS] + [token.model_dump_json()]
         placeholders = ",".join("?" for _ in values)
         with self.db:
-            self.db.execute(
+            cursor = self.db.execute(
                 f"INSERT OR IGNORE INTO token_snapshots ({names}) VALUES ({placeholders})", values
             )
+            if cursor.rowcount:
+                self.record_origin("snapshot", cursor.lastrowid, origin)
+
+    def record_origin(self, kind: str, identity: int, origin: str) -> None:
+        if kind not in {"scan", "snapshot", "evaluation", "alert"} or origin not in {
+            "live",
+            "synthetic",
+            "test",
+            "unknown",
+        }:
+            raise ValueError("Invalid observation provenance")
+        if origin != "unknown":
+            self.db.execute(
+                "INSERT OR IGNORE INTO state(key,value,updated_at) VALUES(?,?,?)",
+                (f"origin:{kind}:{identity}", origin, time.time()),
+            )
+
+    def observation_origin(self, kind: str, identity: int) -> str:
+        value = self.get_state(f"origin:{kind}:{identity}")
+        return value if value in {"live", "synthetic", "test"} else "unknown"
 
     @sqlite_timed
     def history(self, token: TokenSnapshot, limit: int = 24) -> list[TokenSnapshot]:
@@ -67,6 +87,8 @@ class Repository:
         result: RevivalResult,
         config: Settings,
         configuration: dict | None = None,
+        *,
+        origin: str = "unknown",
     ) -> int | None:
         if config.dry_run or not result.eligible or result.score < config.alert_score_threshold:
             return None
@@ -117,9 +139,10 @@ class Repository:
                     context.get("revision"),
                 ),
             )
+            self.record_origin("alert", cursor.lastrowid, origin)
             self.db.commit()
             return cursor.lastrowid
-        except sqlite3.Error:
+        except (sqlite3.Error, ValueError):
             self.db.rollback()
             raise
 
@@ -173,9 +196,12 @@ class Repository:
             )
 
     @sqlite_timed
-    def begin_scan(self, started: float, configuration: dict | None = None) -> int:
+    def begin_scan(
+        self, started: float, configuration: dict | None = None, *, origin: str = "unknown"
+    ) -> int:
         with self.db:
             cursor = self.db.execute("INSERT INTO scan_runs (started) VALUES (?)", (started,))
+            self.record_origin("scan", cursor.lastrowid, origin)
             if configuration:
                 self.db.execute(
                     "INSERT INTO state (key,value,updated_at) VALUES (?,?,?)",
@@ -191,6 +217,8 @@ class Repository:
         result: RevivalResult,
         config: Settings,
         configuration: dict | None = None,
+        *,
+        origin: str = "unknown",
     ) -> None:
         """Retain every scored token, including those capped by the initial filter."""
         gate = first_pass(token, config)
@@ -265,6 +293,7 @@ class Repository:
                 "SELECT id FROM evaluations WHERE scan_id=? AND chain=? AND contract_address=?",
                 (scan_id, *token.key),
             ).fetchone()["id"]
+            self.record_origin("evaluation", identity, origin)
             self.db.execute(
                 """INSERT INTO state (key,value,updated_at) VALUES (?,?,?)
                 ON CONFLICT(key) DO UPDATE SET
@@ -619,15 +648,19 @@ class Repository:
     def prune_diagnostics(self, before: float) -> None:
         with self.db:
             for table, kind in (("evaluations", "evaluation"), ("scan_runs", "scan")):
-                self.db.execute(
-                    f"DELETE FROM state WHERE key IN (SELECT 'telegram:{kind}:' || id FROM {table} "
-                    + (
-                        "WHERE scan_id IN (SELECT id FROM scan_runs WHERE started<?))"
-                        if table == "evaluations"
-                        else "WHERE started<?)"
-                    ),
-                    (before,),
-                )
+                # SQLite may reuse IDs after retention removes all diagnostics.
+                # Drop attached origin markers too; operator audits remain intact.
+                for prefix in ("telegram", "origin"):
+                    self.db.execute(
+                        f"DELETE FROM state WHERE key IN "
+                        f"(SELECT '{prefix}:{kind}:' || id FROM {table} "
+                        + (
+                            "WHERE scan_id IN (SELECT id FROM scan_runs WHERE started<?))"
+                            if table == "evaluations"
+                            else "WHERE started<?)"
+                        ),
+                        (before,),
+                    )
             self.db.execute(
                 "DELETE FROM evaluations WHERE scan_id IN "
                 "(SELECT id FROM scan_runs WHERE started<?)",
@@ -639,6 +672,11 @@ class Repository:
                 (before,),
             )
             self.db.execute("DELETE FROM scan_runs WHERE started<?", (before,))
+            self.db.execute(
+                "DELETE FROM state WHERE key IN (SELECT 'origin:cache:' || chain || ':' || "
+                "contract_address || ':' || kind FROM enrichment_cache WHERE expires_at<?)",
+                (before,),
+            )
             self.db.execute("DELETE FROM enrichment_cache WHERE expires_at<?", (before,))
             self.db.execute("DELETE FROM watch_state WHERE last_seen<?", (before,))
             self.db.execute(
@@ -855,13 +893,33 @@ class Repository:
         return dict(row) if row else None
 
     @sqlite_timed
-    def cache_save(self, kind: str, token: TokenSnapshot, payload: str, expires: float) -> None:
+    def cache_save(
+        self,
+        kind: str,
+        token: TokenSnapshot,
+        payload: str,
+        expires: float,
+        *,
+        origin: str = "unknown",
+    ) -> None:
+        if origin not in {"live", "synthetic", "test", "unknown"}:
+            raise ValueError("Invalid cache provenance")
         with self.db:
             self.db.execute(
                 """INSERT INTO enrichment_cache VALUES (?,?,?,?,?,?)
                 ON CONFLICT(kind,chain,contract_address) DO UPDATE SET
                 fetched_at=excluded.fetched_at,expires_at=excluded.expires_at,payload=excluded.payload""",
                 (kind, *token.key, token.timestamp, expires, payload),
+            )
+            self.db.execute(
+                "INSERT INTO state(key,value,updated_at) VALUES(?,?,?) "
+                "ON CONFLICT(key) DO UPDATE SET "
+                "value=excluded.value,updated_at=excluded.updated_at",
+                (
+                    f"origin:cache:{token.chain}:{token.contract_address}:{kind}",
+                    origin,
+                    time.time(),
+                ),
             )
 
     @sqlite_timed

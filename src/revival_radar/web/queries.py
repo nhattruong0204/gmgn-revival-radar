@@ -41,6 +41,31 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
     db = sqlite3.connect(uri, uri=True, timeout=config.web_read_timeout_ms / 1000)
     try:
         db.row_factory = sqlite3.Row
+        # Keep the same indexed projections in fixture-mode load tests. Opt-in
+        # fixtures bypass exclusion through a reserved, never-recorded origin.
+        excluded = (
+            "'__preview_excluded__'" if config.web_allow_synthetic_data else "'synthetic','test'"
+        )
+        # Only connection-local read projections change; originals stay intact.
+        for table, kind in (
+            ("scan_runs", "scan"),
+            ("token_snapshots", "snapshot"),
+            ("evaluations", "evaluation"),
+            ("alerts", "alert"),
+        ):
+            db.execute(f"""CREATE TEMP VIEW {table} AS SELECT r.* FROM main.{table} r
+                WHERE NOT EXISTS(SELECT 1 FROM main.state p
+                    WHERE p.key='origin:{kind}:' || r.id
+                    AND p.value IN ({excluded}))""")
+        db.execute(f"""CREATE TEMP VIEW enrichment_cache AS
+            SELECT r.* FROM main.enrichment_cache r
+            WHERE NOT EXISTS(SELECT 1 FROM main.state p
+                WHERE p.key='origin:cache:' || r.chain || ':' ||
+                    r.contract_address || ':' || r.kind
+                AND p.value IN ({excluded}))""")
+        db.execute("""CREATE TEMP VIEW signal_outcomes AS
+            SELECT o.rowid AS rowid,o.* FROM main.signal_outcomes o
+            JOIN alerts a ON a.id=o.alert_id""")
         db.execute("PRAGMA query_only=ON")
         db.execute(f"PRAGMA busy_timeout={config.web_read_timeout_ms}")
         deadline = time.monotonic() + config.web_read_timeout_ms / 1000
@@ -71,13 +96,15 @@ def _label(context: Mapping) -> dict:
     }
 
 
-def observation(value: Mapping, identity: Mapping) -> Observation:
+def observation(value: Mapping, identity: Mapping, origin: str = "unknown") -> Observation:
     """Sanitize evidence before it reaches response serialization or caching."""
     token = PublicToken.model_validate(value["token"]) if value.get("token") else None
     signal = PublicSignal.model_validate(value["signal"]) if value.get("signal") else None
     context = value.get("configuration") or {}
     fields = {key: value.get(key) for key in ("id", "timestamp", "score", "status", "eligible")}
     fields.update(
+        origin=origin,
+        origin_confidence="unknown" if origin == "unknown" else "recorded",
         chain=identity["chain"],
         contract_address=identity["contract_address"],
         symbol=token.symbol if token else identity.get("symbol", "?"),
@@ -136,10 +163,14 @@ class PublicQueries:
         return finite(row[0])
 
     def version(self, until: float, route: str = "") -> tuple:
+        origin_version = self.db.execute(
+            "SELECT COUNT(*),MAX(updated_at) FROM state "
+            "WHERE key GLOB 'origin:*' OR key GLOB 'provenance:audit:*'"
+        ).fetchone()
         if route in {"meta", "radar", "reports"}:
             # These routes use only frozen evaluations from completed scans.
             # New snapshots during an unfinished scan do not change their data.
-            return tuple(
+            return tuple(origin_version) + tuple(
                 self.db.execute(
                     "SELECT MAX(finished),MAX(id),COUNT(*) FROM scan_runs WHERE finished<=?",
                     (until,),
@@ -156,11 +187,15 @@ class PublicQueries:
             "(SELECT COUNT(*) FROM signal_outcomes),"
             "(SELECT MAX(fetched_at) FROM enrichment_cache)"
         ).fetchone()
-        return (self.last_scan_at(until), *tuple(row))
+        return (self.last_scan_at(until), *tuple(origin_version), *tuple(row))
 
     def _evaluation(self, row: sqlite3.Row) -> Observation:
         payload = self.repo.get_state(f"telegram:evaluation:{row['id']}")
-        return observation(self.repo._market_observation(row, payload), dict(row))
+        return observation(
+            self.repo._market_observation(row, payload),
+            dict(row),
+            self.repo.observation_origin("evaluation", row["id"]),
+        )
 
     def _latest_row(self, chain: str, address: str, until: float) -> sqlite3.Row | None:
         return self.db.execute(
@@ -184,6 +219,7 @@ class PublicQueries:
         order: str,
         page: int,
         page_size: int,
+        age_hours: int = 24,
     ) -> RadarPage:
         filters, arguments = ["e.score>=?"], [min_score]
         if status:
@@ -221,9 +257,9 @@ class PublicQueries:
             + " AND ".join(filters)
         )
         parameters = (
-            until - LOOKBACK_SECONDS,
+            until - age_hours * 3600,
             until,
-            until - LOOKBACK_SECONDS,
+            until - age_hours * 3600,
             until,
             until,
             *arguments,
@@ -293,7 +329,7 @@ class PublicQueries:
     ) -> TokenHistory:
         since = until - hours * 3600
         snapshots = self.db.execute(
-            """SELECT timestamp,price,market_cap FROM token_snapshots
+            """SELECT id,timestamp,price,market_cap FROM token_snapshots
             WHERE chain=? AND contract_address=? AND timestamp>? AND timestamp<=?
             ORDER BY timestamp DESC,id DESC LIMIT ?""",
             (chain, address, since, until, max_points + 1),
@@ -313,6 +349,7 @@ class PublicQueries:
                     **{
                         key: getattr(item, key)
                         for key in (
+                            "origin",
                             "timestamp",
                             "score",
                             "setup_score",
@@ -347,9 +384,18 @@ class PublicQueries:
                 fetched_at, expires_at = finite(entry["fetched_at"]), finite(entry["expires_at"])
             except (ValueError, KeyError, TypeError, RecursionError, ValidationError):
                 pass
+        cache_origin = (
+            self.repo.get_state(f"origin:cache:{chain}:{address}:{entry['kind']}")
+            if entry
+            else None
+        )
         return TokenHistory(
+            candles_origin=cache_origin
+            if cache_origin in {"live", "synthetic", "test"}
+            else "unknown",
             snapshots=[
                 SnapshotPoint(
+                    origin=self.repo.observation_origin("snapshot", row["id"]),
                     timestamp=row["timestamp"],
                     price=finite(row["price"]),
                     market_cap=finite(row["market_cap"]),
@@ -389,6 +435,7 @@ class PublicQueries:
                 **(evidence or {}),
             },
             {**base, "symbol": "?"},
+            self.repo.observation_origin("alert", row["id"]),
         )
         if not evidence:
             # alert_signals is trustworthy alert-time data even when presentation is absent.
@@ -491,7 +538,14 @@ class PublicQueries:
                             "observations",
                         )
                     },
-                    **{name: observation(entry[name], entry) for name in ("peak", "latest")},
+                    **{
+                        name: observation(
+                            entry[name],
+                            entry,
+                            self.repo.observation_origin("evaluation", entry[name]["id"]),
+                        )
+                        for name in ("peak", "latest")
+                    },
                 }
             )
         return MarketReport.model_validate({**report, "entries": entries})

@@ -7,14 +7,13 @@ and tests. The research backlog is tracked in [#39](https://github.com/nhattruon
 
 ## Recover and establish the base
 
-The owner reports `https://onchainflow.app` is live privately. #16/#26 record launch
-verification. PR #38 (`deploy/onchainflow-launch`) still holds launch/query/index/cache
-and operations changes not in `main` at this audit. The `feat/research-ux-audit`
-branch described in issues is not published remotely; its WSL work may be
-uncommitted. [#52](https://github.com/nhattruong0204/gmgn-revival-radar/issues/52)
-owns preservation/recovery and agreement on the release base. Do not recreate or
-reset those changes blindly, reopen verified launch issues because cloud access
-is unavailable, or claim to have inspected the private deployment from here.
+The owner reports `https://onchainflow.app` is live privately. PR #38 launch,
+query/index/cache and operations changes were reviewed and merged into main on
+2026-10-13 before #51/#41 implementation. The owner explicitly waived recovery
+of unfinished WSL work for these issues because WSL is unavailable. No local WSL
+files were accessed or deleted. #52 can track remaining deployment reconciliation;
+this waiver permits #51/#41 to proceed from published source. Do not claim to have
+inspected or updated the private production deployment from this environment.
 
 ## Use the pinned skill
 
@@ -53,7 +52,7 @@ belong in queries or design artifacts. Search runs locally without provider call
 - Shared navigation, filters, table/mobile card, evidence disclosure, chart
   inspection/fallback, freshness/coverage, form/error and owner-command contracts.
 
-Inspect recovered WSL artifacts first. Do not force-regenerate an existing master
+Preserve any available user artifacts first; WSL recovery was waived for #51/#41. Do not force-regenerate an existing master
 or page override. A product-wide direction uses `--design-system`; inspect the
 candidate before persisting with `--persist --output-dir "$PWD"`. The audit's
 `crypto research dashboard` search and one narrower `financial analytics dashboard`
@@ -95,7 +94,7 @@ validity. These provider features do not block the basic saved-data redesign.
 
 ## Delivery and verification
 
-Start #52 → #51, with #41 definitions in parallel. Implement #40, then #42/#43/#45.
+Start #51 + #41 on the merged published base under the owner’s WSL waiver. Implement #40, then #42/#43/#45.
 Account architecture and basic saved tokens in #46 can proceed without waiting
 for every brief; add brief attachment when #43 is ready. #48 can ship an in-product
 daily review before external delivery. Offer interviews and privacy/event baselines

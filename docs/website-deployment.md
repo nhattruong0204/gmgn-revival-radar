@@ -21,7 +21,7 @@ npm ci
 npm test
 npm run build
 cd ..
-DATABASE_PATH=/tmp/radar-web-demo.db WEB_STATIC_DIRECTORY="$PWD/web/dist" revival-radar-web
+WEB_ALLOW_SYNTHETIC_DATA=true DATABASE_PATH=/tmp/radar-web-demo.db WEB_STATIC_DIRECTORY="$PWD/web/dist" revival-radar-web
 ```
 
 This serves the built public pages and `/api/v1` on one local origin. Development

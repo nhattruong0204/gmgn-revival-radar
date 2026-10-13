@@ -1,3 +1,5 @@
+@import "./design-tokens.css";
+
 :root {
   font-family: "DM Sans", sans-serif;
   color: #d9e4ea;
@@ -264,6 +266,7 @@ h3 {
   margin-top: 24px;
 }
 .workspace {
+  min-width: 0;
   width: calc(100% - 228px);
   margin-left: 228px;
 }

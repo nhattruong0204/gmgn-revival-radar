@@ -61,7 +61,7 @@ def main():
                 ),
             )
         (stage / "web.env").write_text(
-            "DATABASE_PATH=/app/data/staged.db\nWEB_ADMIN_ENABLED=true\nWEB_ADMIN_PASSWORD_HASH="
+            "DATABASE_PATH=/app/data/staged.db\nWEB_ALLOW_SYNTHETIC_DATA=true\nWEB_ADMIN_ENABLED=true\nWEB_ADMIN_PASSWORD_HASH="
             + password_hash(password)
             + "\nWEB_TRUSTED_ORIGIN=https://localhost:18443\nWEB_COOKIE_SECURE=true\n"
         )
