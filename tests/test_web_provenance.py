@@ -266,3 +266,18 @@ def test_retention_cannot_attach_old_origin_to_reused_id(repo, token, config):
         ).fetchone()[0]
         == 1
     )
+
+
+async def test_historical_chain_filter_survives_changed_active_coverage(web, repo, token, config):
+    client, _ = web
+    bsc = changed(token, chain="bsc", contract_address="0x" + "a" * 40)
+    observe(repo, bsc, config, timestamp=NOW - 2 * 86400)
+    repo.set_state(
+        "web:worker", json.dumps({"heartbeat_at": NOW, "collection": {"active_chains": ["base"]}})
+    )
+    meta = (await client.get("/api/v1/meta")).json()
+    assert [c["id"] for c in meta["active_chains"]] == ["base"]
+    assert [c["id"] for c in meta["chains"]] == ["bsc"]
+    assert (await client.get("/api/v1/radar?chain=bsc")).json()["total"] == 0
+    historical = (await client.get("/api/v1/radar?chain=bsc&age_hours=168")).json()
+    assert historical["total"] == 1 and historical["items"][0]["timestamp"] == NOW - 2 * 86400

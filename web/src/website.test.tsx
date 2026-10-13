@@ -370,6 +370,16 @@ it("keeps collection coverage separate from historical presence and selects hist
   expect(
     screen.getByText("Current collection").closest(".stat-card")?.textContent,
   ).toContain("Solana");
+  expect(
+    screen
+      .getByRole("option", { name: "Solana" })
+      .parentElement?.getAttribute("label"),
+  ).toBe("Current collection");
+  expect(
+    screen
+      .getByRole("option", { name: "BSC" })
+      .parentElement?.getAttribute("label"),
+  ).toBe("Saved coverage (last 7 days)");
   await userEvent.selectOptions(
     screen.getByLabelText("Observation window"),
     "168",

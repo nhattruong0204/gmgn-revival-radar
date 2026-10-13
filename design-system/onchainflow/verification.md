@@ -7,7 +7,7 @@ private live deployment was inspected, changed or deleted.
 
 ## Checks and limits
 
-- Python: **895 passed**, Ruff check/format passed. New cases cover age windows,
+- Python: **896 passed**, Ruff check/format passed. New cases cover age windows,
   historical cutoffs/pagination, effective versus pending chain settings, malformed
   worker state, heartbeat expiry under caching, origin confidence, read-only
   exclusions across public evidence routes, cache invalidation/reversal, invalid

@@ -53,6 +53,14 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
     navigate(`/?${next}`);
   };
   const items = data?.items ?? [];
+  const activeChains =
+    meta?.collection_status === "current" ? (meta.active_chains ?? []) : [];
+  const historicalChains = (meta?.chains ?? []).filter(
+    (c) => !activeChains.some((a) => a.id === c.id),
+  );
+  const otherChains = Object.entries(chains).filter(
+    ([id]) => ![...activeChains, ...historicalChains].some((c) => c.id === id),
+  );
   return (
     <div className="research-surface">
       <PageHeading
@@ -185,21 +193,40 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
             </button>
           </form>
           <label className="select-field">
-            <span>Chain</span>
+            <span>Chain coverage</span>
             <select
               aria-label="Filter chain"
               value={q.get("chain") ?? ""}
               onChange={(e) => change("chain", e.target.value)}
             >
               <option value="">All chains</option>
-              {(
-                meta?.chains ??
-                Object.entries(chains).map(([id, name]) => ({ id, name }))
-              ).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {activeChains.length > 0 && (
+                <optgroup label="Current collection">
+                  {activeChains.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {historicalChains.length > 0 && (
+                <optgroup label="Saved coverage (last 7 days)">
+                  {historicalChains.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {otherChains.length > 0 && (
+                <optgroup label="Coverage unconfirmed">
+                  {otherChains.map(([id, name]) => (
+                    <option key={id} value={id}>
+                      {name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </label>
           <label className="select-field">
