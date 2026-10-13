@@ -1,4 +1,78 @@
 export type JsonRecord = Record<string, unknown>;
+export interface ResearchCounts {
+  total: number;
+  observed: number;
+  returns_available: number;
+  positive: number;
+  negative: number;
+  zero: number;
+  missing_price: number;
+  unresolved: number;
+  pending: number;
+  missed: number;
+  median_return_pct: number | null;
+  positive_rate_pct: number | null;
+  small_sample: boolean;
+  comparable: boolean;
+  distribution: Array<{ label: string; count: number }>;
+}
+export interface CheckpointResearch {
+  alert_id: number;
+  timestamp: number;
+  chain: string;
+  contract_address: string;
+  symbol: string;
+  score: number;
+  stage: string;
+  preset: string | null;
+  revision: number | null;
+  score_version: string | null;
+  origin: string;
+  knowledge: string;
+  saved_at: number | null;
+  sent_at: number | null;
+  cohort_id: string;
+  horizon_hours: number;
+  due_at: number;
+  window_end: number;
+  observed_at: number | null;
+  recorded_at: number | null;
+  checkpoint_origin: string;
+  initial_price: number | null;
+  checkpoint_price: number | null;
+  checkpoint_market_cap: number | null;
+  reported_return_pct: number | null;
+  return_pct: number | null;
+  state: string;
+  reason: string;
+  brief_id: string | null;
+  source: string;
+}
+export interface TrackRecordData {
+  methodology_version: string;
+  since: number;
+  as_of: number;
+  filters: Record<string, string | number | null>;
+  reconciliation?: Record<string, number>;
+  definition: string;
+  exclusions: string[];
+  limitations: string[];
+  summary: ResearchCounts;
+  cohorts: Array<{
+    id: string;
+    chain: string;
+    preset: string | null;
+    revision: number | null;
+    score_version: string | null;
+    origin: string;
+    knowledge: string;
+    counts: ResearchCounts;
+  }>;
+  items: CheckpointResearch[];
+  total: number;
+  page: number;
+  page_size: number;
+}
 export interface BriefClaim {
   key: string;
   text: string;
@@ -166,6 +240,8 @@ export interface History {
   truncated: boolean;
 }
 export interface Alert {
+  recorded_at?: number | null;
+  confirmed_at?: number | null;
   id: number;
   timestamp: number;
   chain: string;
@@ -177,6 +253,8 @@ export interface Alert {
   observation: Observation | null;
 }
 export interface AlertDetail extends Alert {
+  checkpoint_research?: CheckpointResearch[];
+  original_brief_id?: string | null;
   latest_observation?: Observation | null;
   outcomes?: Array<{
     horizon_hours?: number;

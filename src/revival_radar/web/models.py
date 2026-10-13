@@ -37,6 +37,90 @@ class BriefPage(PublicModel):
     as_of: Finite
 
 
+class CheckpointResearch(PublicModel):
+    alert_id: int
+    timestamp: Finite
+    chain: str
+    contract_address: str
+    symbol: str
+    score: int
+    stage: str
+    preset: str | None
+    revision: int | None
+    score_version: str | None
+    origin: str
+    knowledge: str
+    saved_at: Finite | None
+    sent_at: Finite | None
+    cohort_id: str
+    horizon_hours: int
+    due_at: Finite
+    window_end: Finite
+    observed_at: Finite | None
+    recorded_at: Finite | None
+    checkpoint_origin: str
+    initial_price: Finite | None
+    checkpoint_price: Finite | None
+    checkpoint_market_cap: Finite | None
+    reported_return_pct: Finite | None
+    return_pct: Finite | None
+    state: Literal["return", "missing_price", "unresolved", "pending", "missed"]
+    reason: str
+    brief_id: str | None
+    source: str
+
+
+class ReturnBin(PublicModel):
+    label: str
+    count: int
+
+
+class ResearchAccounting(PublicModel):
+    total: int
+    observed: int
+    returns_available: int
+    positive: int
+    negative: int
+    zero: int
+    missing_price: int
+    unresolved: int
+    pending: int
+    missed: int
+    median_return_pct: Finite | None
+    positive_rate_pct: Finite | None
+    small_sample: bool
+    comparable: bool
+    distribution: list[ReturnBin]
+
+
+class ResearchCohort(PublicModel):
+    id: str
+    chain: str
+    preset: str | None
+    revision: int | None
+    score_version: str | None
+    origin: str
+    knowledge: str
+    counts: ResearchAccounting
+
+
+class TrackRecord(PublicModel):
+    methodology_version: Literal["checkpoint-cohort-v1"] = "checkpoint-cohort-v1"
+    since: Finite
+    as_of: Finite
+    filters: dict[str, str | int | None]
+    reconciliation: dict[str, int]
+    definition: str
+    exclusions: list[str]
+    limitations: list[str]
+    summary: ResearchAccounting
+    cohorts: list[ResearchCohort]
+    items: list[CheckpointResearch]
+    page: int
+    page_size: int
+    total: int
+
+
 class PublicToken(PublicModel):
     timestamp: Finite
     chain: str
@@ -210,6 +294,8 @@ class Outcomes(PublicModel):
 
 
 class Alert(PublicModel):
+    recorded_at: Finite | None = None
+    confirmed_at: Finite | None = None
     id: int
     timestamp: Finite
     chain: str
@@ -240,6 +326,8 @@ class AlertOutcome(PublicModel):
 
 
 class AlertDetail(Alert):
+    checkpoint_research: list[CheckpointResearch] = Field(default_factory=list)
+    original_brief_id: str | None = None
     latest_observation: Observation | None
     outcomes: list[AlertOutcome]
     as_of: Finite

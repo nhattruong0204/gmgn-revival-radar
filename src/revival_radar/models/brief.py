@@ -5,6 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from revival_radar.models.research_identity import research_digest
 from revival_radar.models.token import Candle
 
 
@@ -42,6 +43,7 @@ class BriefScenario(BriefModel):
 
 class ResearchBrief(BriefModel):
     id: str
+    evidence_digest: str | None = None
     brief_version: Literal["brief-v1"] = "brief-v1"
     evaluation_id: int
     scan_id: int
@@ -267,6 +269,7 @@ def build_brief(
         outcome = "watch"
     return ResearchBrief(
         id=brief_id,
+        evidence_digest=research_digest(token, result, configuration),
         evaluation_id=identity,
         scan_id=scan_id,
         scan_started_at=scan_started_at,

@@ -156,6 +156,7 @@ async def measure(
     replay_wait=REPLAY_WAIT_SECONDS,
     read_timeout_ms=1500,
     include_briefs=False,
+    include_track_record=False,
 ):
     with tempfile.TemporaryDirectory(prefix="radar-web-load-") as directory:
         root = Path(directory)
@@ -202,6 +203,43 @@ async def measure(
                 db.commit()
             finally:
                 db.close()
+        if include_track_record:
+            # Independent synthetic delivered-alert fixture; never send a notification.
+            db = connect(config.database_path)
+            fixture_repo = Repository(db)
+            now = time.time()
+            with db:
+                for index in range(1000):
+                    token_data = source.data[index % len(source.data)]["token"]
+                    age = 100 if index < 100 else 100000 if index < 200 else 90000
+                    timestamp = now - age
+                    price = None if index % 4 == 3 else (2, 0.5, 1)[index % 4]
+                    cursor = db.execute(
+                        """INSERT INTO alerts(timestamp,chain,contract_address,
+                        score,reason,delivery_status) VALUES(?, 'sol', ?,90,'[]','sent')""",
+                        (timestamp, token_data["contract_address"]),
+                    )
+                    identity = cursor.lastrowid
+                    db.execute(
+                        "INSERT INTO alert_signals VALUES(?,1,100,90,70,80,60,"
+                        "'REVIVING','Balanced',4)",
+                        (identity,),
+                    )
+                    fixture_repo.record_origin("alert", identity, "synthetic")
+                    if index >= 200:
+                        db.execute(
+                            "INSERT INTO signal_outcomes VALUES(?,24,?,?,?,?,?)",
+                            (
+                                identity,
+                                timestamp + 24 * 3600,
+                                timestamp + 24 * 3600 + 10,
+                                price,
+                                100,
+                                None if price is None else (price - 1) * 100,
+                            ),
+                        )
+            db.close()
+            counts["synthetic_research_alerts"] = 1000
         for name in ("baseline", "loaded"):
             with (
                 sqlite3.connect(config.database_path) as original,
@@ -264,6 +302,8 @@ async def measure(
             ]
             if include_briefs:
                 routes[5] = f"/tokens/sol/{address}/briefs"
+            if include_track_record:
+                routes[5] = "/track-record?days=7&horizon=24"
             durations = []
             api = None
             transport = httpx.ASGITransport(app=app)
@@ -442,7 +482,14 @@ if __name__ == "__main__":
         action="store_true",
         help="Replace the duplicate radar route with brief archive reads; same gates",
     )
+    parser.add_argument(
+        "--include-track-record",
+        action="store_true",
+        help="Add 1000 synthetic alert fixtures and replace duplicate Radar reads; same gates",
+    )
     args = parser.parse_args()
+    if args.include_track_record and args.initial_database:
+        parser.error("Track-record fixture replay requires a new synthetic database")
     if not 0.05 <= args.read_pause_seconds <= 5:
         parser.error("read pause must be between 0.05 and 5 seconds")
     if not REPLAY_WAIT_SECONDS <= args.replay_wait_seconds <= 1.5:
@@ -460,6 +507,7 @@ if __name__ == "__main__":
                 args.replay_wait_seconds,
                 args.read_timeout_ms,
                 args.include_briefs,
+                args.include_track_record,
             )
         )
     )

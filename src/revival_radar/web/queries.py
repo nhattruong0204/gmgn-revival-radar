@@ -164,6 +164,22 @@ class PublicQueries:
         return finite(row[0])
 
     def version(self, until: float, route: str = "") -> tuple:
+        if route in {"track-record", "outcomes"}:
+            # Outcome evidence changes independently of scanner snapshots/briefs.
+            # Current operator attestations still invalidate quarantine immediately.
+            origin = self.db.execute("""SELECT COUNT(*),MAX(updated_at) FROM state
+                WHERE key GLOB 'origin:alert:*' OR key GLOB 'provenance:audit:*'""").fetchone()
+            data = self.db.execute("""SELECT
+                (SELECT MAX(id) FROM alerts WHERE delivery_status='sent'),
+                (SELECT COUNT(*) FROM alerts WHERE delivery_status='sent'),
+                (SELECT MAX(rowid) FROM signal_outcomes),(SELECT COUNT(*) FROM signal_outcomes),
+                (SELECT MAX(saved_at) FROM research_alert_facts),
+                (SELECT COUNT(*) FROM research_alert_facts),
+                (SELECT MAX(sent_at) FROM research_delivery_receipts),
+                (SELECT COUNT(*) FROM research_delivery_receipts),
+                (SELECT MAX(recorded_at) FROM research_checkpoint_facts),
+                (SELECT COUNT(*) FROM research_checkpoint_facts)""").fetchone()
+            return (*origin, *data)
         origin_version = self.db.execute(
             "SELECT COUNT(*),MAX(updated_at) FROM state "
             "WHERE key GLOB 'origin:*' OR key GLOB 'provenance:audit:*'"
@@ -320,7 +336,29 @@ class PublicQueries:
             links=CHAINS[chain].links(address),
         )
 
-    def briefs(self, chain: str, address: str, until: float, page: int, page_size: int):
+    def visible_brief(self, identity, until):
+        excluded = "'test'" if self.allow_synthetic else "'synthetic','test'"
+        return (
+            self.db.execute(
+                f"""SELECT 1 FROM research_briefs b JOIN research_brief_publications p
+            ON p.brief_id=b.id WHERE b.id=? AND b.as_of<=? AND b.saved_at<=? AND p.published_at<=?
+            AND b.origin NOT IN ({excluded}) AND NOT EXISTS(SELECT 1 FROM state s
+                WHERE s.key IN ('origin:brief:scan:' || b.id,'origin:brief:evaluation:' || b.id)
+                AND s.value IN ({excluded}))""",
+                (identity, until, until, until),
+            ).fetchone()
+            is not None
+        )
+
+    def briefs(
+        self,
+        chain: str,
+        address: str,
+        until: float,
+        page: int,
+        page_size: int,
+        version_id: str | None = None,
+    ):
         from revival_radar.models.brief import ResearchBrief
         from revival_radar.web.models import BriefPage
 
@@ -336,6 +374,9 @@ class PublicQueries:
             WHERE visibility.key IN ('origin:brief:scan:' || b.id,
                 'origin:brief:evaluation:' || b.id) AND visibility.value IN ({excluded}))"""
         params = (chain, address, until, until, until)
+        if version_id:
+            where += " AND b.id=?"
+            params += (version_id,)
         base = "FROM research_briefs b JOIN research_brief_publications p ON p.brief_id=b.id"
         total = self.db.execute(f"SELECT COUNT(*) {base} WHERE {where}", params).fetchone()[0]
         rows = self.db.execute(
@@ -450,8 +491,13 @@ class PublicQueries:
     def _alert(self, row: sqlite3.Row) -> Alert:
         base = dict(row)
         # Validate saved alert-time payload against the immutable alert identity/score.
-        payload = self.repo.get_state(f"telegram:alert:{row['id']}")
+        frozen = self.db.execute(
+            "SELECT payload,saved_at FROM research_alert_facts WHERE alert_id=?", (row["id"],)
+        ).fetchone()
+        payload = frozen[0] if frozen else self.repo.get_state(f"telegram:alert:{row['id']}")
         status = row["stage"] or "UNKNOWN"
+        if frozen:
+            status = json.loads(payload)["signal"]["status"]
         evidence = self.repo._market_detail(
             {**base, "status": status, "eligible": True},
             payload,
@@ -486,7 +532,12 @@ class PublicQueries:
                     },
                 }
             )
+        delivery = self.db.execute(
+            "SELECT sent_at FROM research_delivery_receipts WHERE alert_id=?", (row["id"],)
+        ).fetchone()
         return Alert(
+            recorded_at=frozen[1] if frozen else None,
+            confirmed_at=delivery[0] if delivery else None,
             id=row["id"],
             timestamp=row["timestamp"],
             chain=row["chain"],
@@ -504,6 +555,17 @@ class PublicQueries:
             sg.confirmation_score,sg.stage,sg.preset,sg.revision FROM alerts a
             LEFT JOIN alert_signals sg ON sg.alert_id=a.id """
 
+    @staticmethod
+    def alert_visibility():
+        return """a.timestamp<=? AND (
+            (EXISTS(SELECT 1 FROM research_delivery_receipts d WHERE d.alert_id=a.id
+                AND d.sent_at<=?)
+             AND NOT EXISTS(SELECT 1 FROM research_alert_facts f WHERE f.alert_id=a.id
+                AND f.saved_at>?))
+            OR (a.delivery_status='sent'
+                AND NOT EXISTS(SELECT 1 FROM research_delivery_receipts d WHERE d.alert_id=a.id)
+                AND NOT EXISTS(SELECT 1 FROM research_alert_facts f WHERE f.alert_id=a.id)))"""
+
     def alerts(
         self,
         until: float,
@@ -511,8 +573,8 @@ class PublicQueries:
         page: int,
         page_size: int,
     ) -> AlertsPage:
-        where = "WHERE a.delivery_status='sent' AND a.timestamp<=?"
-        parameters = [until]
+        where = "WHERE " + self.alert_visibility()
+        parameters = [until, until, until]
         if chain:
             where += " AND a.chain=?"
             parameters.append(chain)
@@ -535,23 +597,47 @@ class PublicQueries:
 
     def alert(self, identity: int, until: float) -> AlertDetail | None:
         row = self.db.execute(
-            self._alerts_base() + "WHERE a.id=? AND a.delivery_status='sent' AND a.timestamp<=?",
-            (identity, until),
+            self._alerts_base() + "WHERE a.id=? AND " + self.alert_visibility(),
+            (identity, until, until, until),
         ).fetchone()
         if row is None:
             return None
         saved = self._alert(row)
         current = self._latest_row(row["chain"], row["contract_address"], until)
-        checkpoints = self.db.execute(
-            """SELECT horizon_hours,due_at,observed_at,price,market_cap,return_pct
-            FROM signal_outcomes WHERE alert_id=? AND observed_at<=?
-            ORDER BY horizon_hours""",
-            (identity, until),
-        ).fetchall()
+        from revival_radar.analysis.track_record import checkpoint_rows
+
+        research = [
+            item
+            for h in (1, 6, 24, 72)
+            for item in checkpoint_rows(
+                self.repo,
+                row["timestamp"],
+                until,
+                h,
+                synthetic=self.allow_synthetic,
+                alert_id=identity,
+            )
+        ]
+        original_brief = research[0]["brief_id"] if research else None
+        if original_brief and not self.visible_brief(original_brief, until):
+            original_brief = None
         return AlertDetail(
             **saved.model_dump(),
+            checkpoint_research=research,
+            original_brief_id=original_brief,
             latest_observation=self._evaluation(current) if current else None,
-            outcomes=[AlertOutcome(**dict(item)) for item in checkpoints],
+            outcomes=[
+                AlertOutcome(
+                    horizon_hours=item["horizon_hours"],
+                    due_at=item["due_at"],
+                    observed_at=item["observed_at"],
+                    price=item["checkpoint_price"],
+                    market_cap=item["checkpoint_market_cap"],
+                    return_pct=item["return_pct"],
+                )
+                for item in research
+                if item["observed_at"] is not None
+            ],
             as_of=until,
         )
 
@@ -588,4 +674,118 @@ class PublicQueries:
             since=since,
             until=until,
             horizons=self.repo.outcome_summary(since, until),
+        )
+
+    def track_record(self, until, days, horizon, filters, page, page_size):
+        from revival_radar.analysis.track_record import accounting, checkpoint_rows
+        from revival_radar.web.models import TrackRecord
+
+        rows = checkpoint_rows(
+            self.repo, until - days * 86400, until, horizon, synthetic=self.allow_synthetic
+        )
+        allowed = len(rows)
+        count_where = "a.timestamp BETWEEN ? AND ? AND " + self.alert_visibility()
+        count_params = (until - days * 86400, until, until, until, until)
+        confirmed = self.db.execute(
+            "SELECT COUNT(*) FROM main.alerts a WHERE " + count_where, count_params
+        ).fetchone()[0]
+        excluded_origins = "'test'" if self.allow_synthetic else "'synthetic','test'"
+        excluded_fixtures = self.db.execute(
+            f"""SELECT COUNT(*) FROM main.alerts a WHERE {count_where}
+            AND EXISTS(SELECT 1 FROM state s WHERE s.key='origin:alert:' || a.id
+                AND s.value IN ({excluded_origins}))""",
+            count_params,
+        ).fetchone()[0]
+        for key in ("chain", "preset", "revision", "score_version", "origin", "knowledge"):
+            wanted = filters.get(key)
+            if wanted is not None:
+                rows = [
+                    r for r in rows if ("unknown" if r[key] is None else str(r[key])) == str(wanted)
+                ]
+        groups = {}
+        for row in rows:
+            groups.setdefault(row["cohort_id"], []).append(row)
+        cohorts = [
+            {
+                "id": identity,
+                **{
+                    key: values[0][key]
+                    for key in (
+                        "chain",
+                        "preset",
+                        "revision",
+                        "score_version",
+                        "origin",
+                        "knowledge",
+                    )
+                },
+                "counts": accounting(values),
+            }
+            for identity, values in sorted(groups.items())
+        ]
+        if filters.get("cohort"):
+            rows = groups.get(filters["cohort"], [])
+        if filters.get("checkpoint"):
+            rows = [row for row in rows if row["state"] == filters["checkpoint"]]
+        if filters.get("bucket") is not None:
+            bucket = filters["bucket"]
+
+            def bucket_for(value):
+                return (
+                    0
+                    if value < -50
+                    else 1
+                    if value < 0
+                    else 2
+                    if value == 0
+                    else 3
+                    if value <= 50
+                    else 4
+                )
+
+            rows = [
+                row
+                for row in rows
+                if row["return_pct"] is not None and bucket_for(row["return_pct"]) == bucket
+            ]
+        comparable = len({r["cohort_id"] for r in rows}) <= 1
+        offset = (page - 1) * page_size
+        return TrackRecord(
+            since=until - days * 86400,
+            as_of=until,
+            filters={"days": days, "horizon": horizon, **filters},
+            reconciliation={
+                "confirmed_or_legacy_sent_before_origin_policy": confirmed,
+                "known_fixture_alerts_excluded": excluded_fixtures,
+                "allowed_before_cohort_filters": allowed,
+                "cohort_filters_excluded": allowed - len(rows),
+            },
+            definition="One confirmed delivered alert per row, alert timestamps in inclusive "
+            "[since, as_of]. First usable saved checkpoint in [due, due+1h], inclusive. "
+            "Alert-time strategy/version only; no retrospective peak-ranked reports. "
+            "Horizons anchor to the original alert observation, not delivery time.",
+            exclusions=[
+                "Non-confirmed delivery",
+                "Evidence recorded after the cutoff",
+                "Known synthetic/test origins under the default saved-data policy",
+                "Missing, nonfinite, inconsistent or out-of-window returns from distribution/rates",
+            ],
+            limitations=[
+                "Observed checkpoint price changes are not executed trades or realized P&L.",
+                "Fees, slippage, liquidity, execution and quote-currency identity are unknown.",
+                "Legacy first-recorded/delivery times are unknown; "
+                "legacy replay is an event-time view.",
+                "Rates/medians are withheld for pooled incompatible cohorts; "
+                "select an exact cohort.",
+                "Repeated alerts are not independent trades; "
+                "no confidence interval or predictive success is inferred.",
+                "Only retained alerts are included; "
+                "deleted/missing historic data is not reconstructed.",
+            ],
+            summary=accounting(rows, comparable=comparable),
+            cohorts=cohorts,
+            items=rows[offset : offset + page_size],
+            total=len(rows),
+            page=page,
+            page_size=page_size,
         )

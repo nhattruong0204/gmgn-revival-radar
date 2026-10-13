@@ -305,7 +305,7 @@ export function Stat({
   return (
     <div className="stat-card">
       <div className="stat-label">
-        {label}
+        <span>{label}</span>
         <Icon name={icon} />
       </div>
       <div className={`stat-value ${tone ?? ""}`}>{value}</div>

@@ -33,8 +33,11 @@ async def test_saved_bot_public_parity_across_cutoffs_identity_and_unknowns(
             timestamp=NOW - 7200,
             score=95 - index * 5,
         )
+        # The third alert represents a genuine pre-seven record, not a mutated new receipt.
+        repo.research_outcomes_enabled = index != 2
         alert = repo.reserve_alert(snapshot, signal, live, context)
         repo.finish_alert(alert, "sent", message_id=987654321)
+        repo.research_outcomes_enabled = True
         alerts.append(alert)
         if index < 2:
             repo.observe_outcomes(

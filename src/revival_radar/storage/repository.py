@@ -15,6 +15,7 @@ from revival_radar.analysis.filters import first_pass
 from revival_radar.config import Settings
 from revival_radar.metrics import sqlite_timed
 from revival_radar.models.brief import build_brief
+from revival_radar.models.research_identity import research_context, research_digest
 from revival_radar.models.signal import RevivalResult, has_returning_activity
 from revival_radar.models.token import TokenSnapshot
 from revival_radar.storage.database import SNAPSHOT_FIELDS
@@ -24,6 +25,7 @@ class Repository:
     def __init__(self, db: sqlite3.Connection):
         self.db = db
         self.research_briefs_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 6
+        self.research_outcomes_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 7
         # Connection-local and read-only: a report never trusts unvalidated JSON
         # sub-scores for ranking. Re-registering on a reused connection is safe.
         db.create_function(
@@ -143,6 +145,27 @@ class Repository:
                 ),
             )
             self.record_origin("alert", cursor.lastrowid, origin)
+            if self.research_outcomes_enabled:
+                saved_at = max(time.time(), token.timestamp)
+                digest = research_digest(token, result, configuration)
+                linked = self.db.execute(
+                    """SELECT id FROM research_briefs WHERE chain=?
+                    AND contract_address=? AND as_of=? AND saved_at<=?
+                    AND json_extract(payload,'$.evidence_digest')=?
+                    ORDER BY saved_at DESC,id DESC LIMIT 1""",
+                    (*token.key, token.timestamp, saved_at, digest),
+                ).fetchone()
+                self.db.execute(
+                    "INSERT INTO research_alert_facts VALUES (?,?,?,?,?,?)",
+                    (
+                        cursor.lastrowid,
+                        saved_at,
+                        self._presentation(token, result, research_context(configuration)),
+                        result.score_version,
+                        linked[0] if linked else None,
+                        token.price,
+                    ),
+                )
             self.db.commit()
             return cursor.lastrowid
         except (sqlite3.Error, ValueError):
@@ -197,6 +220,12 @@ class Repository:
                 "UPDATE alerts SET delivery_status=?, telegram_message_id=? WHERE id=?",
                 (status, message_id, alert_id),
             )
+            if status == "sent" and self.research_outcomes_enabled:
+                self.db.execute(
+                    """INSERT OR IGNORE INTO research_delivery_receipts
+                    SELECT id,MAX(timestamp,?) FROM alerts WHERE id=?""",
+                    (time.time(), alert_id),
+                )
 
     @sqlite_timed
     def begin_scan(
@@ -1114,14 +1143,25 @@ class Repository:
         return dict(row) if row else {}
 
     @sqlite_timed
-    def observe_outcomes(self, token: TokenSnapshot) -> int:
+    def observe_outcomes(self, token: TokenSnapshot, *, origin: str = "unknown") -> int:
         """First usable snapshot within one hour after each horizon, without interpolation."""
         if token.price is None and token.market_cap is None:
             return 0
+        captured_join = (
+            "LEFT JOIN research_alert_facts f ON f.alert_id=a.id"
+            if self.research_outcomes_enabled
+            else ""
+        )
+        initial_price = (
+            "CASE WHEN f.alert_id IS NOT NULL THEN f.initial_price ELSE s.price END"
+            if self.research_outcomes_enabled
+            else "s.price"
+        )
         rows = self.db.execute(
-            """WITH horizons(hours) AS (VALUES(1),(6),(24),(72))
-            SELECT a.id, s.price, h.hours, a.timestamp+h.hours*3600 AS due
-            FROM alerts a JOIN alert_signals s ON s.alert_id=a.id CROSS JOIN horizons h
+            f"""WITH horizons(hours) AS (VALUES(1),(6),(24),(72))
+            SELECT a.id, {initial_price} AS price, h.hours, a.timestamp+h.hours*3600 AS due
+            FROM alerts a JOIN alert_signals s ON s.alert_id=a.id {captured_join}
+            CROSS JOIN horizons h
             WHERE a.chain=? AND a.contract_address=? AND a.delivery_status='sent'
             AND ? BETWEEN a.timestamp+h.hours*3600 AND a.timestamp+(h.hours+1)*3600""",
             (*token.key, token.timestamp),
@@ -1150,6 +1190,21 @@ class Repository:
                     ),
                 )
                 inserted += cursor.rowcount
+                if cursor.rowcount and self.research_outcomes_enabled:
+                    self.db.execute(
+                        "INSERT INTO research_checkpoint_facts VALUES (?,?,?,?,?,?,?,?,?)",
+                        (
+                            row["id"],
+                            row["hours"],
+                            max(time.time(), token.timestamp),
+                            row["due"],
+                            token.timestamp,
+                            token.price,
+                            token.market_cap,
+                            change,
+                            origin if origin in {"live", "synthetic", "test"} else "unknown",
+                        ),
+                    )
         return inserted
 
     @sqlite_timed
@@ -1189,6 +1244,22 @@ class Repository:
         ]
 
     def outcome_summary(self, since: float, until: float) -> dict:
+        if self.research_outcomes_enabled:
+            from revival_radar.analysis.track_record import accounting, checkpoint_rows
+
+            fields = (
+                "observed",
+                "returns_available",
+                "positive",
+                "median_return_pct",
+                "pending",
+                "missed",
+            )
+            return {
+                str(h): {key: counts[key] for key in fields}
+                for h in (1, 6, 24, 72)
+                for counts in [accounting(checkpoint_rows(self, since, until, h))]
+            }
         result = {}
         for hours in (1, 6, 24, 72):
             rows = self.db.execute(

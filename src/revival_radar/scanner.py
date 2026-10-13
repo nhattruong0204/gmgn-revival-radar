@@ -143,7 +143,7 @@ class Scanner:
             market_received_at=time.time(),
         )
         history = self.repository.history(token, self.config.history_observations * 3)
-        self.repository.observe_outcomes(token)
+        self.repository.observe_outcomes(token, origin=self.origin)
         structure = Structure()
         result = score_token(token, history, structure, self.config)
         if not first_pass(token, self.config).passed:
@@ -488,7 +488,7 @@ class Scanner:
                     token = await self.enrichment.market(seed)
                 # A new poll is required; cached/discovery snapshots never count as checkpoints.
                 self.repository.save_snapshot(token, origin=self.origin)
-                self.repository.observe_outcomes(token)
+                self.repository.observe_outcomes(token, origin=self.origin)
                 self._count(report, token.chain, "outcome_polled")
             except EnrichmentDeferred:
                 break
