@@ -180,19 +180,36 @@ class PublicQueries:
                 (SELECT MAX(recorded_at) FROM research_checkpoint_facts),
                 (SELECT COUNT(*) FROM research_checkpoint_facts)""").fetchone()
             return (*origin, *data)
-        origin_version = self.db.execute(
-            "SELECT COUNT(*),MAX(updated_at) FROM state "
-            "WHERE key GLOB 'origin:*' OR key GLOB 'provenance:audit:*'"
-        ).fetchone()
         if route in {"meta", "radar", "reports"}:
             # These routes use only frozen evaluations from completed scans.
-            # New snapshots during an unfinished scan do not change their data.
+            # Origins for unrelated snapshots/briefs or unfinished evaluations
+            # cannot change this view. Operator audit changes still invalidate
+            # immediately, including quarantine of previously completed rows.
+            origin_version = self.db.execute(
+                """SELECT COUNT(*),MAX(updated_at) FROM (
+                SELECT p.updated_at FROM state p JOIN main.scan_runs s
+                ON s.id=CAST(substr(p.key,13) AS INTEGER)
+                WHERE p.key GLOB 'origin:scan:*' AND s.finished<=?
+                UNION ALL
+                SELECT p.updated_at FROM state p JOIN main.evaluations e
+                ON e.id=CAST(substr(p.key,19) AS INTEGER)
+                JOIN main.scan_runs s ON s.id=e.scan_id
+                WHERE p.key GLOB 'origin:evaluation:*' AND s.finished<=?
+                UNION ALL
+                SELECT updated_at FROM state WHERE key GLOB 'provenance:audit:*'
+            )""",
+                (until, until),
+            ).fetchone()
             return tuple(origin_version) + tuple(
                 self.db.execute(
                     "SELECT MAX(finished),MAX(id),COUNT(*) FROM scan_runs WHERE finished<=?",
                     (until,),
                 ).fetchone()
             )
+        origin_version = self.db.execute(
+            "SELECT COUNT(*),MAX(updated_at) FROM state "
+            "WHERE key GLOB 'origin:*' OR key GLOB 'provenance:audit:*'"
+        ).fetchone()
         # A lower-ID pending alert can finish after a newer alert was sent. Its
         # receipt must invalidate cached lists/outcomes even when MAX(id) is unchanged.
         # Outcome rows can also arrive without a new snapshot or completed scan.

@@ -665,10 +665,13 @@ class Repository:
             raise ValueError("Invalid market report window")
         ZoneInfo(timezone)
         # Invalid/missing legacy JSON contributes its saved score, with unknown sub-scores.
-        base = """FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id
-            LEFT JOIN state st ON st.key='telegram:evaluation:' || e.id
-            WHERE e.chain='sol' AND e.timestamp>? AND e.timestamp<=?
+        source = "FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id "
+        window = """WHERE e.chain='sol' AND e.timestamp>? AND e.timestamp<=?
             AND s.finished IS NOT NULL AND s.finished<=?"""
+        # Ranking/coverage need scalar rows only. Joining retained presentation
+        # payloads here reads large JSON for every observation, even though only
+        # boundary-score candidates and configuration inspection need it.
+        base = source + window
         params = (since, until, until)
         valid = "CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END"
         query = f"""WITH observations AS MATERIALIZED (
@@ -714,7 +717,9 @@ class Repository:
         configurations = self.db.execute(
             f"SELECT DISTINCT COALESCE(json_extract({valid},'$.configuration'),'legacy') || ':' || "
             f"COALESCE(json_extract({valid},'$.signal.score_version'),'legacy') "
-            + base
+            + source
+            + "LEFT JOIN state st ON st.key='telegram:evaluation:' || e.id "
+            + window
             + " LIMIT 2",
             params,
         ).fetchall()

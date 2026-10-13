@@ -10,11 +10,47 @@ import pytest
 
 from revival_radar.storage.database import SCHEMA_VERSION
 from revival_radar.web.app import create_app
+from revival_radar.web.config import WebConfig
 from revival_radar.web.queries import PublicQueries, public_reader
 
 from .conftest import changed
 from .test_web_public import NOW, observe
 from .test_web_public import web as web
+
+
+@pytest.mark.parametrize("route", ["meta", "radar", "reports"])
+def test_completed_view_version_ignores_unrelated_and_unfinished_origins(
+    repo, token, config, route
+):
+    observe(repo, token, config)
+    database = repo.db.execute("PRAGMA database_list").fetchone()[2]
+
+    def version():
+        with public_reader(WebConfig(database_path=database)) as queries:
+            return queries.version(NOW, route)
+
+    original = version()
+    repo.record_origin("snapshot", 1, "live")
+    repo.record_origin("alert", 1, "live")
+    repo.set_state("origin:brief:scan:unrelated", "live")
+    observe(repo, token, config, timestamp=NOW - 50, finished=False)
+    scan = repo.db.execute("SELECT MAX(id) FROM scan_runs").fetchone()[0]
+    evaluation = repo.db.execute("SELECT MAX(id) FROM evaluations").fetchone()[0]
+    repo.record_origin("scan", scan, "live")
+    repo.record_origin("evaluation", evaluation, "live")
+    repo.db.commit()
+    assert version() == original
+    repo.finish_scan(scan, SimpleNamespace(processed=1), NOW - 49)
+    completed = version()
+    assert completed != original
+    # A late original-origin marker or operator audit of existing evidence must
+    # still invalidate, without waiting for another completed scan.
+    repo.record_origin("evaluation", 1, "test")
+    repo.db.commit()
+    classified = version()
+    assert classified != completed
+    repo.set_state("provenance:audit:review", "reviewed")
+    assert version() != classified
 
 
 async def test_radar_cache_detects_late_completion_with_same_finished_time(
