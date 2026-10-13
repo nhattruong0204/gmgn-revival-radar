@@ -6,8 +6,12 @@ import copy
 import hashlib
 import json
 import logging
+import os
+import socket
 import sqlite3
 import statistics
+import subprocess
+import sys
 import tempfile
 import time
 from collections import Counter
@@ -61,20 +65,22 @@ def expanded_source(tokens: int) -> DemoSource:
 class ReplaySource(DemoSource):
     """Identical saved responses with declared cooperative provider wait latency."""
 
+    wait_seconds = REPLAY_WAIT_SECONDS
+
     async def discover(self, chain, source):
-        await asyncio.sleep(REPLAY_WAIT_SECONDS)
+        await asyncio.sleep(self.wait_seconds)
         return await super().discover(chain, source)
 
     async def enrich_market(self, token):
-        await asyncio.sleep(REPLAY_WAIT_SECONDS)
+        await asyncio.sleep(self.wait_seconds)
         return token
 
     async def enrich_security(self, token):
-        await asyncio.sleep(REPLAY_WAIT_SECONDS)
+        await asyncio.sleep(self.wait_seconds)
         return token
 
     async def candles(self, token):
-        await asyncio.sleep(REPLAY_WAIT_SECONDS)
+        await asyncio.sleep(self.wait_seconds)
         return await super().candles(token)
 
 
@@ -133,7 +139,22 @@ def percentile(values, fraction):
     return sorted(values)[max(0, int(len(values) * fraction + 0.999) - 1)]
 
 
-async def measure(tokens=100):
+def database_digest(path):
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+async def measure(
+    tokens=100,
+    initial_database: Path | None = None,
+    separate_api_process=False,
+    read_pause=0.05,
+    replay_wait=REPLAY_WAIT_SECONDS,
+    read_timeout_ms=1500,
+):
     with tempfile.TemporaryDirectory(prefix="radar-web-load-") as directory:
         root = Path(directory)
         source = expanded_source(tokens)
@@ -149,17 +170,43 @@ async def measure(tokens=100):
             discovery_limit=tokens,
             watchlist_limit=tokens,
         )
-        counts = seed(config.database_path, source, config)
+        if initial_database is None:
+            counts = seed(config.database_path, source, config)
+        else:
+            # Source remains read-only. Migrations and replay changes affect only
+            # the private temporary copy, never the production database.
+            with (
+                sqlite3.connect(
+                    initial_database.resolve().as_uri() + "?mode=ro", uri=True
+                ) as original,
+                sqlite3.connect(config.database_path) as target,
+            ):
+                original.backup(target)
+            db = connect(config.database_path)
+            try:
+                counts = {
+                    name: db.execute(f"SELECT COUNT(*) FROM {name}").fetchone()[0]
+                    for name in (
+                        "token_snapshots",
+                        "evaluations",
+                        "scan_runs",
+                        "alerts",
+                        "signal_outcomes",
+                    )
+                }
+                # Replay only synthetic identities; keep production history for
+                # realistic public queries without refreshing real watch tokens.
+                db.execute("DELETE FROM watch_state")
+                db.commit()
+            finally:
+                db.close()
         for name in ("baseline", "loaded"):
             with (
                 sqlite3.connect(config.database_path) as original,
                 sqlite3.connect(root / f"{name}.db") as target,
             ):
                 original.backup(target)
-        hashes = [
-            hashlib.sha256((root / f"{name}.db").read_bytes()).hexdigest()
-            for name in ("baseline", "loaded")
-        ]
+        hashes = [database_digest(root / f"{name}.db") for name in ("baseline", "loaded")]
         assert hashes[0] == hashes[1], "Both arms must start with identical saved data"
         attempts, scan_errors, scans_during_reads = 0, 0, 0
         latencies, statuses, statements, sqlite_errors = {}, Counter(), Counter(), Counter()
@@ -192,10 +239,15 @@ async def measure(tokens=100):
             db = connect(root / f"{name}.db")
             repo = Repository(db)
             replay = ReplaySource()
+            replay.wait_seconds = replay_wait
             replay.data = copy.deepcopy(source.data)
             settings = config.model_copy(update={"database_path": root / f"{name}.db"})
             app = create_app(
-                WebConfig(database_path=settings.database_path, web_public_rate_limit=10000)
+                WebConfig(
+                    database_path=settings.database_path,
+                    web_public_rate_limit=10000,
+                    web_read_timeout_ms=read_timeout_ms,
+                )
             )
             address = source.data[0]["token"]["contract_address"]
             routes = [
@@ -208,11 +260,53 @@ async def measure(tokens=100):
                 f"/tokens/sol/{address}/history",
             ]
             durations = []
+            api = None
+            transport = httpx.ASGITransport(app=app)
+            origin = "http://benchmark"
+            if browse and separate_api_process:
+                with socket.socket() as listener:
+                    listener.bind(("127.0.0.1", 0))
+                    port = listener.getsockname()[1]
+                environment = dict(
+                    os.environ,
+                    DATABASE_PATH=str(settings.database_path),
+                    WEB_ADMIN_ENABLED="false",
+                    WEB_PUBLIC_RATE_LIMIT="10000",
+                    WEB_READ_TIMEOUT_MS=str(read_timeout_ms),
+                )
+                api = subprocess.Popen(
+                    [
+                        sys.executable,
+                        "-m",
+                        "revival_radar.web",
+                        "--host",
+                        "127.0.0.1",
+                        "--port",
+                        str(port),
+                    ],
+                    env=environment,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                origin = f"http://127.0.0.1:{port}"
+                transport = None
+                async with httpx.AsyncClient(trust_env=False) as ready:
+                    for _ in range(100):
+                        if api.poll() is not None:
+                            raise RuntimeError("Isolated API process failed to start")
+                        try:
+                            if (await ready.get(origin + "/api/v1/meta")).status_code == 200:
+                                break
+                        except httpx.TransportError:
+                            pass
+                        await asyncio.sleep(read_pause)
+                    else:
+                        api.terminate()
+                        api.wait(timeout=10)
+                        raise RuntimeError("Isolated API readiness timed out")
             async with (
                 httpx.AsyncClient(transport=httpx.MockTransport(forbidden)) as upstream,
-                httpx.AsyncClient(
-                    transport=httpx.ASGITransport(app=app), base_url="http://benchmark"
-                ) as browser,
+                httpx.AsyncClient(transport=transport, base_url=origin, trust_env=False) as browser,
             ):
 
                 async def read_client(index):
@@ -246,12 +340,19 @@ async def measure(tokens=100):
                     radar = (
                         await browser.get("/api/v1/radar?page_size=1&include_ignore=true")
                     ).json()
-                    assert radar["total"] == tokens
+                    assert (
+                        radar["total"] == tokens
+                        if initial_database is None
+                        else radar["total"] >= tokens
+                    )
                 finally:
                     if task is not None and not task.done():
                         task.cancel()
                         await asyncio.gather(task, return_exceptions=True)
                     public.public_reader = original_reader
+                    if api is not None:
+                        api.terminate()
+                        api.wait(timeout=10)
                     db.close()
             return durations
 
@@ -275,8 +376,12 @@ async def measure(tokens=100):
             "scans_per_arm": SCANS,
             "identical_initial_database": hashes[0] == hashes[1],
             "initial_rows": counts,
-            "replay_wait_per_provider_operation_seconds": REPLAY_WAIT_SECONDS,
+            "production_copy": initial_database is not None,
+            "separate_api_process": separate_api_process,
+            "replay_wait_per_provider_operation_seconds": replay_wait,
             "clients": CLIENTS,
+            "read_pause_seconds": read_pause,
+            "read_timeout_ms": read_timeout_ms,
             "public_requests": sum(statuses.values()),
             "http_statuses": dict(statuses),
             "external_requests": attempts,
@@ -300,9 +405,10 @@ async def measure(tokens=100):
             "read_sqlite_errors": dict(sqlite_errors),
             "passed": passed,
             "limitations": (
-                "Synthetic bounded corpus and ASGI transport; 5ms replay waits are not live "
-                "provider latency. Production-size database, proxy/network and VPS resources "
-                "still require launch validation."
+                "Current scans use synthetic identities and mocked provider waits, even when "
+                "retained history comes from a production copy. Separate-process mode uses "
+                "loopback HTTP without SQL tracing; otherwise transport is in-process ASGI. "
+                "Neither mode measures live provider quotas or Internet/TLS/proxy latency."
             ),
         }
         print(json.dumps(result, indent=2))
@@ -312,6 +418,36 @@ async def measure(tokens=100):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tokens", type=int, default=100, choices=range(3, 101))
+    parser.add_argument(
+        "--initial-database",
+        type=Path,
+        help="Read-only source copied into isolated replay databases",
+    )
+    parser.add_argument(
+        "--separate-api-process",
+        action="store_true",
+        help="Match the deployment's separate API process using loopback HTTP",
+    )
+    parser.add_argument("--read-pause-seconds", type=float, default=0.05)
+    parser.add_argument("--replay-wait-seconds", type=float, default=REPLAY_WAIT_SECONDS)
+    parser.add_argument("--read-timeout-ms", type=int, default=1500)
     args = parser.parse_args()
+    if not 0.05 <= args.read_pause_seconds <= 5:
+        parser.error("read pause must be between 0.05 and 5 seconds")
+    if not REPLAY_WAIT_SECONDS <= args.replay_wait_seconds <= 1.5:
+        parser.error("replay wait must be between 0.005 and 1.5 seconds")
+    if not 100 <= args.read_timeout_ms <= 10000:
+        parser.error("read timeout must be between 100 and 10000ms")
     logging.disable(logging.INFO)
-    raise SystemExit(asyncio.run(measure(args.tokens)))
+    raise SystemExit(
+        asyncio.run(
+            measure(
+                args.tokens,
+                args.initial_database,
+                args.separate_api_process,
+                args.read_pause_seconds,
+                args.replay_wait_seconds,
+                args.read_timeout_ms,
+            )
+        )
+    )

@@ -1,0 +1,8 @@
+[Unit]
+Description=OnchainFlow website and bot freshness check
+After=network-online.target
+
+[Service]
+Type=oneshot
+UMask=0077
+ExecStart=/usr/bin/python3 /opt/gmgn-revival-radar/scripts/website_health.py --database /opt/gmgn-revival-radar/data/revival_radar.db

@@ -2,7 +2,10 @@
 
 A small Python 3.12 scanner that watches **GMGN Hot Searches**, stores
 SQLite snapshots, and alerts on previously dumped tokens showing a base and returning
-volume/transactions. No frontend, broker, wallet, or trading system.
+volume/transactions. The public dashboard is live at
+**https://onchainflow.app**, with private owner controls at
+**https://onchainflow.app/admin**. See the [production launch record](docs/website-launch.md)
+for deployment, recovery and verification details.
 
 **This tool produces heuristic market alerts. It does not guarantee profit.
 It does not execute trades.** A high score is a rule match, not a calibrated probability.

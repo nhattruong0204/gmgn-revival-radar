@@ -528,7 +528,8 @@ class Repository:
         params = (since, until, until)
         valid = "CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END"
         query = f"""WITH observations AS MATERIALIZED (
-            SELECT e.*,MAX(e.score) OVER (PARTITION BY e.contract_address) AS peak_score,
+            SELECT e.id,e.chain,e.contract_address,e.timestamp,e.score,e.status,e.eligible,
+                MAX(e.score) OVER (PARTITION BY e.contract_address) AS peak_score,
                 ROW_NUMBER() OVER (
                     PARTITION BY e.contract_address ORDER BY e.timestamp DESC,e.id DESC
                 ) AS latest_position,
@@ -561,12 +562,18 @@ class Repository:
         ranked = self.db.execute(query, (*params, limit - 1, limit)).fetchall()
         totals = self.db.execute(
             "SELECT COUNT(*) AS evaluations,COUNT(DISTINCT e.contract_address) AS unique_tokens,"
-            "MIN(e.timestamp) AS first_observation,MAX(s.finished) AS last_finished,"
-            f"COUNT(DISTINCT COALESCE(json_extract({valid},'$.configuration'),'legacy') || ':' || "
-            f"COALESCE(json_extract({valid},'$.signal.score_version'),'legacy')) AS configurations "
-            + base,
+            "MIN(e.timestamp) AS first_observation,MAX(s.finished) AS last_finished " + base,
             params,
         ).fetchone()
+        # Only two distinct configurations are needed for the warning. Avoid
+        # parsing every retained presentation after a difference is established.
+        configurations = self.db.execute(
+            f"SELECT DISTINCT COALESCE(json_extract({valid},'$.configuration'),'legacy') || ':' || "
+            f"COALESCE(json_extract({valid},'$.signal.score_version'),'legacy') "
+            + base
+            + " LIMIT 2",
+            params,
+        ).fetchall()
         runs = self.db.execute(
             """SELECT SUM(CASE WHEN finished IS NOT NULL AND finished<=? THEN 1 ELSE 0 END)
                 AS completed_scans,SUM(CASE WHEN finished IS NULL OR finished>? THEN 1 ELSE 0 END)
@@ -605,7 +612,7 @@ class Repository:
             "incomplete_scans": runs["incomplete_scans"] or 0,
             "first_observation": totals["first_observation"],
             "last_finished": totals["last_finished"],
-            "multiple_configurations": totals["configurations"] > 1,
+            "multiple_configurations": len(configurations) > 1,
             "entries": entries,
         }
 

@@ -1,10 +1,8 @@
 # Website operation and HTTPS launch
 
-The website implementation is merged into `main`. Local verification is recorded
-in [website validation](website-validation.md). The proposed host is VPS `130.94.7.127`; the proposed domain is
-`onchain.revival.com`. SSH access and control of the parent domain `revival.com`
-have not been confirmed, so there is **no verified deployed URL**.
-Issue #16's HTTPS launch acceptance remains open until deployment and smoke checks.
+The website is live at **https://onchainflow.app**, with private owner controls
+at **https://onchainflow.app/admin**, on the existing bot host.
+Actual-host verification is recorded in [the production launch record](website-launch.md).
 
 For the Docker release workflow, matched backups, monitoring and pending launch
 sign-off, see [website operations](website-operations.md). The Compose overlay and

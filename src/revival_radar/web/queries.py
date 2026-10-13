@@ -135,7 +135,16 @@ class PublicQueries:
         ).fetchone()
         return finite(row[0])
 
-    def version(self, until: float) -> tuple:
+    def version(self, until: float, route: str = "") -> tuple:
+        if route in {"meta", "radar", "reports"}:
+            # These routes use only frozen evaluations from completed scans.
+            # New snapshots during an unfinished scan do not change their data.
+            return tuple(
+                self.db.execute(
+                    "SELECT MAX(finished),MAX(id),COUNT(*) FROM scan_runs WHERE finished<=?",
+                    (until,),
+                ).fetchone()
+            )
         # A lower-ID pending alert can finish after a newer alert was sent. Its
         # receipt must invalidate cached lists/outcomes even when MAX(id) is unchanged.
         # Outcome rows can also arrive without a new snapshot or completed scan.
@@ -176,7 +185,7 @@ class PublicQueries:
         page: int,
         page_size: int,
     ) -> RadarPage:
-        filters, arguments = ["position=1", "e.score>=?"], [min_score]
+        filters, arguments = ["e.score>=?"], [min_score]
         if status:
             filters.append("e.status=?")
             arguments.append(status)
@@ -194,17 +203,31 @@ class PublicQueries:
                 "e.status,e.eligible,'name') LIKE ? ESCAPE '\\' OR instr(e.contract_address,?)>0)"
             )
             arguments.extend((f"%{escaped}%", f"%{escaped}%", search))
-        cte = """WITH latest AS (
-            SELECT e.*,ROW_NUMBER() OVER (PARTITION BY e.chain,e.contract_address
-                ORDER BY e.timestamp DESC,e.id DESC) AS position
-            FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id
-            WHERE e.timestamp>? AND e.timestamp<=? AND s.finished IS NOT NULL AND s.finished<=?
+        cte = """WITH identities AS (
+            SELECT DISTINCT chain,contract_address FROM evaluations
+            WHERE timestamp>? AND timestamp<=?
+        ), latest AS (
+            SELECT e.* FROM identities i JOIN evaluations e ON e.id=(
+                SELECT candidate.id FROM evaluations candidate
+                JOIN scan_runs s ON s.id=candidate.scan_id
+                WHERE candidate.chain=i.chain AND candidate.contract_address=i.contract_address
+                AND candidate.timestamp>? AND candidate.timestamp<=?
+                AND s.finished IS NOT NULL AND s.finished<=?
+                ORDER BY candidate.timestamp DESC,candidate.id DESC LIMIT 1
+            )
         ) """
         selection = (
             "FROM latest e LEFT JOIN state st ON st.key='telegram:evaluation:' || e.id WHERE "
             + " AND ".join(filters)
         )
-        parameters = (until - LOOKBACK_SECONDS, until, until, *arguments)
+        parameters = (
+            until - LOOKBACK_SECONDS,
+            until,
+            until - LOOKBACK_SECONDS,
+            until,
+            until,
+            *arguments,
+        )
         total = self.db.execute(cte + "SELECT COUNT(*) " + selection, parameters).fetchone()[0]
         if sort in ("score", "timestamp"):
             sorting = f"e.{sort}"

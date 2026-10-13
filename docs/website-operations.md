@@ -1,10 +1,9 @@
 # Website release operations (#26)
 
-Launch is pending. There is no deployed URL. The proposed VPS is 130.94.7.127;
-cloud connections to SSH/HTTP/HTTPS were refused and no SSH identity is available.
-The owner has not chosen a domain. Provider public-display permission and host
-resources must also be confirmed before exposing market data. Issues #26 and #16
-remain open until their actual-host criteria pass.
+The website is live at **https://onchainflow.app** on the existing bot host. The owner purchased the domain through Cloudflare and confirmed
+successful browser sign-in after clearing a cached negative DNS result.
+See [the production launch record](website-launch.md) for actual-host smoke,
+backup/recovery, parity, freshness and capacity evidence.
 
 ## Package and host prerequisites
 
@@ -25,8 +24,8 @@ full Git commit SHA, database path, UID/GID and current scan/provider/report set
 Check there is only one scanner: inspect the existing Compose project and systemd
 services; do not introduce a second project or scanner process. Obtain a domain
 you control, point A/AAAA records at this host, verify the existing firewall/proxy,
-and confirm your provider agreement allows public display. A child domain such
-as `onchain.revival.com` requires control of `revival.com`.
+and review public-display permissions for the data being published. The production
+domain is `onchainflow.app`.
 
 ## Controlled release (default Docker layout)
 
@@ -166,7 +165,7 @@ injects an outbound HTTP proxy, the script exempts only its local backend IP fro
 that proxy. This is internal staging routing, not a production network change.
 CI also builds and runs this HTTPS check.
 
-## Actual launch sign-off still required
+## Release acceptance for subsequent deployments
 
 Record the purchased domain, deployed HTTPS URL, approved data-display rights,
 resource checks and release/image references in #26/#16. At the real URL verify
