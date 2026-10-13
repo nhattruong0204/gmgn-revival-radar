@@ -88,6 +88,7 @@ export interface TokenResponse {
   links?: Record<string, string | null>;
 }
 export interface Candle {
+  volume_usd?: number | null;
   timestamp: number;
   open: number;
   high: number;

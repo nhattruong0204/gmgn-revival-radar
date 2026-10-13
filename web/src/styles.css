@@ -2373,3 +2373,58 @@ textarea,
 .method-hero {
   border-radius: var(--research-radius-panel);
 }
+/* Linked saved-candle panels; SVG width follows the available CSS viewport. */
+.candle-workspace {
+  min-width: 0;
+}
+.candle-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.candle-controls button,
+.candle-workspace details > button {
+  min-height: 44px;
+}
+.candle-inspection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 110px;
+  font-size: var(--research-type-table);
+  overflow-wrap: anywhere;
+}
+.candle-workspace svg {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  touch-action: pan-y;
+}
+.candle-workspace svg text {
+  fill: var(--research-muted, #a8b7c4);
+  font-size: 12px;
+}
+.candle-grid {
+  stroke: #607584;
+  stroke-dasharray: 3 5;
+}
+.candle-boundary {
+  stroke: #e5bb73;
+  stroke-dasharray: 6 4;
+}
+.candle-crosshair {
+  stroke: #d9e4ea;
+  stroke-dasharray: 3 3;
+}
+.candle-up {
+  fill: #64dda9;
+  stroke: #64dda9;
+}
+.candle-down {
+  fill: #ef9292;
+  stroke: #ef9292;
+}
+.candle-hollow {
+  fill: #101c26;
+}

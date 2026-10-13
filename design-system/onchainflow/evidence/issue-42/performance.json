@@ -1,0 +1,12 @@
+{
+  "base_commit": "429eaff",
+  "base_js_gzip_bytes": 93593,
+  "workspace_js_gzip_bytes": 96993,
+  "increase_bytes": 3400,
+  "increase_gate_bytes": 10240,
+  "range167_max_ms": 34.599999994039536,
+  "inspection_max_ms": 23.600000008940697,
+  "interaction_gate_ms": 100,
+  "method": "Browser performance.now to two requestAnimationFrame callbacks after range/keyboard event; native table open, 25 rows per page. Local Chromium fixtures, not real-device/VPS capacity.",
+  "passed": true
+}

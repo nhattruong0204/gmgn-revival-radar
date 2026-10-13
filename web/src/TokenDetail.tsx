@@ -16,6 +16,7 @@ import {
   Stat,
 } from "./components";
 import { ObservedChart } from "./Chart";
+import { CandleWorkspace } from "./CandleWorkspace";
 import {
   chains,
   compact,
@@ -367,6 +368,7 @@ export function TokenDetail({
                     <button
                       key={m}
                       className={metric === m ? "active" : ""}
+                      aria-pressed={metric === m}
                       onClick={() => setMetric(m)}
                     >
                       {m === "market_cap"
@@ -390,11 +392,8 @@ export function TokenDetail({
             {history.loading && !history.data ? (
               <Loading />
             ) : history.data ? (
-              metric === "candles" && !history.data.candles.length ? (
-                <Empty title="No cached closed candles">
-                  The scanner has not fetched candles for this token. Public
-                  chart requests read existing data only.
-                </Empty>
+              metric === "candles" ? (
+                <CandleWorkspace history={history.data} />
               ) : (
                 <ObservedChart
                   label={
@@ -402,9 +401,7 @@ export function TokenDetail({
                       ? "Observed price"
                       : metric === "market_cap"
                         ? "Observed market cap"
-                        : metric === "score"
-                          ? "Revival score"
-                          : "Closed 1h candles"
+                        : "Revival score"
                   }
                   money={metric !== "score"}
                   score={metric === "score"}
@@ -414,32 +411,13 @@ export function TokenDetail({
                           timestamp: s.timestamp,
                           value: s.score,
                         }))
-                      : metric === "candles"
-                        ? history.data.candles.map((c) => ({
-                            timestamp: c.timestamp,
-                            value: c.close,
-                          }))
-                        : history.data.snapshots.map((s) => ({
-                            timestamp: s.timestamp,
-                            value: s[metric],
-                          }))
-                  }
-                  candles={
-                    metric === "candles" ? history.data.candles : undefined
+                      : history.data.snapshots.map((s) => ({
+                          timestamp: s.timestamp,
+                          value: s[metric],
+                        }))
                   }
                 />
               )
-            ) : null}
-            {metric === "candles" && history.data?.candles.length ? (
-              <p className="small muted chart-cache">
-                Cached candles fetched{" "}
-                {dateTime(history.data.candles_fetched_at)} · Cache{" "}
-                {history.data.candles_expires_at &&
-                Date.now() / 1000 > history.data.candles_expires_at
-                  ? "expired"
-                  : "expiry"}{" "}
-                {dateTime(history.data.candles_expires_at)}
-              </p>
             ) : null}
           </section>
           {small && (
