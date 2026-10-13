@@ -30,3 +30,6 @@ web/test-results/
 web/playwright-report/
 
 web/*.tsbuildinfo
+
+# Project-local, pinned design tooling; recreate with scripts/setup_ui_ux_skill.py.
+.agents/skills/ui-ux-pro-max/

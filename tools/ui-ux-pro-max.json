@@ -1,0 +1,6 @@
+{
+  "repository": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git",
+  "revision": "7246805992a42b7bba37d4cac83b01416f0c6c44",
+  "license": "MIT",
+  "destination": ".agents/skills/ui-ux-pro-max"
+}
