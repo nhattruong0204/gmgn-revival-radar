@@ -5,6 +5,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { labels } from "./labels";
 import { Alerts, Reports, OutcomePage, Methodology } from "./Publications";
 import { App } from "./App";
+import { explainText } from "./explain";
 import { demoObservations, demoRequest } from "./demo";
 import type { Report } from "./types";
 
@@ -244,5 +245,15 @@ it("lists the risk warnings saved with an alert in the Risk panel", async () => 
   const panel = (
     await screen.findByRole("heading", { name: "Risk & data coverage" })
   ).closest("section");
-  for (const warning of saved) expect(panel?.textContent).toContain(warning);
+  // Plain-language rendering (#68): "bundler penalty" is replaced by the
+  // sentence built from the matching scorer component, not shown raw.
+  const text = panel?.textContent ?? "";
+  expect(text).toContain("Bundled wallets hold 12% of supply");
+  expect(text).not.toContain("bundler penalty");
+  for (const warning of saved.filter((w) => w !== "bundler penalty"))
+    expect(text).toContain(explainText(warning));
+  expect(text).toContain("Insider holdings unavailable");
+  expect(text).toContain(
+    "Token-2022 extension risks not assessed: metadataPointer",
+  );
 });
