@@ -675,22 +675,21 @@ class Repository:
         params = (since, until, until)
         valid = "CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END"
         query = f"""WITH observations AS MATERIALIZED (
-            SELECT e.id,e.chain,e.contract_address,e.timestamp,e.score,e.status,e.eligible,
-                MAX(e.score) OVER (PARTITION BY e.contract_address) AS peak_score,
-                ROW_NUMBER() OVER (
-                    PARTITION BY e.contract_address ORDER BY e.timestamp DESC,e.id DESC
-                ) AS latest_position,
-                COUNT(*) OVER (PARTITION BY e.contract_address) AS observations {base}
+            SELECT e.id,e.chain,e.contract_address,e.timestamp,e.score,e.status,e.eligible {base}
+        ), token_counts AS MATERIALIZED (
+            SELECT contract_address,MAX(score) AS peak_score,COUNT(*) AS observations
+            FROM observations GROUP BY contract_address
         ), competitive_score AS (
-            SELECT COALESCE((SELECT peak_score FROM observations
-                GROUP BY contract_address ORDER BY peak_score DESC LIMIT 1 OFFSET ?),-1)
+            SELECT COALESCE((SELECT peak_score FROM token_counts
+                ORDER BY peak_score DESC LIMIT 1 OFFSET ?),-1)
                 AS minimum
         ), candidates AS MATERIALIZED (
-            SELECT o.*,market_evidence_rank(st.value,o.chain,o.contract_address,o.timestamp,
+            SELECT o.*,t.observations,
+                market_evidence_rank(st.value,o.chain,o.contract_address,o.timestamp,
                 o.score,o.status,o.eligible) AS evidence_rank
-            FROM observations o
+            FROM observations o JOIN token_counts t ON t.contract_address=o.contract_address
             LEFT JOIN state st ON st.key='telegram:evaluation:' || o.id
-            WHERE o.score=o.peak_score AND o.score>=(SELECT minimum FROM competitive_score)
+            WHERE o.score=t.peak_score AND o.score>=(SELECT minimum FROM competitive_score)
         ), peaks AS (
             SELECT *,ROW_NUMBER() OVER (
                 PARTITION BY contract_address ORDER BY evidence_rank DESC,timestamp DESC,id DESC
@@ -700,7 +699,8 @@ class Repository:
             ORDER BY score DESC,evidence_rank DESC,timestamp DESC,contract_address ASC LIMIT ?
         ) SELECT p.id AS peak_id,(
                 SELECT o.id FROM observations o
-                WHERE o.contract_address=p.contract_address AND o.latest_position=1
+                WHERE o.contract_address=p.contract_address
+                ORDER BY o.timestamp DESC,o.id DESC LIMIT 1
             ) AS latest_id,p.observations FROM top_peaks p
             ORDER BY p.score DESC,p.evidence_rank DESC,
                 p.timestamp DESC,p.contract_address ASC"""
