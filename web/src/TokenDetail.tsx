@@ -29,7 +29,42 @@ import {
   shortAddress,
   researchReturn,
 } from "./format";
+import {
+  explainMissing,
+  explainReasons,
+  explainRisks,
+  type Risk,
+} from "./explain";
 import type { History, Observation, TokenResponse } from "./types";
+
+const RISK_LIMIT = 3;
+function RiskList({ risks }: { risks: Risk[] }) {
+  const group = (items: Risk[]) =>
+    (["danger", "warning"] as const).map(
+      (tone) =>
+        items.some((r) => r.tone === tone) && (
+          <EvidenceList
+            key={tone}
+            items={items.filter((r) => r.tone === tone).map((r) => r.text)}
+            tone={tone === "danger" ? "danger" : "warning-text"}
+          />
+        ),
+    );
+  return (
+    <>
+      {group(risks.slice(0, RISK_LIMIT))}
+      {risks.length > RISK_LIMIT && (
+        <details className="research-disclosure">
+          <summary>
+            {risks.length - RISK_LIMIT} more risk finding
+            {risks.length - RISK_LIMIT === 1 ? "" : "s"}
+          </summary>
+          {group(risks.slice(RISK_LIMIT))}
+        </details>
+      )}
+    </>
+  );
+}
 export function SignalEvidence({
   observation: o,
 }: {
@@ -37,14 +72,8 @@ export function SignalEvidence({
 }) {
   const security = o.token?.security,
     structure = o.signal?.structure;
-  const componentReasons = new Set(
-    Object.entries(o.signal?.components ?? {}).map(
-      ([name, points]) => `${name}:${points >= 0 ? "+" : ""}${points}`,
-    ),
-  );
-  const narrativeReasons = [...new Set(o.signal?.reasons ?? [])].filter(
-    (reason) => !componentReasons.has(reason.replaceAll(" ", "")),
-  );
+  const reasons = explainReasons(o),
+    risks = explainRisks(o);
   return (
     <>
       <div className="detail-grid">
@@ -54,8 +83,8 @@ export function SignalEvidence({
             <h2>Why it’s on the radar</h2>
           </div>
           <EvidenceList
-            items={narrativeReasons}
-            empty="No narrative reasons were saved. Inspect the saved rule contributions in the score breakdown below."
+            items={reasons.map((r) => r.text)}
+            empty="No positive contributions were saved for this evaluation. Inspect the saved rule contributions in the score breakdown below."
           />
         </section>
         <section className="panel">
@@ -63,22 +92,12 @@ export function SignalEvidence({
             <Icon name="warning" />
             <h2>Risk & data coverage</h2>
           </div>
-          {o.blockers.length > 0 && (
-            <EvidenceList items={[...new Set(o.blockers)]} tone="danger" />
-          )}
-          {o.warnings.length > 0 && (
-            <EvidenceList
-              items={[...new Set(o.warnings)].filter(
-                (w) => !o.blockers.includes(w),
-              )}
-              tone="warning-text"
-            />
-          )}
+          <RiskList risks={risks} />
           {o.missing_fields.length > 0 && (
             <div className="missing-fields">
               <span>Missing evidence</span>
-              {o.missing_fields.map((f) => (
-                <small key={f}>{humanKey(f)}</small>
+              {[...new Set(o.missing_fields)].map((f) => (
+                <small key={f}>{explainMissing(f)}</small>
               ))}
             </div>
           )}
@@ -150,7 +169,9 @@ export function SignalEvidence({
         <div className="components-list">
           {Object.entries(o.signal?.components ?? {}).map(([key, v]) => (
             <div key={key}>
-              <span>{humanKey(key)}</span>
+              <span>
+                {humanKey(key)} <code>{key}</code>
+              </span>
               <strong>
                 {v > 0 ? "+" : ""}
                 {v}
@@ -158,6 +179,18 @@ export function SignalEvidence({
             </div>
           ))}
         </div>
+        {(o.blockers.length > 0 ||
+          o.missing_fields.length > 0 ||
+          o.warnings.length > 0) && (
+          <p className="small muted">
+            Saved rule keys:{" "}
+            {[
+              ...o.blockers.map((k) => `blocker ${k}`),
+              ...o.missing_fields.map((k) => `missing ${k}`),
+              ...o.warnings.map((k) => `warning ${k}`),
+            ].join(" · ")}
+          </p>
+        )}
       </details>
       <section className="panel">
         <div className="section-heading">

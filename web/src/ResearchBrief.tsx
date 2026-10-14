@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useData } from "./api";
 import { Empty, Loading, Notice } from "./components";
+import { explainDiffKey, explainText } from "./explain";
 import { dateTime, humanKey } from "./format";
 import type { BriefClaim, BriefPage, ResearchBrief as Brief } from "./types";
 
@@ -39,7 +40,7 @@ export function briefDiff(before: Brief, after: Brief) {
         (group) =>
           b[group].map((c) => [
             `${group}: ${c.key}`,
-            `${c.text}${c.value != null ? ` · ${c.value}` : ""}`,
+            `${c.text}${c.value != null && String(c.value) !== c.text ? ` · ${c.value}` : ""}`,
           ]),
       ),
       ...b.scenarios.map((s) => [
@@ -57,6 +58,8 @@ export function briefDiff(before: Brief, after: Brief) {
       after: right[key] ?? "Not recorded",
     }));
 }
+
+const display = (v: unknown) => explainText(String(v));
 
 export function ResearchBrief({
   chain,
@@ -94,16 +97,17 @@ export function ResearchBrief({
           {rows.map((c) => (
             <li key={c.key}>
               <span>
-                {humanKey(c.text)}
+                {explainText(c.text)}
                 {c.value != null && typeof c.value === "number"
                   ? ` · ${c.value}`
                   : ""}
               </span>{" "}
               <a
                 href={`#${sourceAnchor(c.source_id)}`}
+                title={`Opens the saved source evidence for ${explainText(c.field)}`}
                 onClick={() => revealSource(c.source_id)}
               >
-                Source: {c.field}
+                Saved source
               </a>
             </li>
           ))}
@@ -238,9 +242,10 @@ export function ResearchBrief({
                 {s.level != null && <span>Observed level: {s.level}. </span>}
                 <a
                   href={`#${sourceAnchor(s.source_id)}`}
+                  title={`Opens the saved source evidence for ${explainText(s.field)}`}
                   onClick={() => revealSource(s.source_id)}
                 >
-                  Source: {s.field}
+                  Saved source
                 </a>
               </li>
             ))}
@@ -257,7 +262,7 @@ export function ResearchBrief({
                 <ul>
                   {briefDiff(prior, current).map((d) => (
                     <li key={d.key}>
-                      <strong>{humanKey(d.key)}</strong>
+                      <strong>{humanKey(explainDiffKey(d.key))}</strong>
                       {d.key.startsWith("Closed bars:") ? (
                         <details className="research-disclosure">
                           <summary>
@@ -270,8 +275,8 @@ export function ResearchBrief({
                         </details>
                       ) : (
                         <>
-                          <div>Before: {String(d.before)}</div>
-                          <div>After: {String(d.after)}</div>
+                          <div>Before: {display(d.before)}</div>
+                          <div>After: {display(d.after)}</div>
                         </>
                       )}
                     </li>
