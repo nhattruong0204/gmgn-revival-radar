@@ -175,3 +175,24 @@ Compare reports/outcomes with the bot and verify exactly one scanner, unchanged
 chains/provider budgets, Telegram delivery and independent market reports. Repeat
 the [load check](website-release-validation.md) on a protected production-sized
 copy. Test actual-host recovery and record results before closing #26 or #16.
+
+## Call parity check (#64)
+
+`scripts/verify_call_parity.py` is a read-only operator check that every published call
+shows the same numbers in the saved data and in the public API. It opens the SQLite file
+with `mode=ro`, recomputes each delivered call's market-cap change, latest observation,
+freshness, MFE/MAE and per-token call index in plain SQL/Python (it does not import the
+website query code), and optionally compares the result with `GET /api/v1/alerts`.
+
+```bash
+# Always use a consistent copy (for example from release_backup.py), never the live file.
+python scripts/verify_call_parity.py --db /path/to/copy.db
+python scripts/verify_call_parity.py --db /path/to/copy.db --api https://onchainflow.app
+```
+
+With `--api` it pages through the alerts list with GET requests, takes the API's `as_of`
+and computes with that same cutoff (`--as-of` overrides it). It prints one row per call
+and a `mismatches=N` line. Exit status: `0` all match, `1` a mismatch or a call present
+on one side only, `2` the check could not run. Unknown values must match as unknown (never
+zero). Use a copy taken at about the same time as the API read; snapshots saved between
+the two legitimately differ.
