@@ -40,7 +40,7 @@ import {
 import type { History, Observation, TokenResponse } from "./types";
 
 const RISK_LIMIT = 3;
-function RiskList({ risks }: { risks: Risk[] }) {
+export function RiskList({ risks }: { risks: Risk[] }) {
   const group = (items: Risk[]) =>
     (["danger", "warning"] as const).map(
       (tone) =>
@@ -67,10 +67,57 @@ function RiskList({ risks }: { risks: Risk[] }) {
     </>
   );
 }
+export function SecurityRows({
+  security,
+}: {
+  security: NonNullable<Observation["token"]>["security"] | undefined;
+}) {
+  return (
+    <dl className="risk-grid">
+      <div>
+        <dt>Mint authority renounced</dt>
+        <dd className={security?.mint_renounced === false ? "danger" : ""}>
+          {security?.mint_renounced == null
+            ? "Unknown"
+            : security.mint_renounced
+              ? "Yes"
+              : "No"}
+        </dd>
+      </div>
+      <div>
+        <dt>Freeze authority renounced</dt>
+        <dd className={security?.freeze_renounced === false ? "danger" : ""}>
+          {security?.freeze_renounced == null
+            ? "Unknown"
+            : security.freeze_renounced
+              ? "Yes"
+              : "No"}
+        </dd>
+      </div>
+      <div>
+        <dt>Top 10 concentration</dt>
+        <dd>{percent(security?.top10_ratio, true)}</dd>
+      </div>
+      <div>
+        <dt>Dangerous flag</dt>
+        <dd className={security?.dangerous ? "danger" : ""}>
+          {security?.dangerous == null
+            ? "Unknown"
+            : security.dangerous
+              ? "Present"
+              : "Not reported"}
+        </dd>
+      </div>
+    </dl>
+  );
+}
 export function SignalEvidence({
   observation: o,
+  summary = true,
 }: {
   observation: Observation;
+  /** Render the reasons/risks panels. Signal detail shows them in its call card. */
+  summary?: boolean;
 }) {
   const security = o.token?.security,
     structure = o.signal?.structure;
@@ -78,77 +125,40 @@ export function SignalEvidence({
     risks = explainRisks(o);
   return (
     <>
-      <div className="detail-grid">
-        <section className="panel">
-          <div className="section-heading">
-            <Icon name="bolt" />
-            <h2>Why it’s on the radar</h2>
-          </div>
-          <EvidenceList
-            items={reasons.map((r) => r.text)}
-            empty="No positive contributions were saved for this evaluation. Inspect the saved rule contributions in the score breakdown below."
-          />
-        </section>
-        <section className="panel">
-          <div className="section-heading">
-            <Icon name="warning" />
-            <h2>Risk & data coverage</h2>
-          </div>
-          <RiskList risks={risks} />
-          {o.missing_fields.length > 0 && (
-            <div className="missing-fields">
-              <span>Missing evidence</span>
-              {[...new Set(o.missing_fields)].map((f) => (
-                <small key={f}>{explainMissing(f)}</small>
-              ))}
+      {summary && (
+        <div className="detail-grid">
+          <section className="panel">
+            <div className="section-heading">
+              <Icon name="bolt" />
+              <h2>Why it’s on the radar</h2>
             </div>
-          )}
-          <dl className="risk-grid">
-            <div>
-              <dt>Mint authority renounced</dt>
-              <dd
-                className={security?.mint_renounced === false ? "danger" : ""}
-              >
-                {security?.mint_renounced == null
-                  ? "Unknown"
-                  : security.mint_renounced
-                    ? "Yes"
-                    : "No"}
-              </dd>
+            <EvidenceList
+              items={reasons.map((r) => r.text)}
+              empty="No positive contributions were saved for this evaluation. Inspect the saved rule contributions in the score breakdown below."
+            />
+          </section>
+          <section className="panel">
+            <div className="section-heading">
+              <Icon name="warning" />
+              <h2>Risk & data coverage</h2>
             </div>
-            <div>
-              <dt>Freeze authority renounced</dt>
-              <dd
-                className={security?.freeze_renounced === false ? "danger" : ""}
-              >
-                {security?.freeze_renounced == null
-                  ? "Unknown"
-                  : security.freeze_renounced
-                    ? "Yes"
-                    : "No"}
-              </dd>
-            </div>
-            <div>
-              <dt>Top 10 concentration</dt>
-              <dd>{percent(security?.top10_ratio, true)}</dd>
-            </div>
-            <div>
-              <dt>Dangerous flag</dt>
-              <dd className={security?.dangerous ? "danger" : ""}>
-                {security?.dangerous == null
-                  ? "Unknown"
-                  : security.dangerous
-                    ? "Present"
-                    : "Not reported"}
-              </dd>
-            </div>
-          </dl>
-          <p className="small muted">
-            Unavailable security evidence remains unknown. A score does not
-            establish token safety.
-          </p>
-        </section>
-      </div>
+            <RiskList risks={risks} />
+            {o.missing_fields.length > 0 && (
+              <div className="missing-fields">
+                <span>Missing evidence</span>
+                {[...new Set(o.missing_fields)].map((f) => (
+                  <small key={f}>{explainMissing(f)}</small>
+                ))}
+              </div>
+            )}
+            <SecurityRows security={security} />
+            <p className="small muted">
+              Unavailable security evidence remains unknown. A score does not
+              establish token safety.
+            </p>
+          </section>
+        </div>
+      )}
       <details className="panel research-disclosure score-disclosure">
         <summary>Score breakdown and components</summary>
         <div className="dimension-grid">

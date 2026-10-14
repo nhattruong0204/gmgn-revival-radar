@@ -89,10 +89,13 @@ export function CallPerformanceCard({
   alert,
   variant = "full",
   headingLevel = 2,
+  hideTokenLink = false,
 }: {
   alert: Alert | AlertDetail;
   variant?: "full" | "compact";
   headingLevel?: 2 | 3;
+  /** Hide 'View token' when the card is already shown on that token's page. */
+  hideTokenLink?: boolean;
 }) {
   const p = alert.performance;
   const o = alert.observation;
@@ -108,6 +111,101 @@ export function CallPerformanceCard({
   const reasons = o ? explainReasons(o, 2) : [];
   const risks = o ? explainRisks(o).slice(0, 2) : [];
   const title = `$${alert.symbol}`;
+  const bestWorst = p ? (
+    <>
+      <div>
+        <dt>Best observed</dt>
+        <dd className={p.mfe_pct != null && p.mfe_pct > 0 ? "positive" : ""}>
+          {signed(p.mfe_pct)}
+        </dd>
+      </div>
+      <div>
+        <dt>Worst observed</dt>
+        <dd className={p.mae_pct != null && p.mae_pct < 0 ? "danger" : ""}>
+          {signed(p.mae_pct)}
+        </dd>
+      </div>
+    </>
+  ) : null;
+  const actions = (
+    <nav className="call-card-actions" aria-label={`Actions for ${title}`}>
+      {!hideTokenLink && (
+        <Link className="call-action" href={tokenPage}>
+          View token
+          <Icon name="arrow" size={14} />
+        </Link>
+      )}
+      <a
+        className="call-action"
+        href={gmgnLink(alert.chain, alert.contract_address)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open GMGN
+        <Icon name="external" size={14} />
+      </a>
+      {small && (
+        <Link className="call-action" href={callPage}>
+          Original call
+          <Icon name="chevron" size={14} />
+        </Link>
+      )}
+    </nav>
+  );
+  const body = (
+    <>
+      <div className="call-card-config">
+        <Stage stage={o?.status ?? "UNKNOWN"} />
+        <div className="call-card-score">
+          <span>Score</span>
+          <Score value={alert.score} />
+        </div>
+        <span>
+          {alert.preset ?? "Unlabeled strategy"} · revision{" "}
+          {alert.revision ?? "unknown"}
+        </span>
+      </div>
+
+      <div className="call-card-why">
+        <section aria-label="Top reasons">
+          <h3 className="call-card-sub">Why it was called</h3>
+          {reasons.length ? (
+            <ul className="call-card-list">
+              {reasons.map((r) => (
+                <li key={r.key}>
+                  <Icon name="check" size={14} />
+                  <span>{r.text}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">No reasons were saved with this call.</p>
+          )}
+        </section>
+        <section aria-label="Top risks">
+          <h3 className="call-card-sub">Risks to weigh</h3>
+          {risks.length ? (
+            <ul className="call-card-list risks">
+              {risks.map((r) => (
+                <li key={r.key}>
+                  <Icon name="warning" size={14} />
+                  <span>
+                    <b className="sr-only">Risk: </b>
+                    {r.text}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">
+              No risks were saved with this call. That does not mean the token
+              is safe.
+            </p>
+          )}
+        </section>
+      </div>
+    </>
+  );
   return (
     <article
       className={`call-card call-card-${variant}`}
@@ -222,22 +320,7 @@ export function CallPerformanceCard({
                 )}
               </dd>
             </div>
-            <div>
-              <dt>Best observed</dt>
-              <dd
-                className={p.mfe_pct != null && p.mfe_pct > 0 ? "positive" : ""}
-              >
-                {signed(p.mfe_pct)}
-              </dd>
-            </div>
-            <div>
-              <dt>Worst observed</dt>
-              <dd
-                className={p.mae_pct != null && p.mae_pct < 0 ? "danger" : ""}
-              >
-                {signed(p.mae_pct)}
-              </dd>
-            </div>
+            {!small && bestWorst}
           </dl>
           {!small && (
             <p className="call-card-note">
@@ -293,78 +376,23 @@ export function CallPerformanceCard({
         </>
       )}
 
-      <div className="call-card-config">
-        <Stage stage={o?.status ?? "UNKNOWN"} />
-        <div className="call-card-score">
-          <span>Score</span>
-          <Score value={alert.score} />
-        </div>
-        <span>
-          {alert.preset ?? "Unlabeled strategy"} · revision{" "}
-          {alert.revision ?? "unknown"}
-        </span>
-      </div>
-
-      <div className="call-card-why">
-        <section aria-label="Top reasons">
-          <h3 className="call-card-sub">Why it was called</h3>
-          {reasons.length ? (
-            <ul className="call-card-list">
-              {reasons.map((r) => (
-                <li key={r.key}>
-                  <Icon name="check" size={14} />
-                  <span>{r.text}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="muted">No reasons were saved with this call.</p>
+      {small ? (
+        <details className="call-card-more">
+          <summary>
+            <span>Score {alert.score} · reasons, risks &amp; best/worst</span>
+          </summary>
+          {bestWorst && (
+            <dl className="call-card-meta call-card-extremes">{bestWorst}</dl>
           )}
-        </section>
-        <section aria-label="Top risks">
-          <h3 className="call-card-sub">Risks to weigh</h3>
-          {risks.length ? (
-            <ul className="call-card-list risks">
-              {risks.map((r) => (
-                <li key={r.key}>
-                  <Icon name="warning" size={14} />
-                  <span>
-                    <b className="sr-only">Risk: </b>
-                    {r.text}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="muted">
-              No risks were saved with this call. That does not mean the token
-              is safe.
-            </p>
-          )}
-        </section>
-      </div>
-
-      <nav className="call-card-actions" aria-label={`Actions for ${title}`}>
-        <Link className="call-action" href={tokenPage}>
-          View token
-          <Icon name="arrow" size={14} />
-        </Link>
-        <a
-          className="call-action"
-          href={gmgnLink(alert.chain, alert.contract_address)}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Open GMGN
-          <Icon name="external" size={14} />
-        </a>
-        {small && (
-          <Link className="call-action" href={callPage}>
-            Original call
-            <Icon name="chevron" size={14} />
-          </Link>
-        )}
-      </nav>
+          {body}
+          {actions}
+        </details>
+      ) : (
+        <>
+          {body}
+          {actions}
+        </>
+      )}
     </article>
   );
 }

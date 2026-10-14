@@ -6,7 +6,10 @@ import { demoRequest } from "./demo";
 import type { Alert, AlertDetail } from "./types";
 
 afterEach(cleanup);
-const alerts = (demoRequest("/api/v1/alerts") as { items: Alert[] }).items;
+// The feed is newest first; fixtures below are addressed by their stable ids.
+const alerts = (demoRequest("/api/v1/alerts") as { items: Alert[] }).items
+  .slice()
+  .sort((a, b) => a.id - b.id);
 const text = (c: Element | null) => c?.textContent ?? "";
 
 it("shows a positive change with sign and the word up", () => {
@@ -55,7 +58,7 @@ it("labels best and worst observed and allows a negative best", () => {
   const { container } = render(
     <CallPerformanceCard alert={alerts[1]} variant="compact" />,
   );
-  const dl = container.querySelector("dl") as HTMLElement;
+  const dl = container.querySelector(".call-card-extremes") as HTMLElement;
   expect(within(dl).getByText("Best observed")).toBeTruthy();
   expect(within(dl).getByText("Worst observed")).toBeTruthy();
   expect(text(dl)).toContain("−3.1%");
@@ -168,4 +171,12 @@ it("EvidenceList risks use a warning icon, never the check icon", async () => {
   expect(neutral.querySelector("svg path")?.getAttribute("d")).not.toBe(
     risk.querySelector("svg path")?.getAttribute("d"),
   );
+});
+it("hides View token on request but keeps the other actions", () => {
+  const { container } = render(
+    <CallPerformanceCard alert={alerts[0]} variant="compact" hideTokenLink />,
+  );
+  expect(within(container as HTMLElement).queryByText("View token")).toBeNull();
+  expect(text(container)).toContain("Open GMGN");
+  expect(text(container)).toContain("Original call");
 });

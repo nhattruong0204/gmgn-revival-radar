@@ -375,6 +375,44 @@ const first = demoObservations[0];
     },
   });
 });
+const newestFirst = [...alerts].sort(
+  (a, b) => b.timestamp - a.timestamp || b.id - a.id,
+);
+function groupedAlerts(q: URLSearchParams): ListResponse<Alert> {
+  const order: string[] = [];
+  const by = new Map<string, Alert[]>();
+  for (const a of newestFirst) {
+    const key = `${a.chain}:${a.contract_address}`;
+    if (!by.has(key)) {
+      by.set(key, []);
+      order.push(key);
+    }
+    by.get(key)!.push(a);
+  }
+  const page = Number(q.get("page") ?? 1),
+    size = Number(q.get("page_size") ?? 10);
+  const keys = order.slice((page - 1) * size, page * size);
+  return {
+    items: keys.flatMap((k) => by.get(k)!),
+    groups: keys.map((k) => {
+      const calls = by.get(k)!;
+      return {
+        chain: calls[0].chain,
+        contract_address: calls[0].contract_address,
+        symbol: calls[0].symbol,
+        call_count: calls.length,
+        latest_call_at: calls[0].timestamp,
+        alert_ids: calls.map((a) => a.id),
+        truncated: false,
+      };
+    }),
+    total: order.length,
+    page,
+    page_size: size,
+    as_of: now,
+    last_scan_at: now - 140,
+  };
+}
 function readyRequest(path: string): unknown {
   const url = new URL(path, "https://demo.local"),
     q = url.searchParams;
@@ -468,17 +506,18 @@ function readyRequest(path: string): unknown {
     };
   }
   if (url.pathname.endsWith("/alerts")) {
+    if (q.get("group") === "token") return groupedAlerts(q);
     const chain = q.get("chain"),
       address = q.get("address");
-    const matched = alerts
-      .filter(
+    // The API lists newest first.
+    return list(
+      newestFirst.filter(
         (a) =>
           (!chain || a.chain === chain) &&
           (!address || a.contract_address === address),
-      )
-      // The API lists newest first; the unfiltered preview keeps fixture order.
-      .sort((a, b) => (address ? b.timestamp - a.timestamp : 0));
-    return list(matched, q);
+      ),
+      q,
+    );
   }
   if (url.pathname.endsWith("/reports"))
     return {

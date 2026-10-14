@@ -97,6 +97,7 @@ export function TokenCalls({
                 alert={a}
                 variant="compact"
                 headingLevel={3}
+                hideTokenLink
               />
             ))}
           </div>
