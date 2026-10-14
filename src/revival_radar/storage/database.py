@@ -67,6 +67,8 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
         db.execute("""CREATE INDEX IF NOT EXISTS evaluations_token_time
             ON evaluations(chain,contract_address,timestamp DESC,id DESC)""")
         db.execute("CREATE INDEX IF NOT EXISTS scan_runs_finished ON scan_runs(finished DESC)")
+        db.execute("""CREATE INDEX IF NOT EXISTS evaluations_report_window ON evaluations(
+            chain,timestamp DESC,id DESC,scan_id,contract_address,score,status,eligible)""")
         db.execute(
             "CREATE INDEX IF NOT EXISTS enrichment_fetched ON enrichment_cache(fetched_at DESC)"
         )

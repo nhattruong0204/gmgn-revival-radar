@@ -106,5 +106,10 @@ Public readers use connection-local 8 MiB page-cache targets for main and tempor
 pages, retaining file-backed temporary storage and the same 1,500 ms read deadline.
 These are cache targets, not hard process-memory limits; measure concurrency and
 memory on the actual host. No persistent database/owner/provider setting changes.
+The companion `evaluations_report_window` index covers the scalar report window.
+SQL deadline callbacks run every 10,000 VM instructions; a final elapsed-time check
+enforces the same configured budget even for short SQL/model work or cache waits.
+The production read deadline remains 1,500 ms; callback cadence is not a longer
+read allowance. Over-budget results remain service errors rather than partial data.
 Measure archive/database/backup growth and sustained production capacity before
 rollout; local fixture capacity is not VPS or Internet capacity certification.

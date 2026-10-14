@@ -11,6 +11,7 @@ def test_existing_schema_seven_adds_configuration_index_without_rewriting_state(
     path = tmp_path / "existing-seven.db"
     db = connect(path)
     db.execute("DROP INDEX state_report_configuration")
+    db.execute("DROP INDEX evaluations_report_window")
     rows = [("telegram:evaluation:1", "{broken", 1), ("origin:scan:1", "live", 2)]
     db.executemany("INSERT INTO state VALUES(?,?,?)", rows)
     db.commit()
@@ -21,6 +22,9 @@ def test_existing_schema_seven_adds_configuration_index_without_rewriting_state(
         assert [tuple(r) for r in db.execute("SELECT * FROM state ORDER BY updated_at")] == rows
         assert db.execute(
             "SELECT 1 FROM sqlite_master WHERE name='state_report_configuration'"
+        ).fetchone()
+        assert db.execute(
+            "SELECT 1 FROM sqlite_master WHERE name='evaluations_report_window'"
         ).fetchone()
         assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
         db.close()

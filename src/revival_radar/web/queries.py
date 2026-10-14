@@ -75,11 +75,16 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
         db.execute("PRAGMA query_only=ON")
         db.execute(f"PRAGMA busy_timeout={config.web_read_timeout_ms}")
         deadline = time.monotonic() + config.web_read_timeout_ms / 1000
-        db.set_progress_handler(lambda: int(time.monotonic() > deadline), 1000)
+        # Frequent Python callbacks are expensive in request worker threads.
+        # Poll SQL periodically and enforce the identical elapsed budget again
+        # on exit, including short SQL/model work or waits without a callback.
+        db.set_progress_handler(lambda: int(time.monotonic() > deadline), 10000)
         db.execute("BEGIN")
         if db.execute("PRAGMA user_version").fetchone()[0] != SCHEMA_VERSION:
             raise sqlite3.DatabaseError("Unsupported public storage schema")
         yield PublicQueries(db, allow_synthetic=config.web_allow_synthetic_data)
+        if time.monotonic() > deadline:
+            raise sqlite3.OperationalError("Saved read deadline exceeded")
     finally:
         db.close()
 

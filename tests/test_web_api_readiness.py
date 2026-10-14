@@ -2,6 +2,7 @@ import asyncio
 import json
 import sqlite3
 import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from types import SimpleNamespace
 
@@ -16,6 +17,21 @@ from revival_radar.web.queries import PublicQueries, public_reader
 from .conftest import changed
 from .test_web_public import NOW, observe
 from .test_web_public import web as web
+
+
+async def test_short_saved_query_cannot_bypass_deadline_after_slow_model_work(web, monkeypatch):
+    client, app = web
+    app.state.config.web_read_timeout_ms = 100
+    original = PublicQueries.report
+
+    def slow_model_work(queries, until, hours):
+        time.sleep(0.15)
+        return original(queries, until, hours)
+
+    monkeypatch.setattr(PublicQueries, "report", slow_model_work)
+    response = await client.get("/api/v1/reports")
+    assert response.status_code == 503
+    assert response.json()["detail"] == "Saved observations temporarily unavailable"
 
 
 @pytest.mark.parametrize("route", ["meta", "radar", "reports"])
