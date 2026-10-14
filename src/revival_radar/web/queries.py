@@ -18,6 +18,7 @@ from revival_radar.web.config import WebConfig
 from revival_radar.web.models import (
     Alert,
     AlertDetail,
+    AlertGroup,
     AlertOutcome,
     AlertsPage,
     CallPerformance,
@@ -742,12 +743,16 @@ class PublicQueries:
         chain: str | None,
         page: int,
         page_size: int,
+        address: str | None = None,
     ) -> AlertsPage:
         where = "WHERE " + self.alert_visibility()
         parameters = [until, until, until]
         if chain:
             where += " AND a.chain=?"
             parameters.append(chain)
+        if chain and address:
+            where += " AND a.contract_address=?"
+            parameters.append(address)
         count = self.db.execute(
             "SELECT COUNT(*) FROM alerts a " + where,
             parameters,
@@ -759,6 +764,85 @@ class PublicQueries:
         return AlertsPage(
             items=[self._alert(row, until) for row in rows],
             total=count,
+            page=page,
+            page_size=page_size,
+            as_of=until,
+            last_scan_at=self.last_scan_at(until),
+        )
+
+    GROUP_CALL_CAP = 25
+    GROUP_PAGE_MAX = 20
+
+    def alerts_by_token(
+        self,
+        until: float,
+        chain: str | None,
+        page: int,
+        page_size: int,
+        address: str | None = None,
+    ) -> AlertsPage:
+        """Page over tokens (most recently called first); list every call of each.
+
+        `total` counts tokens. Each token lists at most GROUP_CALL_CAP calls, newest
+        first; `truncated` and `call_count` state when older calls are not listed.
+        Uses the (chain, contract_address, timestamp) index; bounded by the read deadline.
+        """
+        where = "WHERE " + self.alert_visibility()
+        parameters: list = [until, until, until]
+        if chain:
+            where += " AND a.chain=?"
+            parameters.append(chain)
+        if chain and address:
+            where += " AND a.contract_address=?"
+            parameters.append(address)
+        total = self.db.execute(
+            "SELECT COUNT(*) FROM (SELECT 1 FROM alerts a "
+            + where
+            + " GROUP BY a.chain,a.contract_address)",
+            parameters,
+        ).fetchone()[0]
+        tokens = self.db.execute(
+            "SELECT a.chain,a.contract_address,COUNT(*) n,MAX(a.timestamp) latest,MAX(a.id) lid "
+            "FROM alerts a "
+            + where
+            + " GROUP BY a.chain,a.contract_address ORDER BY latest DESC,lid DESC LIMIT ? OFFSET ?",
+            (*parameters, page_size, (page - 1) * page_size),
+        ).fetchall()
+        items: list[Alert] = []
+        groups: list[AlertGroup] = []
+        for token in tokens:
+            self.check_deadline()
+            rows = self.db.execute(
+                self._alerts_base()
+                + "WHERE a.chain=? AND a.contract_address=? AND "
+                + self.alert_visibility()
+                + " ORDER BY a.timestamp DESC,a.id DESC LIMIT ?",
+                (
+                    token["chain"],
+                    token["contract_address"],
+                    until,
+                    until,
+                    until,
+                    self.GROUP_CALL_CAP,
+                ),
+            ).fetchall()
+            calls = [self._alert(row, until) for row in rows]
+            items.extend(calls)
+            groups.append(
+                AlertGroup(
+                    chain=token["chain"],
+                    contract_address=token["contract_address"],
+                    symbol=calls[0].symbol if calls else "",
+                    call_count=token["n"],
+                    latest_call_at=token["latest"],
+                    alert_ids=[c.id for c in calls],
+                    truncated=token["n"] > len(calls),
+                )
+            )
+        return AlertsPage(
+            items=items,
+            groups=groups,
+            total=total,
             page=page,
             page_size=page_size,
             as_of=until,

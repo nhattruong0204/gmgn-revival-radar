@@ -1,0 +1,930 @@
+{
+ "390": {
+  "overflowX": 0,
+  "cards": 3,
+  "order": {
+   "calls": 1272,
+   "chart": 587,
+   "brief": 3980
+  },
+  "markerNames": [
+   "Call 3 of 3, alert #8, Oct 14, 2026, 08:04:30 PM GMT+7, market cap at call $4.1M",
+   "Call 2 of 3, alert #1, Oct 13, 2026, 05:04:30 PM GMT+7, market cap at call $3M",
+   "Call 1 of 3, alert #7, Oct 12, 2026, 11:04:30 AM GMT+7, market cap at call $2.4M"
+  ],
+  "focusReadout": "Call 3 of 3, alert #8, Oct 14, 2026, 08:04:30 PM GMT+7, market cap at call $4.1M",
+  "focusStrokeWidth": "3px",
+  "afterArrow": "Call 2 of 3, alert #1, Oct 13, 2026, 05:04:30 PM GMT+7, market cap at call $3M",
+  "targets": [
+   {
+    "t": "Open call record",
+    "w": 92,
+    "h": 44
+   },
+   {
+    "t": "Dismiss",
+    "w": 50,
+    "h": 44
+   },
+   {
+    "t": "rect",
+    "w": 44,
+    "h": 230
+   },
+   {
+    "t": "rect",
+    "w": 44,
+    "h": 230
+   },
+   {
+    "t": "rect",
+    "w": 44,
+    "h": 230
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   }
+  ],
+  "colors": {
+   "glyph": "rgb(229, 187, 115)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "panel": "rgb(16, 28, 38)"
+  },
+  "touchReadout": "Call 2 of 3, alert #1, Oct 13, 2026, 05:04:30 PM GMT+7, market cap at call $3M",
+  "empty": "No published calls for this token",
+  "emptyOverflowX": 0
+ },
+ "768": {
+  "overflowX": 0,
+  "cards": 3,
+  "order": {
+   "calls": 1392,
+   "chart": 725,
+   "brief": 3358
+  },
+  "markerNames": [
+   "Call 3 of 3, alert #8, Oct 14, 2026, 08:04:31 PM GMT+7, market cap at call $4.1M",
+   "Call 2 of 3, alert #1, Oct 13, 2026, 05:04:31 PM GMT+7, market cap at call $3M",
+   "Call 1 of 3, alert #7, Oct 12, 2026, 11:04:31 AM GMT+7, market cap at call $2.4M"
+  ],
+  "focusReadout": "Call 3 of 3, alert #8, Oct 14, 2026, 08:04:31 PM GMT+7, market cap at call $4.1M",
+  "focusStrokeWidth": "3px",
+  "afterArrow": "Call 2 of 3, alert #1, Oct 13, 2026, 05:04:31 PM GMT+7, market cap at call $3M",
+  "targets": [
+   {
+    "t": "Open call record",
+    "w": 92,
+    "h": 44
+   },
+   {
+    "t": "Dismiss",
+    "w": 50,
+    "h": 44
+   },
+   {
+    "t": "rect",
+    "w": 44,
+    "h": 230
+   },
+   {
+    "t": "rect",
+    "w": 44,
+    "h": 230
+   },
+   {
+    "t": "rect",
+    "w": 44,
+    "h": 230
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   }
+  ],
+  "colors": {
+   "glyph": "rgb(229, 187, 115)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "panel": "rgb(16, 28, 38)"
+  },
+  "empty": "No published calls for this token",
+  "emptyOverflowX": 0
+ },
+ "1366": {
+  "overflowX": 0,
+  "cards": 3,
+  "order": {
+   "calls": 1156,
+   "chart": 563,
+   "brief": 2687
+  },
+  "markerNames": [
+   "Call 3 of 3, alert #8, Oct 14, 2026, 08:04:32 PM GMT+7, market cap at call $4.1M",
+   "Call 2 of 3, alert #1, Oct 13, 2026, 05:04:32 PM GMT+7, market cap at call $3M",
+   "Call 1 of 3, alert #7, Oct 12, 2026, 11:04:32 AM GMT+7, market cap at call $2.4M"
+  ],
+  "focusReadout": "Call 3 of 3, alert #8, Oct 14, 2026, 08:04:32 PM GMT+7, market cap at call $4.1M",
+  "focusStrokeWidth": "3px",
+  "afterArrow": "Call 2 of 3, alert #1, Oct 13, 2026, 05:04:32 PM GMT+7, market cap at call $3M",
+  "targets": [
+   {
+    "t": "Open call record",
+    "w": 92,
+    "h": 44
+   },
+   {
+    "t": "Dismiss",
+    "w": 50,
+    "h": 44
+   },
+   {
+    "t": "rect",
+    "w": 48,
+    "h": 253
+   },
+   {
+    "t": "rect",
+    "w": 48,
+    "h": 253
+   },
+   {
+    "t": "rect",
+    "w": 48,
+    "h": 253
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   }
+  ],
+  "colors": {
+   "glyph": "rgb(229, 187, 115)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "panel": "rgb(16, 28, 38)"
+  },
+  "empty": "No published calls for this token",
+  "emptyOverflowX": 0
+ },
+ "1366-zoom200": {
+  "overflowX": 0,
+  "cards": 3,
+  "order": {
+   "calls": 1054,
+   "chart": 470,
+   "brief": 3381
+  },
+  "markerNames": [
+   "Call 3 of 3, alert #8, Oct 14, 2026, 08:04:33 PM GMT+7, market cap at call $4.1M",
+   "Call 2 of 3, alert #1, Oct 13, 2026, 05:04:33 PM GMT+7, market cap at call $3M",
+   "Call 1 of 3, alert #7, Oct 12, 2026, 11:04:33 AM GMT+7, market cap at call $2.4M"
+  ],
+  "focusReadout": "Call 3 of 3, alert #8, Oct 14, 2026, 08:04:33 PM GMT+7, market cap at call $4.1M",
+  "focusStrokeWidth": "3px",
+  "afterArrow": "Call 2 of 3, alert #1, Oct 13, 2026, 05:04:33 PM GMT+7, market cap at call $3M",
+  "targets": [
+   {
+    "t": "Open call record",
+    "w": 92,
+    "h": 44
+   },
+   {
+    "t": "Dismiss",
+    "w": 50,
+    "h": 44
+   },
+   {
+    "t": "rect",
+    "w": 44,
+    "h": 230
+   },
+   {
+    "t": "rect",
+    "w": 44,
+    "h": 230
+   },
+   {
+    "t": "rect",
+    "w": 44,
+    "h": 230
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   },
+   {
+    "t": "$WIF",
+    "w": 44,
+    "h": 27
+   },
+   {
+    "t": "View token",
+    "w": 121,
+    "h": 44
+   },
+   {
+    "t": "Open GMGN",
+    "w": 132,
+    "h": 44
+   },
+   {
+    "t": "Original call",
+    "w": 125,
+    "h": 44
+   }
+  ],
+  "colors": {
+   "glyph": "rgb(229, 187, 115)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "panel": "rgb(16, 28, 38)"
+  },
+  "empty": "No published calls for this token",
+  "emptyOverflowX": 0
+ },
+ "state-error": "Synthetic demo. Every token, score and return shown here is sample data. Owner controls are disabled. Synthetic preview state ready loading empty partial stale error ← Back to research Synthetic previ",
+ "state-loading": "Synthetic demo. Every token, score and return shown here is sample data. Owner controls are disabled. Synthetic preview state ready loading empty partial stale error ← Back to research Loading saved o",
+ "runningAnimations": 0
+}

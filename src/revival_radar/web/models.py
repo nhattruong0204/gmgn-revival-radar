@@ -334,8 +334,21 @@ class Alert(PublicModel):
     performance: CallPerformance
 
 
+class AlertGroup(PublicModel):
+    """One token's calls in `group=token` mode. `alert_ids` index into `items`."""
+
+    chain: str
+    contract_address: str
+    symbol: str
+    call_count: int
+    latest_call_at: Finite
+    alert_ids: list[int]
+    truncated: bool = False
+
+
 class AlertsPage(PublicModel):
     items: list[Alert]
+    groups: list[AlertGroup] | None = None
     total: int
     page: int
     page_size: int

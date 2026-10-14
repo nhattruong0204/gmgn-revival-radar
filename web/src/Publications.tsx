@@ -10,12 +10,10 @@ import {
   Loading,
   Notice,
   PageHeading,
-  Score,
   Stage,
   Stat,
 } from "./components";
 import {
-  chains,
   compact,
   dateTime,
   percent,
@@ -33,6 +31,7 @@ import type {
   Report,
 } from "./types";
 import { SignalEvidence } from "./TokenDetail";
+import { CallRecord, FeedNotes, SignalGroups } from "./SignalFeed";
 import { ResearchBrief } from "./ResearchBrief";
 import { CheckpointTable } from "./TrackRecord";
 export function Alerts({ id }: { id?: string }) {
@@ -42,9 +41,15 @@ export function Alerts({ id }: { id?: string }) {
     10000,
     Math.max(1, Math.trunc(Number(params.get("page"))) || 1),
   );
-  const setPage = (value: number) => navigate(`/alerts?page=${value}`);
+  const grouped = params.get("group") === "token";
+  const pageSize = grouped ? 10 : 25;
+  const feedUrl = (p: number, g: boolean) =>
+    `/alerts?${g ? "group=token&" : ""}page=${p}`;
+  const setPage = (value: number) => navigate(feedUrl(value, grouped));
   const feed = useData<ListResponse<Alert>>(
-    !id ? `/api/v1/alerts?page=${page}&page_size=25` : null,
+    !id
+      ? `/api/v1/alerts?page=${page}&page_size=${pageSize}${grouped ? "&group=token" : ""}`
+      : null,
   );
   const detail = useData<AlertDetail>(
     id ? `/api/v1/alerts/${encodeURIComponent(id)}` : null,
@@ -93,61 +98,7 @@ export function Alerts({ id }: { id?: string }) {
       ) : id && detail.data ? (
         <>
           <CallPerformanceCard alert={detail.data} variant="full" />
-          <p className="contract-address">
-            {chains[detail.data.chain] ?? detail.data.chain} ·{" "}
-            {detail.data.contract_address}
-          </p>
-          <div className="alert-meta">
-            <Stage stage={detail.data.observation?.status ?? "UNKNOWN"} />
-            {detail.data.observation && (
-              <ObservationStamp
-                observation={detail.data.observation}
-                kind="signal"
-              />
-            )}
-            <span>Alert observation {dateTime(detail.data.timestamp)}</span>
-            <span>
-              Capture recorded{" "}
-              {detail.data.recorded_at == null
-                ? "unknown (legacy)"
-                : dateTime(detail.data.recorded_at)}
-            </span>
-            <span>
-              Delivery confirmed{" "}
-              {detail.data.confirmed_at == null
-                ? "first confirmation time unknown (legacy)"
-                : dateTime(detail.data.confirmed_at)}
-            </span>
-            <span>
-              {detail.data.preset ?? "Unlabeled strategy"} · revision{" "}
-              {detail.data.revision ?? "unknown"}
-            </span>
-            <Link
-              className="external-link"
-              href={researchLink(
-                tokenPath(detail.data.chain, detail.data.contract_address),
-              )}
-            >
-              Current token observation
-              <Icon name="arrow" size={15} />
-            </Link>
-          </div>
-          <div className="stats-grid">
-            <Stat
-              label="Alert-time score"
-              value={<Score value={detail.data.score} />}
-              detail="Original confirmed signal"
-            />
-            <Stat
-              label="Alert-time liquidity"
-              value={compact(detail.data.observation?.liquidity, true)}
-            />
-            <Stat
-              label="Alert evidence observed"
-              value={dateTime(detail.data.observation?.timestamp)}
-              detail="Saved independently from current markets"
-            />
-          </div>
+          <CallRecord alert={detail.data} />
           {detail.data.observation &&
             (!detail.data.observation.token ||
               !detail.data.observation.signal) && (
@@ -176,7 +127,10 @@ export function Alerts({ id }: { id?: string }) {
           )}
           {detail.data.observation ? (
             <>
-              <SignalEvidence observation={detail.data.observation} />
+              <SignalEvidence
+                observation={detail.data.observation}
+                summary={false}
+              />
               <details className="research-disclosure">
                 <summary>Separate research brief archive</summary>
                 <p>
@@ -242,28 +196,57 @@ export function Alerts({ id }: { id?: string }) {
           the request or return to the confirmed alert list.
         </Empty>
       ) : (
-        <section className="panel">
+        <section className="panel signals-panel">
           <div className="panel-header">
             <div>
               <h2>Sent signals</h2>
-              <p>Failed, pending and uncertain deliveries are excluded</p>
             </div>
             <Freshness observed={feed.data?.last_scan_at} />
           </div>
+          <div className="feed-controls">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={grouped}
+              className={`feed-toggle ${grouped ? "on" : ""}`}
+              onClick={() => navigate(feedUrl(1, !grouped))}
+            >
+              <span aria-hidden="true" className="feed-toggle-track" />
+              Group by token
+            </button>
+            <span className="small muted">
+              {grouped
+                ? "One group per token, most recently called first. Every call is listed."
+                : "Newest first."}
+            </span>
+          </div>
           {feed.data?.items.length ? (
             <>
-              <div className="call-card-list-grid">
-                {feed.data.items.map((a) => (
-                  <CallPerformanceCard
-                    key={a.id}
-                    alert={a}
-                    variant="compact"
-                    headingLevel={3}
-                  />
-                ))}
-              </div>
+              {grouped && feed.data.groups ? (
+                <SignalGroups
+                  groups={feed.data.groups}
+                  items={feed.data.items}
+                />
+              ) : (
+                <div className="call-card-list-grid">
+                  {feed.data.items.map((a) => (
+                    <CallPerformanceCard
+                      key={a.id}
+                      alert={a}
+                      variant="compact"
+                      headingLevel={3}
+                    />
+                  ))}
+                </div>
+              )}
+              <FeedNotes items={feed.data.items} />
               <div className="panel-footer">
-                <span>{feed.data.total} confirmed sent alerts</span>
+                <span>
+                  {feed.data.total}{" "}
+                  {grouped
+                    ? "tokens with confirmed sent alerts"
+                    : "confirmed sent alerts"}
+                </span>
                 <div className="pagination">
                   <button
                     disabled={page === 1}
@@ -273,7 +256,7 @@ export function Alerts({ id }: { id?: string }) {
                   </button>
                   <span>Page {page}</span>
                   <button
-                    disabled={page * 25 >= feed.data.total}
+                    disabled={page * pageSize >= feed.data.total}
                     onClick={() => setPage(page + 1)}
                   >
                     →

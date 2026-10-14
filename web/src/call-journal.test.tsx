@@ -204,3 +204,18 @@ it("validates URL state and maps call age to API bounds", () => {
   expect(exported.has("page")).toBe(false);
   expect(exported.has("page_size")).toBe(false);
 });
+
+it("shows best and worst observed on every row without opening a disclosure", async () => {
+  render(<TrackRecordPage />);
+  await screen.findByRole("region", { name: "Call summary" });
+  const rows = document.querySelectorAll("article.call-row");
+  expect(rows.length).toBeGreaterThanOrEqual(10);
+  for (const row of rows) {
+    expect(row.querySelector("details")).toBeNull();
+    const terms = Array.from(row.querySelectorAll("dt")).map(
+      (t) => t.textContent,
+    );
+    expect(terms).toContain("Best");
+    expect(terms).toContain("Worst");
+  }
+});

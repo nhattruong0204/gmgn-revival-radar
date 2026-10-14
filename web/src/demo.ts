@@ -317,8 +317,106 @@ const alerts: Alert[] = demoObservations
       },
     };
   });
+// Two more calls on the first token so it has three (indexes 1, 2, 3 of 3).
+const first = demoObservations[0];
+[
+  {
+    id: 7,
+    age: 60 * H,
+    index: 1,
+    call: 2400000,
+    latest: 4200000,
+    change: 75,
+    mfe: 80,
+    mae: -4,
+    outcomes: [
+      { horizon_hours: 1, return_pct: 3.1 },
+      { horizon_hours: 6, return_pct: 21 },
+      { horizon_hours: 24, return_pct: 48 },
+      { horizon_hours: 72, return_pct: 70 },
+    ],
+  },
+  {
+    id: 8,
+    age: 3 * H,
+    index: 3,
+    call: 4100000,
+    latest: 4200000,
+    change: 2.4,
+    mfe: 5.1,
+    mae: -1.2,
+    outcomes: [{ horizon_hours: 1, return_pct: 1.8 }],
+  },
+].forEach((c) => {
+  alertOutcomes.set(c.id, c.outcomes);
+  alerts.push({
+    id: c.id,
+    timestamp: now - c.age,
+    chain: first.chain,
+    contract_address: first.contract_address,
+    symbol: first.symbol,
+    score: first.score,
+    preset: first.preset ?? undefined,
+    revision: 4,
+    observation: first,
+    performance: {
+      ...blank,
+      call_market_cap: c.call,
+      latest_market_cap: c.latest,
+      latest_observed_at: now - 240,
+      freshness: "fresh",
+      change_since_call_pct: c.change,
+      change_reason: null,
+      mfe_pct: c.mfe,
+      mae_pct: c.mae,
+      observations: 30,
+      max_gap_seconds: 1800,
+      elapsed_seconds: c.age,
+      token_call_index: c.index,
+      token_call_count: 3,
+    },
+  });
+});
+const newestFirst = [...alerts].sort(
+  (a, b) => b.timestamp - a.timestamp || b.id - a.id,
+);
+function groupedAlerts(q: URLSearchParams): ListResponse<Alert> {
+  const order: string[] = [];
+  const by = new Map<string, Alert[]>();
+  for (const a of newestFirst) {
+    const key = `${a.chain}:${a.contract_address}`;
+    if (!by.has(key)) {
+      by.set(key, []);
+      order.push(key);
+    }
+    by.get(key)!.push(a);
+  }
+  const page = Number(q.get("page") ?? 1),
+    size = Number(q.get("page_size") ?? 10);
+  const keys = order.slice((page - 1) * size, page * size);
+  return {
+    items: keys.flatMap((k) => by.get(k)!),
+    groups: keys.map((k) => {
+      const calls = by.get(k)!;
+      return {
+        chain: calls[0].chain,
+        contract_address: calls[0].contract_address,
+        symbol: calls[0].symbol,
+        call_count: calls.length,
+        latest_call_at: calls[0].timestamp,
+        alert_ids: calls.map((a) => a.id),
+        truncated: false,
+      };
+    }),
+    total: order.length,
+    page,
+    page_size: size,
+    as_of: now,
+    last_scan_at: now - 140,
+  };
+}
 
-// Call journal fixtures (#66): the six Signals calls plus six more, mixing outcomes,
+// Call journal fixtures (#66): the Signals calls plus four more, mixing outcomes,
 // two strategy revisions and a token (WIF) called three times. Values are fixtures.
 type Extra = [
   id: number,
@@ -333,8 +431,6 @@ type Extra = [
   count?: number,
 ];
 const extras: Extra[] = [
-  [7, 0, 4 * 86400, 3, -35, 10, -48, "fresh", 1, 3],
-  [8, 0, 2 * H, 4, 12, 18, -4, "fresh", 3, 3],
   [9, 6, 6 * 86400, 3, 160, 210, -12, "fresh"],
   [10, 7, 3 * 86400, 3, -62, 4, -71, "fresh"],
   [11, 8, 9 * H, 4, 8.5, 15, -2, "fresh"],
@@ -662,7 +758,20 @@ function readyRequest(path: string): unknown {
       })),
     };
   }
-  if (url.pathname.endsWith("/alerts")) return list(alerts, q);
+  if (url.pathname.endsWith("/alerts")) {
+    if (q.get("group") === "token") return groupedAlerts(q);
+    const chain = q.get("chain"),
+      address = q.get("address");
+    // The API lists newest first.
+    return list(
+      newestFirst.filter(
+        (a) =>
+          (!chain || a.chain === chain) &&
+          (!address || a.contract_address === address),
+      ),
+      q,
+    );
+  }
   if (url.pathname.endsWith("/reports"))
     return {
       since: now - Number(q.get("hours") ?? 24) * 3600,
