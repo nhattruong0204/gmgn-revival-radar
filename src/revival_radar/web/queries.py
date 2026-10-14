@@ -114,6 +114,20 @@ def _label(context: Mapping) -> dict:
     }
 
 
+def _alert_warnings(evidence: Mapping) -> list[str]:
+    """Union of warnings saved with an alert presentation, first-seen order, no duplicates."""
+    groups = (
+        evidence.get("warnings"),
+        (evidence.get("signal") or {}).get("warnings"),
+        (evidence.get("token") or {}).get("data_warnings"),
+    )
+    seen: dict[str, None] = {}
+    for group in groups:
+        if isinstance(group, list):
+            seen.update((w, None) for w in group if isinstance(w, str))
+    return list(seen)
+
+
 def observation(value: Mapping, identity: Mapping, origin: str = "unknown") -> Observation:
     """Sanitize evidence before it reaches response serialization or caching."""
     token = PublicToken.model_validate(value["token"]) if value.get("token") else None
@@ -557,6 +571,7 @@ class PublicQueries:
                 "eligible": True if evidence else None,
                 "warnings": [] if evidence else ["Saved alert evidence unavailable"],
                 **(evidence or {}),
+                **({"warnings": _alert_warnings(evidence)} if evidence else {}),
             },
             {**base, "symbol": "?"},
             self.repo.observation_origin("alert", row["id"]),
