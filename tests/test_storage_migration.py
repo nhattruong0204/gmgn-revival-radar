@@ -7,6 +7,25 @@ from revival_radar.storage.database import SCHEMA_VERSION, SNAPSHOT_FIELDS, TEXT
 from revival_radar.storage.repository import Repository
 
 
+def test_existing_schema_seven_adds_configuration_index_without_rewriting_state(tmp_path):
+    path = tmp_path / "existing-seven.db"
+    db = connect(path)
+    db.execute("DROP INDEX state_report_configuration")
+    rows = [("telegram:evaluation:1", "{broken", 1), ("origin:scan:1", "live", 2)]
+    db.executemany("INSERT INTO state VALUES(?,?,?)", rows)
+    db.commit()
+    db.close()
+    for _ in range(2):
+        db = connect(path)
+        assert db.execute("PRAGMA user_version").fetchone()[0] == 7
+        assert [tuple(r) for r in db.execute("SELECT * FROM state ORDER BY updated_at")] == rows
+        assert db.execute(
+            "SELECT 1 FROM sqlite_master WHERE name='state_report_configuration'"
+        ).fetchone()
+        assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+        db.close()
+
+
 def test_schema_one_migration_preserves_snapshot_payload_and_alert(tmp_path, token):
     path = tmp_path / "legacy.db"
     legacy = sqlite3.connect(path)

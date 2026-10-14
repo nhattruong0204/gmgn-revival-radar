@@ -715,10 +715,12 @@ class Repository:
         # Only two distinct configurations are needed for the warning. Avoid
         # parsing every retained presentation after a difference is established.
         configurations = self.db.execute(
-            f"SELECT DISTINCT COALESCE(json_extract({valid},'$.configuration'),'legacy') || ':' || "
-            f"COALESCE(json_extract({valid},'$.signal.score_version'),'legacy') "
+            f"SELECT DISTINCT COALESCE(CAST(json_extract({valid},'$.configuration') "
+            f"AS TEXT),'legacy') || ':' || "
+            f"COALESCE(CAST(json_extract({valid},'$.signal.score_version') AS TEXT),'legacy') "
             + source
-            + "LEFT JOIN state st ON st.key='telegram:evaluation:' || e.id "
+            + "LEFT JOIN state st INDEXED BY state_report_configuration "
+            + "ON st.key='telegram:evaluation:' || e.id "
             + window
             + " LIMIT 2",
             params,

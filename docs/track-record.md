@@ -96,5 +96,11 @@ Older application readers reject schema seven. Rollback restores the matched
 pre-release database/control backup with its matching code; never downgrade or
 remove historical receipts in place. Restore/stage must preserve private permissions
 and immutable records. No access-policy or provider-budget change is authorized here.
+The deployment follow-up adds `state_report_configuration`, a compatible expression
+index built by scanner startup, including on existing schema-seven databases. It
+indexes the same nullable saved configuration/version fields and preserves malformed
+or missing presentations as unknown; no historical state is rewritten. Build and
+measure this index on the staged copy before cutover: uniform-configuration reports
+must also meet the unchanged read deadline, not just mixed synthetic replay cohorts.
 Measure archive/database/backup growth and sustained production capacity before
 rollout; local fixture capacity is not VPS or Internet capacity certification.

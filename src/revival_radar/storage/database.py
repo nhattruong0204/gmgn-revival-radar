@@ -70,6 +70,16 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
         db.execute(
             "CREATE INDEX IF NOT EXISTS enrichment_fetched ON enrichment_cache(fetched_at DESC)"
         )
+        # Compatible additive index, including existing schema-seven databases.
+        # Reports inspect every saved configuration when all observations agree;
+        # index nullable extracted fields instead of reparsing large presentations.
+        db.execute("""CREATE INDEX IF NOT EXISTS state_report_configuration ON state (
+            key,
+            CAST(json_extract(CASE WHEN json_valid(value) THEN value ELSE '{}' END,
+                '$.configuration') AS TEXT),
+            CAST(json_extract(CASE WHEN json_valid(value) THEN value ELSE '{}' END,
+                '$.signal.score_version') AS TEXT)
+        )""")
         db.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
         db.commit()
     except Exception:
