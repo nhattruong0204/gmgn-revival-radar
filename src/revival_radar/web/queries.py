@@ -20,12 +20,14 @@ from revival_radar.web.models import (
     AlertDetail,
     AlertOutcome,
     AlertsPage,
+    CallPerformance,
     MarketReport,
     Observation,
     Outcomes,
     PublicSignal,
     PublicToken,
     RadarPage,
+    RegimeContext,
     ScorePoint,
     SnapshotPoint,
     TokenDetail,
@@ -33,6 +35,7 @@ from revival_radar.web.models import (
 )
 
 LOOKBACK_SECONDS = 7 * 86400
+FRESH_SECONDS = 30 * 60
 
 
 @contextmanager
@@ -548,7 +551,70 @@ class PublicQueries:
             ),
         )
 
-    def _alert(self, row: sqlite3.Row) -> Alert:
+    def _performance(self, row: sqlite3.Row, until: float) -> CallPerformance:
+        """Compare the immutable call with saved snapshots in (call, until]; read-only."""
+        called = row["timestamp"]
+        call_mc, call_price = finite(row["market_cap"]), finite(row["price"])
+        call_mc = call_mc if call_mc is not None and call_mc > 0 else None
+        # Finite, positive market caps only; 1e300 excludes +inf without Python callbacks.
+        # One indexed range read (chain, contract_address, timestamp) bounded by the cutoff.
+        agg = self.db.execute(
+            """WITH r AS (SELECT timestamp t,market_cap mc FROM token_snapshots
+                WHERE chain=? AND contract_address=? AND timestamp>? AND timestamp<=?
+                AND market_cap>0 AND market_cap<1e300)
+            SELECT COUNT(*),MAX(mc),MIN(mc),MAX(t),
+                (SELECT MAX(g) FROM (SELECT t-LAG(t,1,?) OVER (ORDER BY t) g FROM r)) FROM r""",
+            (row["chain"], row["contract_address"], called, until, called),
+        ).fetchone()
+        count, high, low, latest_at, gap = agg
+        latest_mc = latest_price = None
+        if count:
+            latest = self.db.execute(
+                """SELECT market_cap,price FROM token_snapshots
+                WHERE chain=? AND contract_address=? AND timestamp=?""",
+                (row["chain"], row["contract_address"], latest_at),
+            ).fetchone()
+            latest_mc = finite(latest[0])
+            price = finite(latest[1])
+            latest_price = price if price is not None and price > 0 else None
+        position = self.db.execute(
+            "SELECT COUNT(*),COALESCE(SUM(a.timestamp<? OR (a.timestamp=? AND a.id<=?)),0) "
+            "FROM alerts a WHERE a.chain=? AND a.contract_address=? AND " + self.alert_visibility(),
+            (called, called, row["id"], row["chain"], row["contract_address"], until, until, until),
+        ).fetchone()
+        change = mfe = mae = None
+        reason = None
+        if call_mc is None:
+            reason = "no_call_mc"
+        elif not count:
+            reason = "no_later_observation"
+        else:
+            change = (latest_mc / call_mc - 1) * 100
+            mfe = (high / call_mc - 1) * 100
+            mae = (low / call_mc - 1) * 100
+        return CallPerformance(
+            call_market_cap=call_mc,
+            call_price=call_price if call_price is not None and call_price > 0 else None,
+            latest_market_cap=latest_mc,
+            latest_price=latest_price,
+            latest_observed_at=latest_at if count else None,
+            freshness="none"
+            if not count
+            else "fresh"
+            if until - latest_at <= FRESH_SECONDS
+            else "stale",
+            change_since_call_pct=change,
+            change_reason=reason,
+            mfe_pct=mfe,
+            mae_pct=mae,
+            observations=count,
+            max_gap_seconds=gap if count else None,
+            elapsed_seconds=max(0.0, until - called),
+            token_call_index=position[1] or None,
+            token_call_count=position[0] or None,
+        )
+
+    def _alert(self, row: sqlite3.Row, until: float) -> Alert:
         base = dict(row)
         # Validate saved alert-time payload against the immutable alert identity/score.
         frozen = self.db.execute(
@@ -608,6 +674,7 @@ class PublicQueries:
             preset=public.preset,
             revision=public.revision,
             observation=public,
+            performance=self._performance(row, until),
         )
 
     @staticmethod
@@ -648,7 +715,7 @@ class PublicQueries:
             (*parameters, page_size, (page - 1) * page_size),
         ).fetchall()
         return AlertsPage(
-            items=[self._alert(row) for row in rows],
+            items=[self._alert(row, until) for row in rows],
             total=count,
             page=page,
             page_size=page_size,
@@ -663,7 +730,7 @@ class PublicQueries:
         ).fetchone()
         if row is None:
             return None
-        saved = self._alert(row)
+        saved = self._alert(row, until)
         current = self._latest_row(row["chain"], row["contract_address"], until)
         from revival_radar.analysis.track_record import checkpoint_rows
 
@@ -702,6 +769,28 @@ class PublicQueries:
             as_of=until,
         )
 
+    def regime_context(self, until: float, chain: str = "sol") -> dict | None:
+        """Latest completed scan's saved regime context; saved data only."""
+        rows = self.db.execute(
+            """SELECT s.finished, json_extract(m.value,'$.market_context') AS context
+            FROM (SELECT id,finished FROM scan_runs WHERE finished IS NOT NULL
+                AND finished<=? ORDER BY finished DESC LIMIT 5) s
+            JOIN state m ON m.key='scan:metrics:' || s.id
+            ORDER BY s.finished DESC""",
+            (until,),
+        ).fetchall()
+        for row in rows:
+            try:
+                context = json.loads(row["context"]) if row["context"] else None
+                value = context.get(chain) if isinstance(context, dict) else None
+                if value:
+                    return RegimeContext.model_validate(
+                        {**value, "scan_finished": row["finished"], "chain": chain}
+                    ).model_dump()
+            except (ValueError, TypeError, ValidationError):
+                continue
+        return None
+
     def report(self, until: float, hours: int) -> MarketReport:
         report = self.repo.market_report(until - hours * 3600, until, timezone="Asia/Ho_Chi_Minh")
         entries = []
@@ -727,7 +816,9 @@ class PublicQueries:
                     },
                 }
             )
-        return MarketReport.model_validate({**report, "entries": entries})
+        return MarketReport.model_validate(
+            {**report, "entries": entries, "market_context": self.regime_context(until)}
+        )
 
     def outcomes(self, until: float, days: int) -> Outcomes:
         since = until - days * 86400

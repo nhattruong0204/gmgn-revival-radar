@@ -25,7 +25,13 @@ import {
   researchLink,
   researchReturn,
 } from "./format";
-import type { Alert, AlertDetail, ListResponse, Report } from "./types";
+import type {
+  Alert,
+  AlertDetail,
+  ListResponse,
+  RegimeContext,
+  Report,
+} from "./types";
 import { SignalEvidence } from "./TokenDetail";
 import { ResearchBrief } from "./ResearchBrief";
 import { CheckpointTable } from "./TrackRecord";
@@ -337,6 +343,68 @@ export function Alerts({ id }: { id?: string }) {
     </>
   );
 }
+const sourceNames: Record<string, string> = {
+  hot_search: "Hot Search",
+  trending: "Trending",
+};
+function utcClock(timestamp: number): string {
+  return new Date(timestamp * 1000).toISOString().slice(11, 16);
+}
+export function RegimeSummary({
+  context,
+}: {
+  context: RegimeContext | null | undefined;
+}) {
+  if (!context) {
+    return (
+      <section
+        className="panel regime-panel"
+        aria-label="Market regime context"
+      >
+        <h2>Market regime</h2>
+        <p className="muted small">
+          No saved regime context yet. It appears after the next completed scan.
+        </p>
+      </section>
+    );
+  }
+  const sources = context.sources.map((s) => sourceNames[s] ?? s).join(" + ");
+  const unknown = (reason?: string | null) =>
+    reason === "insufficient_sample"
+      ? `unknown (fewer than ${context.minimum_sample} tokens)`
+      : "unknown";
+  const median1h =
+    context.median_price_change_1h === null
+      ? unknown(context.median_price_change_1h_reason)
+      : percent(context.median_price_change_1h, false, true);
+  const median24h =
+    context.median_price_change_24h === null
+      ? unknown(context.median_price_change_24h_reason)
+      : percent(context.median_price_change_24h, false, true);
+  const share =
+    context.share_positive_1h === null
+      ? `share up ${unknown(context.share_positive_1h_reason)}`
+      : `${percent(context.share_positive_1h, true)} up`;
+  return (
+    <section className="panel regime-panel" aria-label="Market regime context">
+      <h2>Market regime</h2>
+      <p className="regime-line">
+        {`Universe of ${context.universe_size} ${sources ? `${sources} ` : ""}tokens: median 1h change ${median1h}, ${share} (scan at ${utcClock(context.scan_finished)} UTC)`}
+      </p>
+      <p className="muted small">
+        Median 24h change {median24h} · {context.coverage.price_change_1h}{" "}
+        tokens with 1h data, {context.coverage.price_change_24h} with 24h data ·{" "}
+        {context.eligible_count === null
+          ? "eligible count unknown"
+          : `${context.eligible_count} eligible`}
+      </p>
+      <p className="muted small">
+        Context, not a signal. Regime figures explain market conditions around
+        the scan; they do not change any score or alert.
+      </p>
+    </section>
+  );
+}
 export function Reports() {
   const location = useLocation();
   const selected = Number(
@@ -391,6 +459,7 @@ export function Reports() {
           revisions before interpreting changes in scores.
         </Notice>
       )}
+      <RegimeSummary context={data?.market_context} />
       <section className="panel report-panel">
         <div className="panel-header">
           <div>

@@ -239,6 +239,24 @@ export interface History {
   since: number;
   truncated: boolean;
 }
+export type CallFreshness = "fresh" | "stale" | "none";
+export interface CallPerformance {
+  call_market_cap: number | null;
+  call_price: number | null;
+  latest_market_cap: number | null;
+  latest_price: number | null;
+  latest_observed_at: number | null;
+  freshness: CallFreshness;
+  change_since_call_pct: number | null;
+  change_reason: "no_call_mc" | "no_later_observation" | null;
+  mfe_pct: number | null;
+  mae_pct: number | null;
+  observations: number;
+  max_gap_seconds: number | null;
+  elapsed_seconds: number | null;
+  token_call_index: number | null;
+  token_call_count: number | null;
+}
 export interface Alert {
   recorded_at?: number | null;
   confirmed_at?: number | null;
@@ -251,6 +269,7 @@ export interface Alert {
   preset?: string;
   revision?: number;
   observation: Observation | null;
+  performance?: CallPerformance;
 }
 export interface AlertDetail extends Alert {
   checkpoint_research?: CheckpointResearch[];
@@ -286,6 +305,22 @@ export interface Report {
   last_finished: number | null;
   multiple_configurations: boolean;
   entries: ReportEntry[];
+  market_context?: RegimeContext | null;
+}
+export interface RegimeContext {
+  scan_finished: number;
+  chain: string;
+  sources: string[];
+  universe_size: number;
+  median_price_change_1h: number | null;
+  median_price_change_1h_reason?: string | null;
+  median_price_change_24h: number | null;
+  median_price_change_24h_reason?: string | null;
+  share_positive_1h: number | null;
+  share_positive_1h_reason?: string | null;
+  eligible_count: number | null;
+  coverage: { price_change_1h: number; price_change_24h: number };
+  minimum_sample: number;
 }
 export interface OutcomeStats {
   observed: number;
