@@ -6,6 +6,7 @@ import sqlite3
 import time
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
+from threading import Timer
 
 from pydantic import ValidationError
 
@@ -39,6 +40,7 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
     # mode=ro refuses absent databases and never invokes scanner migrations.
     uri = config.database_path.resolve().as_uri() + "?mode=ro"
     db = sqlite3.connect(uri, uri=True, timeout=config.web_read_timeout_ms / 1000)
+    interruption = None
     try:
         db.row_factory = sqlite3.Row
         # Connection-local page-cache targets avoid repeated spill/read churn on
@@ -75,10 +77,12 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
         db.execute("PRAGMA query_only=ON")
         db.execute(f"PRAGMA busy_timeout={config.web_read_timeout_ms}")
         deadline = time.monotonic() + config.web_read_timeout_ms / 1000
-        # Frequent Python callbacks are expensive in request worker threads.
-        # Poll SQL periodically and enforce the identical elapsed budget again
-        # on exit, including short SQL/model work or waits without a callback.
-        db.set_progress_handler(lambda: int(time.monotonic() > deadline), 10000)
+        # Native interrupt is thread-safe and avoids Python callbacks throughout
+        # SQL execution. Keep the same elapsed deadline and check it again on
+        # exit for model work/cache waits without an active SQL statement.
+        interruption = Timer(max(0, deadline - time.monotonic()), db.interrupt)
+        interruption.daemon = True
+        interruption.start()
         db.execute("BEGIN")
         if db.execute("PRAGMA user_version").fetchone()[0] != SCHEMA_VERSION:
             raise sqlite3.DatabaseError("Unsupported public storage schema")
@@ -86,6 +90,9 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
         if time.monotonic() > deadline:
             raise sqlite3.OperationalError("Saved read deadline exceeded")
     finally:
+        if interruption is not None:
+            interruption.cancel()
+            interruption.join()
         db.close()
 
 
