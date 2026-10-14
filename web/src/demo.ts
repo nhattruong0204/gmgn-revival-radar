@@ -315,51 +315,66 @@ const alerts: Alert[] = demoObservations
       },
     };
   });
-// A token with three calls (#67): the grouped Signals view needs a repeat caller.
-// The existing first call is "2 of 3"; these are the first and the third.
-{
-  const base = alerts[0];
-  const extra = (
-    id: number,
-    age: number,
-    perf: Partial<CallPerformance>,
-  ): Alert => ({
-    ...base,
-    id,
-    timestamp: now - age,
-    score: base.score - (id === 7 ? 8 : 0),
+// Two more calls on the first token so it has three (indexes 1, 2, 3 of 3).
+const first = demoObservations[0];
+[
+  {
+    id: 7,
+    age: 60 * H,
+    index: 1,
+    call: 2400000,
+    latest: 4200000,
+    change: 75,
+    mfe: 80,
+    mae: -4,
+    outcomes: [
+      { horizon_hours: 1, return_pct: 3.1 },
+      { horizon_hours: 6, return_pct: 21 },
+      { horizon_hours: 24, return_pct: 48 },
+      { horizon_hours: 72, return_pct: 70 },
+    ],
+  },
+  {
+    id: 8,
+    age: 3 * H,
+    index: 3,
+    call: 4100000,
+    latest: 4200000,
+    change: 2.4,
+    mfe: 5.1,
+    mae: -1.2,
+    outcomes: [{ horizon_hours: 1, return_pct: 1.8 }],
+  },
+].forEach((c) => {
+  alertOutcomes.set(c.id, c.outcomes);
+  alerts.push({
+    id: c.id,
+    timestamp: now - c.age,
+    chain: first.chain,
+    contract_address: first.contract_address,
+    symbol: first.symbol,
+    score: first.score,
+    preset: first.preset ?? undefined,
+    revision: 4,
+    observation: first,
     performance: {
-      ...base.performance!,
-      elapsed_seconds: age,
-      ...perf,
+      ...blank,
+      call_market_cap: c.call,
+      latest_market_cap: c.latest,
+      latest_observed_at: now - 240,
+      freshness: "fresh",
+      change_since_call_pct: c.change,
+      change_reason: null,
+      mfe_pct: c.mfe,
+      mae_pct: c.mae,
+      observations: 30,
+      max_gap_seconds: 1800,
+      elapsed_seconds: c.age,
+      token_call_index: c.index,
+      token_call_count: 3,
     },
   });
-  alerts.push(
-    extra(7, 80 * H, {
-      call_market_cap: 2500000,
-      change_since_call_pct: 68,
-      mfe_pct: 80,
-      mae_pct: -4,
-      observations: 120,
-      token_call_index: 1,
-    }),
-    extra(8, 4 * H, {
-      call_market_cap: 4000000,
-      change_since_call_pct: 5,
-      mfe_pct: 7,
-      mae_pct: -1.5,
-      observations: 9,
-      token_call_index: 3,
-    }),
-  );
-  alertOutcomes.set(7, [
-    { horizon_hours: 1, return_pct: 6 },
-    { horizon_hours: 6, return_pct: 21 },
-    { horizon_hours: 24, return_pct: 44 },
-    { horizon_hours: 72, return_pct: 61 },
-  ]);
-  alertOutcomes.set(8, []);
-}
+});
 const newestFirst = [...alerts].sort(
   (a, b) => b.timestamp - a.timestamp || b.id - a.id,
 );
@@ -490,8 +505,20 @@ function readyRequest(path: string): unknown {
       })),
     };
   }
-  if (url.pathname.endsWith("/alerts"))
-    return q.get("group") === "token" ? groupedAlerts(q) : list(newestFirst, q);
+  if (url.pathname.endsWith("/alerts")) {
+    if (q.get("group") === "token") return groupedAlerts(q);
+    const chain = q.get("chain"),
+      address = q.get("address");
+    // The API lists newest first.
+    return list(
+      newestFirst.filter(
+        (a) =>
+          (!chain || a.chain === chain) &&
+          (!address || a.contract_address === address),
+      ),
+      q,
+    );
+  }
   if (url.pathname.endsWith("/reports"))
     return {
       since: now - Number(q.get("hours") ?? 24) * 3600,

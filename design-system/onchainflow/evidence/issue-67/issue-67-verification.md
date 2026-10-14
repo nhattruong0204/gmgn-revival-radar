@@ -50,3 +50,10 @@ Backend `tests/test_signals_group.py` (token paging, all calls listed, bound and
 deadline returns 503). Frontend `web/src/signal-feed.test.tsx` (grouping keeps all call ids, toggle URL
 state, mobile disclosure, caveat once, detail has no duplicate panels but exposes contract, security and
 times). Existing call-card and publications tests were updated for the new structure.
+
+## Token page (merged with #69 from main)
+
+`token-page-390x844.png`: the compact cards under "Calls on this token" share the same dense layout. They are
+rendered with the new `hideTokenLink` prop, so no card links to the page it is on (0 "View token" links,
+3 cards, no horizontal overflow); "Open GMGN" and "Original call" remain. `group=token` also honours the
+`address` filter from #69.

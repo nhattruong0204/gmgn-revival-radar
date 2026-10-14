@@ -18,7 +18,7 @@ future observations cannot supply a saved score. Missing historical evidence rem
 | `GET /radar` | `search` (100 characters), `chain`, `status`, `min_score` (0–100, default 0), `include_ignore` (default false), `sort` (`score`, `timestamp`, `market_cap`, `liquidity`, `volume_5m`), `order` (`desc`/`asc`), `page` (1–10000), `page_size` (1–100, default 25) | `{items,total,page,page_size,as_of,last_scan_at}` |
 | `GET /tokens/{chain}/{address}` | `as_of` | `{observation,latest_market,links,as_of,last_scan_at}` |
 | `GET /tokens/{chain}/{address}/history` | `hours` (1–168, default 168), `max_points` (1–1000, default 500) | `{snapshots,scores,candles,candles_fetched_at,candles_expires_at,since,as_of,truncated}` |
-| `GET /alerts` | `chain`, `page`, `page_size` | Paginated confirmed sent alerts, each with `performance` |
+| `GET /alerts` | `chain`, `address` (requires `chain`; validated like the token routes, so one token's calls), `page` (1–10000), `page_size` (1–100, default 25), `as_of` | Paginated confirmed sent alerts, newest first, each with `performance`. Uses the `alerts_token_time` index when `address` is given; the usual read deadline and cache apply |
 | `GET /alerts/{id}` | `as_of` | Original alert observation, separately named `latest_observation`, saved `outcomes`, `performance`, `as_of` |
 | `GET /reports` | `hours` (1, 4, 12, 24, 72 or 168; default 24) | Existing Solana top-ten report with sanitized `peak` and `latest` observations |
 | `GET /outcomes` | `days` (1–7, default 7) | `{since,until,horizons}` using the bot's existing outcome calculation |

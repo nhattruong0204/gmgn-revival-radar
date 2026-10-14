@@ -3081,3 +3081,79 @@ textarea,
     line-height: 1.3;
   }
 }
+.token-calls-grid {
+  padding: 0;
+  margin-top: 12px;
+}
+.token-calls-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  color: var(--research-muted);
+  font-size: var(--research-type-metadata);
+}
+.token-calls-pager {
+  display: flex;
+  gap: 8px;
+}
+.token-calls-pager button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--research-control-border);
+  border-radius: var(--research-radius-control);
+  background: var(--research-surface);
+  color: var(--research-text);
+  font-size: var(--research-type-body);
+}
+.token-calls-pager button:disabled {
+  opacity: 0.55;
+}
+.chart-marker-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid var(--research-control-border);
+  border-radius: var(--research-radius-control);
+  font-size: var(--research-type-metadata);
+}
+.chart-marker-readout a,
+.chart-marker-readout .text-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.call-marker {
+  cursor: pointer;
+  outline: none;
+}
+.call-marker-line {
+  stroke: var(--research-warning);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 4;
+}
+.call-marker-glyph {
+  fill: var(--research-warning);
+  stroke: var(--research-bg);
+  stroke-width: 2;
+}
+.call-marker.active .call-marker-glyph,
+.call-marker:focus-visible .call-marker-glyph {
+  stroke: var(--research-text);
+  stroke-width: 3;
+}
+.call-marker:focus-visible .call-marker-line {
+  stroke-dasharray: none;
+  stroke-width: 2.5;
+}
+.chart-marker-readout a {
+  color: var(--research-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

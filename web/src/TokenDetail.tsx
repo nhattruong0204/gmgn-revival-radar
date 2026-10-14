@@ -19,6 +19,7 @@ import {
 import { ObservedChart } from "./Chart";
 import { CandleWorkspace } from "./CandleWorkspace";
 import { ResearchBrief } from "./ResearchBrief";
+import { TokenCalls, useCallMarkers } from "./TokenCalls";
 import {
   chains,
   compact,
@@ -266,6 +267,7 @@ export function TokenDetail({
   const history = useData<History>(
     `/api/v1/tokens/${encoded}/history?hours=168`,
   );
+  const markers = useCallMarkers(chain, address);
   const [metric, setMetric] = useState<
       "price" | "market_cap" | "score" | "candles"
     >("price"),
@@ -450,6 +452,7 @@ export function TokenDetail({
                   }
                   money={metric !== "score"}
                   score={metric === "score"}
+                  markers={markers}
                   points={
                     metric === "score"
                       ? history.data.scores.map((s) => ({
@@ -465,6 +468,7 @@ export function TokenDetail({
               )
             ) : null}
           </section>
+          <TokenCalls key={encoded} chain={chain} address={address} />
           {small && (
             <details className="research-disclosure">
               <summary>Saved market metrics</summary>

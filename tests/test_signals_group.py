@@ -83,3 +83,18 @@ async def test_group_token_excludes_unsent_and_respects_deadline(  # noqa: F811
     monkeypatch.setattr(PublicQueries, "alerts_by_token", slow)
     response = await client.get("/api/v1/alerts?group=token")
     assert response.status_code == 503
+
+
+async def test_group_token_honours_the_address_filter(web, repo, token, config):  # noqa: F811
+    client, _ = web
+    a, b, _c = _tokens(token, 3)
+    make_call(repo, a, config, timestamp=NOW - 40 * 3600)
+    make_call(repo, a, config, timestamp=NOW - 20 * 3600)
+    make_call(repo, b, config, timestamp=NOW - 500)
+    page = (
+        await client.get(f"/api/v1/alerts?group=token&chain=sol&address={a.contract_address}")
+    ).json()
+    assert page["total"] == 1 and page["groups"][0]["call_count"] == 2
+    assert (
+        await client.get("/api/v1/alerts?group=token&address=" + a.contract_address)
+    ).status_code == 422

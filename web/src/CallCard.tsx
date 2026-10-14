@@ -89,10 +89,13 @@ export function CallPerformanceCard({
   alert,
   variant = "full",
   headingLevel = 2,
+  hideTokenLink = false,
 }: {
   alert: Alert | AlertDetail;
   variant?: "full" | "compact";
   headingLevel?: 2 | 3;
+  /** Hide 'View token' when the card is already shown on that token's page. */
+  hideTokenLink?: boolean;
 }) {
   const p = alert.performance;
   const o = alert.observation;
@@ -126,10 +129,12 @@ export function CallPerformanceCard({
   ) : null;
   const actions = (
     <nav className="call-card-actions" aria-label={`Actions for ${title}`}>
-      <Link className="call-action" href={tokenPage}>
-        View token
-        <Icon name="arrow" size={14} />
-      </Link>
+      {!hideTokenLink && (
+        <Link className="call-action" href={tokenPage}>
+          View token
+          <Icon name="arrow" size={14} />
+        </Link>
+      )}
       <a
         className="call-action"
         href={gmgnLink(alert.chain, alert.contract_address)}

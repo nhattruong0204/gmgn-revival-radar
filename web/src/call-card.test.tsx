@@ -172,3 +172,11 @@ it("EvidenceList risks use a warning icon, never the check icon", async () => {
     risk.querySelector("svg path")?.getAttribute("d"),
   );
 });
+it("hides View token on request but keeps the other actions", () => {
+  const { container } = render(
+    <CallPerformanceCard alert={alerts[0]} variant="compact" hideTokenLink />,
+  );
+  expect(within(container as HTMLElement).queryByText("View token")).toBeNull();
+  expect(text(container)).toContain("Open GMGN");
+  expect(text(container)).toContain("Original call");
+});
