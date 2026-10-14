@@ -100,14 +100,14 @@ not enough to tune weights.
 | Bundler/insider share | Concentration predicts dumps | GMGN security (insider often null) | none | Stronger penalty after trial |
 | Token-2022 extension risks (#10) | Hidden transfer controls | Helius (already called) | negligible | Risk gate |
 | Holder concentration via Helius (#11) | GMGN top-10 can be wrong | Helius `getTokenLargestAccounts` | ~1 call/candidate | Evidence |
-| Regime context (V2-Q3) | Revivals fail in falling markets | Already-fetched discovery data | none | Explanation |
+| Regime context (#72 (V2-Q3)) | Revivals fail in falling markets | Already-fetched discovery data | none | Explanation |
 | Smart-money/wallet flows | Informed buying | GMGN `smart_money_count` exists; deeper flows need paid APIs | unknown | Defer |
 
 Do not add paid data before the stage-gated call record exists to evaluate it.
 
 ## Owner decisions needed
 
-1. Approve the published-call policy (stage gate + evidence-based re-alerts) — V2-Q1.
+1. Approve the published-call policy (stage gate + evidence-based re-alerts) — #70 (V2-Q1).
 2. Approve MC change as the headline metric and labelled pooled stats on Track Record.
 3. Confirm blocking subscriptions/payments (#46/#47/#50) until the V2 gate passes.
 4. Approve closing superseded PRs #9/#15 and closing #52 after confirming access policy.

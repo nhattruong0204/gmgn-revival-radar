@@ -1,7 +1,6 @@
 # V2 issue drafts
 
-Drafted by the 2026-10-14 audit. GitHub issues were **not** created because the audit
-environment had no authenticated GitHub access. After `gh auth login`, run from the repo root:
+Drafted by the 2026-10-14 audit. Created on GitHub on 2026-10-14 as #62–#75 (mapping below). Original creation commands, kept for reference:
 
 ```bash
 gh label create v2 --color 0e8a16 --force
@@ -38,3 +37,22 @@ gh issue create --title '[V2][P1] V2 release gate: data parity, call cards, brow
 | `12-v2-q4.md` | P1 | S | [V2][P1] Define and document market-cap vs price performance (circulating vs FDV) |
 | `13-v2-q5.md` | P2 | L | [V2][P2] Retain replay-grade evidence and build a point-in-time replay harness |
 | `14-v2-g1.md` | P1 | S | [V2][P1] V2 release gate: data parity, call cards, browser and load evidence |
+
+## Created issues
+
+| Draft | Issue |
+|---|---|
+| V2-D1 | #62 |
+| V2-D2 | #63 |
+| V2-D3 | #64 |
+| V2-U1 | #65 |
+| V2-U2 | #66 |
+| V2-U3 | #67 |
+| V2-U4 | #68 |
+| V2-U5 | #69 |
+| V2-Q1 | #70 |
+| V2-Q2 | #71 |
+| V2-Q3 | #72 |
+| V2-Q4 | #73 |
+| V2-Q5 | #74 |
+| V2-G1 | #75 |

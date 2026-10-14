@@ -88,7 +88,7 @@ separates:
 - **Watch**: website-only list from Radar, never counted in the Track Record.
 
 This is a policy change in `Scanner.process` (`src/revival_radar/scanner.py`, the `alert_score_threshold` check) and `Repository.reserve_alert` (cooldown/re-alert rule), plus runtime settings. It
-needs owner approval and a measured trial (see plan V2-Q1).
+needs owner approval and a measured trial (see plan #70 (V2-Q1)).
 
 ## 6. Research data layer
 

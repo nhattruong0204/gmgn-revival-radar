@@ -8,7 +8,7 @@ session, M ≈ 1–2 sessions, L ≈ 3+ sessions split into PRs.
 
 | Decision | Recommendation | Alternative | Trade-off |
 |---|---|---|---|
-| Published-call policy (V2-Q1) | Stage gate at EARLY_REVIVAL + evidence-based re-alerts; WATCH stays website-only | Keep threshold 40 and only improve the UI | Fewer calls (expect ~0–3/day in the current regime) vs. a record that keeps measuring WATCH noise. A silent radar is honest; a noisy one is not useful. |
+| Published-call policy (#70 (V2-Q1)) | Stage gate at EARLY_REVIVAL + evidence-based re-alerts; WATCH stays website-only | Keep threshold 40 and only improve the UI | Fewer calls (expect ~0–3/day in the current regime) vs. a record that keeps measuring WATCH noise. A silent radar is honest; a noisy one is not useful. |
 | Headline performance metric | Market-cap change since call (labelled "observed") | Price change | MC matches what traders read on GMGN; price is kept for checkpoints. |
 | Track Record pooling | Show descriptive stats for mixed revisions with a label | Keep withholding | Withholding is statistically pure but makes the page useless; labelling preserves honesty. |
 | Subscriptions/paid (#46/#47/#50) | Block until the V2 gate passes | Continue in parallel | Selling an unproven record would be misleading. |
@@ -17,27 +17,27 @@ session, M ≈ 1–2 sessions, L ≈ 3+ sessions split into PRs.
 
 Order matters: data contract → component → pages.
 
-1. **V2-D2** Alert risk warnings fix (S) — isolated bug, ship first.
-2. **V2-D1** Call performance read model (M).
-3. **V2-D3** Call data-integrity acceptance suite + parity script (M).
-4. **V2-U1** CallPerformanceCard (M).
-5. **V2-U2** Track Record performance journal (L, split API/UI PRs).
-6. **V2-Q1** Published-call policy code behind settings (M); owner activates after review.
+1. **#63 (V2-D2)** Alert risk warnings fix (S) — isolated bug, ship first.
+2. **#62 (V2-D1)** Call performance read model (M).
+3. **#64 (V2-D3)** Call data-integrity acceptance suite + parity script (M).
+4. **#65 (V2-U1)** CallPerformanceCard (M).
+5. **#66 (V2-U2)** Track Record performance journal (L, split API/UI PRs).
+6. **#70 (V2-Q1)** Published-call policy code behind settings (M); owner activates after review.
 
 ## Wave 2 — P1 coherence and research (≈ 2–3 weeks)
 
-- V2-U3 Signals feed, V2-U4 plain-language reasons, V2-U5 token calls section.
-- V2-Q2 research export/report, V2-Q3 regime context, V2-Q4 metric definitions.
-- V2-G1 release gate executed on staging with a production copy → owner-approved deploy.
+- #67 (V2-U3) Signals feed, #68 (V2-U4) plain-language reasons, #69 (V2-U5) token calls section.
+- #71 (V2-Q2) research export/report, #72 (V2-Q3) regime context, #73 (V2-Q4) metric definitions.
+- #75 (V2-G1) release gate executed on staging with a production copy → owner-approved deploy.
 
 ## Wave 3 — P2 evidence and research depth
 
-- V2-Q5 replay-grade retention and harness.
+- #74 (V2-Q5) replay-grade retention and harness.
 - Helius #10 (Token-2022 risks), #11 (holders), #12 re-scoped (participation), #13.
 - Only after 2–4 weeks of stage-gated calls: component re-weighting proposals,
   evaluated walk-forward on data not used to design them.
 
-## Mandatory data-integrity tests (V2-D3)
+## Mandatory data-integrity tests (#64 (V2-D3))
 
 1. Published call preserves original timestamp and market cap.
 2. Latest MC comes from a timestamped, strictly later observation.
@@ -54,7 +54,7 @@ Order matters: data contract → component → pages.
 
 - No new paid infrastructure required. Current VPS (2 GB RAM, 50 GB disk, 46% used)
   is sufficient; watch disk growth (DB 1.5 GB after ~8 days, mostly evaluation
-  state) and add retention (V2-Q5) before it becomes a problem.
+  state) and add retention (#74 (V2-Q5)) before it becomes a problem.
 - Helius/GMGN: no additional calls in Wave 1–2. Wave 3 Helius features consume the
   existing Helius plan budget; size them in their issues before enabling.
 - Agent effort: Wave 1 ≈ 8–10 focused sessions, Wave 2 ≈ 8 sessions.

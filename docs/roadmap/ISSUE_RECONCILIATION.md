@@ -5,9 +5,9 @@ Source: all 60 GitHub issues/PRs and 27 comments (public API), current `main`
 `docs/audit/`. "Verified in production" means checked on onchainflow.app or the
 production DB copy during this audit.
 
-**No GitHub state was changed by this audit.** The audit environment had read-only
-(unauthenticated) GitHub access. The actions below are proposals; ready-to-run
-commands are in `docs/roadmap/issues/README.md`.
+**Applied on 2026-10-14** after the owner authorised GitHub changes: new issues
+#62–#75 created, labels/comments applied, superseded PRs #9/#15 closed. Items
+that need an owner decision (#52 closure, branch deletion) were left open.
 
 ## Decisions
 
@@ -25,12 +25,12 @@ commands are in `docs/roadmap/issues/README.md`.
 | 16–26 | Website launch epic and children | Merged | Yes (HTTPS, public API, owner gate) | Completed and verified | None. |
 | 27–38 | Website PRs | Merged | Yes | Completed | None. |
 | 39 | Research product epic | Open | — | Still the right umbrella, **priorities wrong** | Update body: add "V2 trust foundation" wave first; move #46/#47/#50 behind it. |
-| 40 | Readable, coherent pages | Closed | Mechanically yes (no overflow, ≥12px, focus) | Completed in code; **product outcome not met** (pages not coherent) | Keep closed; link follow-ups V2-U1…U5 as the coherence regression. |
+| 40 | Readable, coherent pages | Closed | Mechanically yes (no overflow, ≥12px, focus) | Completed in code; **product outcome not met** (pages not coherent) | Keep closed; link follow-ups #65 (V2-U1)…U5 as the coherence regression. |
 | 41 | Current vs historical separation | Closed | Yes (24h default window, origin labels) | Completed and verified | None. |
 | 42 | Candle workspace | Closed | Yes (chart renders saved candles) | Completed and verified | None. |
-| 43 | Versioned research brief | Closed | Yes, but "Supporting facts: none" and empty "Why it's on the radar" | Completed in code; **partially useful** | Link V2-U4 (plain-language reasons). |
+| 43 | Versioned research brief | Closed | Yes, but "Supporting facts: none" and empty "Why it's on the radar" | Completed in code; **partially useful** | Link #68 (V2-U4) (plain-language reasons). |
 | 44 | Elliott-wave prototype | Open | — | **No longer aligned** with priorities | Keep open, label `deferred`; do not schedule before V2 gate. |
-| 45 | Auditable track record | Closed | Yes — deployed today | Completed in code and verified for correctness; **fails the product question** | Keep closed (its contracts are correct and needed); link V2-U2 as the regression follow-up. |
+| 45 | Auditable track record | Closed | Yes — deployed today | Completed in code and verified for correctness; **fails the product question** | Keep closed (its contracts are correct and needed); link #66 (V2-U2) as the regression follow-up. |
 | 46 | Subscriber accounts | Open | — | Still valid later, **blocked** by V2 trust foundation | Label `blocked-by-v2`. |
 | 47 | Paid offer | Open | — | **Blocked**: selling an unproven track record would be misleading | Label `blocked-by-v2`. |
 | 48 | Daily research loop | Open | — | Valid after calls are trustworthy | Label `blocked-by-v2`. |
