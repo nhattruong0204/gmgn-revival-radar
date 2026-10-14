@@ -49,12 +49,25 @@ export const demoObservations: Observation[] = names.map(
       holders: 8240 - i * 383,
       price_change_1h: 24 - i * 3.2,
       security: {
+        bundler_ratio: 0.12,
         mint_renounced: true,
         freeze_renounced: i % 3 === 0 ? null : true,
         top10_ratio: 0.12 + i * 0.01,
         dangerous: false,
         flags: [],
       },
+    };
+    const components: Record<string, number> = {
+      drawdown: 10,
+      liquidity: 10,
+      holders: 5,
+      base: 8,
+      volume_5m: 15,
+      volume_1h: 10,
+      transactions: 10,
+      higher_low: 5,
+      higher_high: 5,
+      bundler_penalty: -5,
     };
     return {
       ...token,
@@ -65,21 +78,26 @@ export const demoObservations: Observation[] = names.map(
       setup_score: 88 - i * 2,
       trigger_score: 91 - i * 4,
       confirmation_score: i % 3 === 0 ? 78 : null,
-      blockers: i === 7 ? ["Insufficient liquidity for current strategy"] : [],
-      missing_fields: i % 3 === 0 ? ["freeze_authority"] : [],
+      blockers:
+        i === 7
+          ? ["no_base", "no_returning_activity", "score_below_threshold"]
+          : [],
+      missing_fields:
+        i % 3 === 0 ? ["security.dev_ratio", "baseline_history"] : [],
       warnings: i % 3 === 0 ? ["Freeze authority evidence unavailable"] : [],
       preset: "Balanced",
       revision: 4,
       token,
       signal: {
-        reasons: [
-          "Returning 5m volume above observed baseline",
-          "Established base after a deep ATH drawdown",
-          "Higher lows in cached closed candles",
-        ],
-        components: { base: 24, volume_5m: 18, transactions: 12, drawdown: 15 },
+        // Matches the current scorer: component strings only, no narrative.
+        reasons: Object.entries(components).map(
+          ([k, v]) => `${k}: ${v >= 0 ? "+" : ""}${v}`,
+        ),
+        components,
         acceleration: {
           volume_acceleration_5m: 3.4 - i * 0.12,
+          volume_ratio_5m: 4.1 - i * 0.15,
+          volume_acceleration_1h: 2.2 - i * 0.05,
           tx_acceleration_5m: 2.8 - i * 0.1,
         },
         structure: {
