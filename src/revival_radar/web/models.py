@@ -293,6 +293,26 @@ class Outcomes(PublicModel):
     horizons: dict[str, OutcomeHorizon]
 
 
+class CallPerformance(PublicModel):
+    """Call-to-latest performance computed on read from saved snapshots; nulls carry a reason."""
+
+    call_market_cap: Finite | None = None
+    call_price: Finite | None = None
+    latest_market_cap: Finite | None = None
+    latest_price: Finite | None = None
+    latest_observed_at: Finite | None = None
+    freshness: Literal["fresh", "stale", "none"] = "none"
+    change_since_call_pct: Finite | None = None
+    change_reason: Literal["no_call_mc", "no_later_observation"] | None = None
+    mfe_pct: Finite | None = None
+    mae_pct: Finite | None = None
+    observations: int = 0
+    max_gap_seconds: Finite | None = None
+    elapsed_seconds: Finite | None = None
+    token_call_index: int | None = None
+    token_call_count: int | None = None
+
+
 class Alert(PublicModel):
     recorded_at: Finite | None = None
     confirmed_at: Finite | None = None
@@ -305,6 +325,7 @@ class Alert(PublicModel):
     preset: str | None
     revision: int | None
     observation: Observation
+    performance: CallPerformance
 
 
 class AlertsPage(PublicModel):
