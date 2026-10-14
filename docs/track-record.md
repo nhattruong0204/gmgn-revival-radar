@@ -96,5 +96,26 @@ Older application readers reject schema seven. Rollback restores the matched
 pre-release database/control backup with its matching code; never downgrade or
 remove historical receipts in place. Restore/stage must preserve private permissions
 and immutable records. No access-policy or provider-budget change is authorized here.
+The deployment follow-up adds `state_report_configuration`, a compatible expression
+index built by scanner startup, including on existing schema-seven databases. It
+indexes the same nullable saved configuration/version fields and preserves malformed
+or missing presentations as unknown; no historical state is rewritten. Build and
+measure this index on the staged copy before cutover: uniform-configuration reports
+must also meet the unchanged read deadline, not just mixed synthetic replay cohorts.
+Public readers use connection-local 8 MiB page-cache targets for main and temporary
+pages, retaining file-backed temporary storage and the same 1,500 ms read deadline.
+These are cache targets, not hard process-memory limits; measure concurrency and
+memory on the actual host. No persistent database/owner/provider setting changes.
+The companion `evaluations_report_window` index covers the scalar report window.
+A request-owned timer interrupts active SQLite work at the configured deadline,
+avoiding repeated Python progress callbacks. A final elapsed-time check enforces
+the same budget for short SQL/model work or cache waits; the timer is cancelled
+and joined before closing its connection. The production read deadline remains
+1,500 ms. Over-budget results remain service errors rather than partial data.
+Server startup warms the 24-hour/seven-day saved reports before accepting requests,
+with at most three attempts per window under that same per-read budget. Missing
+storage remains unavailable and is never created/migrated by the website. Record
+startup time separately from request latency; do not label pre-startup diagnostics
+as serving readiness. Failed or over-budget models are never response-cached.
 Measure archive/database/backup growth and sustained production capacity before
 rollout; local fixture capacity is not VPS or Internet capacity certification.

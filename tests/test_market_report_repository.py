@@ -27,6 +27,23 @@ def observe(repo, token, config, timestamp, score, *, finished=True, finish_at=N
     return repo.db.execute("SELECT id FROM evaluations WHERE scan_id=?", (scan,)).fetchone()[0]
 
 
+def test_uniform_configuration_report_does_not_reparse_every_presentation(repo, token, config):
+    for timestamp in range(110, 170):
+        observe(repo, token, config, timestamp, 70)
+    calls = []
+
+    def record_json_validation(value):
+        calls.append(value)
+        return 1
+
+    # Configuration inspection must use extracted saved fields, including when
+    # LIMIT 2 cannot exit early because every observation has the same settings.
+    repo.db.create_function("json_valid", 1, record_json_validation, deterministic=True)
+    report = repo.market_report(100, now=200)
+    assert report["evaluations"] == 60 and not report["multiple_configurations"]
+    assert calls == []
+
+
 def test_market_report_peaks_latest_distinct_identity_without_threshold(repo, token, config):
     config.alert_score_threshold = 100
     peak = observe(repo, token, config, 110, 70, confirmation_score=25)

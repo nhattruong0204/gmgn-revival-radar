@@ -6,6 +6,7 @@ import sqlite3
 import time
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
+from threading import Timer
 
 from pydantic import ValidationError
 
@@ -39,8 +40,15 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
     # mode=ro refuses absent databases and never invokes scanner migrations.
     uri = config.database_path.resolve().as_uri() + "?mode=ro"
     db = sqlite3.connect(uri, uri=True, timeout=config.web_read_timeout_ms / 1000)
+    interruption = None
     try:
         db.row_factory = sqlite3.Row
+        # Connection-local page-cache targets avoid repeated spill/read churn on
+        # week-long saved cohorts. Keep temporary storage file-backed; neither
+        # these settings nor the read-only projections change persisted data.
+        db.execute("PRAGMA temp_store=FILE")
+        db.execute("PRAGMA cache_size=-8192")
+        db.execute("PRAGMA temp.cache_size=-8192")
         # Keep the same indexed projections in fixture-mode load tests. Opt-in
         # fixtures bypass exclusion through a reserved, never-recorded origin.
         excluded = (
@@ -69,12 +77,22 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
         db.execute("PRAGMA query_only=ON")
         db.execute(f"PRAGMA busy_timeout={config.web_read_timeout_ms}")
         deadline = time.monotonic() + config.web_read_timeout_ms / 1000
-        db.set_progress_handler(lambda: int(time.monotonic() > deadline), 1000)
+        # Native interrupt is thread-safe and avoids Python callbacks throughout
+        # SQL execution. Keep the same elapsed deadline and check it again on
+        # exit for model work/cache waits without an active SQL statement.
+        interruption = Timer(max(0, deadline - time.monotonic()), db.interrupt)
+        interruption.daemon = True
+        interruption.start()
         db.execute("BEGIN")
         if db.execute("PRAGMA user_version").fetchone()[0] != SCHEMA_VERSION:
             raise sqlite3.DatabaseError("Unsupported public storage schema")
-        yield PublicQueries(db, allow_synthetic=config.web_allow_synthetic_data)
+        yield PublicQueries(db, allow_synthetic=config.web_allow_synthetic_data, deadline=deadline)
+        if time.monotonic() > deadline:
+            raise sqlite3.OperationalError("Saved read deadline exceeded")
     finally:
+        if interruption is not None:
+            interruption.cancel()
+            interruption.join()
         db.close()
 
 
@@ -151,11 +169,22 @@ def public_field(payload, chain, address, timestamp, score, status, eligible, na
 
 
 class PublicQueries:
-    def __init__(self, db: sqlite3.Connection, *, allow_synthetic: bool = False):
+    def __init__(
+        self,
+        db: sqlite3.Connection,
+        *,
+        allow_synthetic: bool = False,
+        deadline: float | None = None,
+    ):
         self.db = db
+        self.deadline = deadline
         self.allow_synthetic = allow_synthetic
         self.repo = Repository(db)
         db.create_function("public_field", 8, public_field, deterministic=True)
+
+    def check_deadline(self):
+        if self.deadline is not None and time.monotonic() > self.deadline:
+            raise sqlite3.OperationalError("Saved read deadline exceeded")
 
     def last_scan_at(self, until: float) -> float | None:
         row = self.db.execute(

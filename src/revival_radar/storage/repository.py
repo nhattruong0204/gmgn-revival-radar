@@ -676,21 +676,21 @@ class Repository:
         valid = "CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END"
         query = f"""WITH observations AS MATERIALIZED (
             SELECT e.id,e.chain,e.contract_address,e.timestamp,e.score,e.status,e.eligible,
-                MAX(e.score) OVER (PARTITION BY e.contract_address) AS peak_score,
-                ROW_NUMBER() OVER (
-                    PARTITION BY e.contract_address ORDER BY e.timestamp DESC,e.id DESC
-                ) AS latest_position,
-                COUNT(*) OVER (PARTITION BY e.contract_address) AS observations {base}
+                s.finished AS scan_finished {base}
+        ), token_counts AS MATERIALIZED (
+            SELECT contract_address,MAX(score) AS peak_score,COUNT(*) AS observations
+            FROM observations GROUP BY contract_address
         ), competitive_score AS (
-            SELECT COALESCE((SELECT peak_score FROM observations
-                GROUP BY contract_address ORDER BY peak_score DESC LIMIT 1 OFFSET ?),-1)
+            SELECT COALESCE((SELECT peak_score FROM token_counts
+                ORDER BY peak_score DESC LIMIT 1 OFFSET ?),-1)
                 AS minimum
         ), candidates AS MATERIALIZED (
-            SELECT o.*,market_evidence_rank(st.value,o.chain,o.contract_address,o.timestamp,
+            SELECT o.*,t.observations,
+                market_evidence_rank(st.value,o.chain,o.contract_address,o.timestamp,
                 o.score,o.status,o.eligible) AS evidence_rank
-            FROM observations o
+            FROM observations o JOIN token_counts t ON t.contract_address=o.contract_address
             LEFT JOIN state st ON st.key='telegram:evaluation:' || o.id
-            WHERE o.score=o.peak_score AND o.score>=(SELECT minimum FROM competitive_score)
+            WHERE o.score=t.peak_score AND o.score>=(SELECT minimum FROM competitive_score)
         ), peaks AS (
             SELECT *,ROW_NUMBER() OVER (
                 PARTITION BY contract_address ORDER BY evidence_rank DESC,timestamp DESC,id DESC
@@ -698,31 +698,35 @@ class Repository:
         ), top_peaks AS MATERIALIZED (
             SELECT * FROM peaks WHERE peak_position=1
             ORDER BY score DESC,evidence_rank DESC,timestamp DESC,contract_address ASC LIMIT ?
+        ), coverage AS (
+            SELECT COUNT(*) AS evaluations,
+                (SELECT COUNT(*) FROM token_counts) AS unique_tokens,
+                MIN(timestamp) AS first_observation,MAX(scan_finished) AS last_finished
+            FROM observations
+        ), configurations AS MATERIALIZED (
+            SELECT DISTINCT COALESCE((SELECT
+                COALESCE(CAST(json_extract({valid},'$.configuration') AS TEXT),'legacy') || ':' ||
+                COALESCE(CAST(json_extract({valid},'$.signal.score_version') AS TEXT),'legacy')
+                FROM state st INDEXED BY state_report_configuration
+                WHERE st.key='telegram:evaluation:' || e.id),'legacy:legacy')
+            FROM observations e LIMIT 2
         ) SELECT p.id AS peak_id,(
                 SELECT o.id FROM observations o
-                WHERE o.contract_address=p.contract_address AND o.latest_position=1
-            ) AS latest_id,p.observations FROM top_peaks p
+                WHERE o.contract_address=p.contract_address
+                ORDER BY o.timestamp DESC,o.id DESC LIMIT 1
+            ) AS latest_id,p.observations,c.*,
+                (SELECT COUNT(*) FROM configurations) AS configurations
+            FROM coverage c LEFT JOIN top_peaks p ON 1
             ORDER BY p.score DESC,p.evidence_rank DESC,
                 p.timestamp DESC,p.contract_address ASC"""
         # Only tokens whose peak score can reach the requested top list need
         # expensive validated evidence tie-breaks. Keep every boundary-score tie.
         ranked = self.db.execute(query, (*params, limit - 1, limit)).fetchall()
-        totals = self.db.execute(
-            "SELECT COUNT(*) AS evaluations,COUNT(DISTINCT e.contract_address) AS unique_tokens,"
-            "MIN(e.timestamp) AS first_observation,MAX(s.finished) AS last_finished " + base,
-            params,
-        ).fetchone()
-        # Only two distinct configurations are needed for the warning. Avoid
-        # parsing every retained presentation after a difference is established.
-        configurations = self.db.execute(
-            f"SELECT DISTINCT COALESCE(json_extract({valid},'$.configuration'),'legacy') || ':' || "
-            f"COALESCE(json_extract({valid},'$.signal.score_version'),'legacy') "
-            + source
-            + "LEFT JOIN state st ON st.key='telegram:evaluation:' || e.id "
-            + window
-            + " LIMIT 2",
-            params,
-        ).fetchall()
+        # Reuse the same scalar projection for coverage/configurations instead
+        # of traversing the entire provenance-filtered window three times.
+        # Scalar index lookups retain expression coverage on SQLite 3.40, where
+        # an outer join reparses JSON despite selecting the expression index.
+        totals = ranked[0]
         runs = self.db.execute(
             """SELECT SUM(CASE WHEN finished IS NOT NULL AND finished<=? THEN 1 ELSE 0 END)
                 AS completed_scans,SUM(CASE WHEN finished IS NULL OR finished>? THEN 1 ELSE 0 END)
@@ -732,6 +736,8 @@ class Repository:
         ).fetchone()
         entries = []
         for item in ranked:
+            if item["peak_id"] is None:
+                continue
             evidence = {}
             for name in ("peak", "latest"):
                 identity = item[f"{name}_id"]
@@ -761,7 +767,7 @@ class Repository:
             "incomplete_scans": runs["incomplete_scans"] or 0,
             "first_observation": totals["first_observation"],
             "last_finished": totals["last_finished"],
-            "multiple_configurations": len(configurations) > 1,
+            "multiple_configurations": totals["configurations"] > 1,
             "entries": entries,
         }
 

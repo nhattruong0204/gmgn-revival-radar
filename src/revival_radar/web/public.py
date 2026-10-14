@@ -119,6 +119,7 @@ def read[T: BaseModel](
                 result = query(queries, until)
                 if result is None:
                     raise HTTPException(status_code=404, detail="Saved record not found")
+                queries.check_deadline()
                 return result
 
             return request.app.state.public_cache.get_or_create(
