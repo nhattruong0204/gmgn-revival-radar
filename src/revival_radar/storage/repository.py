@@ -704,11 +704,12 @@ class Repository:
                 MIN(timestamp) AS first_observation,MAX(scan_finished) AS last_finished
             FROM observations
         ), configurations AS MATERIALIZED (
-            SELECT DISTINCT COALESCE(CAST(json_extract({valid},'$.configuration')
-                AS TEXT),'legacy') || ':' ||
+            SELECT DISTINCT COALESCE((SELECT
+                COALESCE(CAST(json_extract({valid},'$.configuration') AS TEXT),'legacy') || ':' ||
                 COALESCE(CAST(json_extract({valid},'$.signal.score_version') AS TEXT),'legacy')
-            FROM observations e LEFT JOIN state st INDEXED BY state_report_configuration
-                ON st.key='telegram:evaluation:' || e.id LIMIT 2
+                FROM state st INDEXED BY state_report_configuration
+                WHERE st.key='telegram:evaluation:' || e.id),'legacy:legacy')
+            FROM observations e LIMIT 2
         ) SELECT p.id AS peak_id,(
                 SELECT o.id FROM observations o
                 WHERE o.contract_address=p.contract_address
@@ -723,6 +724,8 @@ class Repository:
         ranked = self.db.execute(query, (*params, limit - 1, limit)).fetchall()
         # Reuse the same scalar projection for coverage/configurations instead
         # of traversing the entire provenance-filtered window three times.
+        # Scalar index lookups retain expression coverage on SQLite 3.40, where
+        # an outer join reparses JSON despite selecting the expression index.
         totals = ranked[0]
         runs = self.db.execute(
             """SELECT SUM(CASE WHEN finished IS NOT NULL AND finished<=? THEN 1 ELSE 0 END)
