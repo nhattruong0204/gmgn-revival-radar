@@ -675,7 +675,8 @@ class Repository:
         params = (since, until, until)
         valid = "CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END"
         query = f"""WITH observations AS MATERIALIZED (
-            SELECT e.id,e.chain,e.contract_address,e.timestamp,e.score,e.status,e.eligible {base}
+            SELECT e.id,e.chain,e.contract_address,e.timestamp,e.score,e.status,e.eligible,
+                s.finished AS scan_finished {base}
         ), token_counts AS MATERIALIZED (
             SELECT contract_address,MAX(score) AS peak_score,COUNT(*) AS observations
             FROM observations GROUP BY contract_address
@@ -697,34 +698,32 @@ class Repository:
         ), top_peaks AS MATERIALIZED (
             SELECT * FROM peaks WHERE peak_position=1
             ORDER BY score DESC,evidence_rank DESC,timestamp DESC,contract_address ASC LIMIT ?
+        ), coverage AS (
+            SELECT COUNT(*) AS evaluations,
+                (SELECT COUNT(*) FROM token_counts) AS unique_tokens,
+                MIN(timestamp) AS first_observation,MAX(scan_finished) AS last_finished
+            FROM observations
+        ), configurations AS MATERIALIZED (
+            SELECT DISTINCT COALESCE(CAST(json_extract({valid},'$.configuration')
+                AS TEXT),'legacy') || ':' ||
+                COALESCE(CAST(json_extract({valid},'$.signal.score_version') AS TEXT),'legacy')
+            FROM observations e LEFT JOIN state st INDEXED BY state_report_configuration
+                ON st.key='telegram:evaluation:' || e.id LIMIT 2
         ) SELECT p.id AS peak_id,(
                 SELECT o.id FROM observations o
                 WHERE o.contract_address=p.contract_address
                 ORDER BY o.timestamp DESC,o.id DESC LIMIT 1
-            ) AS latest_id,p.observations FROM top_peaks p
+            ) AS latest_id,p.observations,c.*,
+                (SELECT COUNT(*) FROM configurations) AS configurations
+            FROM coverage c LEFT JOIN top_peaks p ON 1
             ORDER BY p.score DESC,p.evidence_rank DESC,
                 p.timestamp DESC,p.contract_address ASC"""
         # Only tokens whose peak score can reach the requested top list need
         # expensive validated evidence tie-breaks. Keep every boundary-score tie.
         ranked = self.db.execute(query, (*params, limit - 1, limit)).fetchall()
-        totals = self.db.execute(
-            "SELECT COUNT(*) AS evaluations,COUNT(DISTINCT e.contract_address) AS unique_tokens,"
-            "MIN(e.timestamp) AS first_observation,MAX(s.finished) AS last_finished " + base,
-            params,
-        ).fetchone()
-        # Only two distinct configurations are needed for the warning. Avoid
-        # parsing every retained presentation after a difference is established.
-        configurations = self.db.execute(
-            f"SELECT DISTINCT COALESCE(CAST(json_extract({valid},'$.configuration') "
-            f"AS TEXT),'legacy') || ':' || "
-            f"COALESCE(CAST(json_extract({valid},'$.signal.score_version') AS TEXT),'legacy') "
-            + source
-            + "LEFT JOIN state st INDEXED BY state_report_configuration "
-            + "ON st.key='telegram:evaluation:' || e.id "
-            + window
-            + " LIMIT 2",
-            params,
-        ).fetchall()
+        # Reuse the same scalar projection for coverage/configurations instead
+        # of traversing the entire provenance-filtered window three times.
+        totals = ranked[0]
         runs = self.db.execute(
             """SELECT SUM(CASE WHEN finished IS NOT NULL AND finished<=? THEN 1 ELSE 0 END)
                 AS completed_scans,SUM(CASE WHEN finished IS NULL OR finished>? THEN 1 ELSE 0 END)
@@ -734,6 +733,8 @@ class Repository:
         ).fetchone()
         entries = []
         for item in ranked:
+            if item["peak_id"] is None:
+                continue
             evidence = {}
             for name in ("peak", "latest"):
                 identity = item[f"{name}_id"]
@@ -763,7 +764,7 @@ class Repository:
             "incomplete_scans": runs["incomplete_scans"] or 0,
             "first_observation": totals["first_observation"],
             "last_finished": totals["last_finished"],
-            "multiple_configurations": len(configurations) > 1,
+            "multiple_configurations": totals["configurations"] > 1,
             "entries": entries,
         }
 
