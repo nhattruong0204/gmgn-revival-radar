@@ -127,6 +127,34 @@ it("includes the measured value from saved evidence", () => {
   expect(explainRisks(base)[0].text).toBe("Bundled wallets hold 12% of supply");
 });
 
+it("words drawdown as market cap and uses only the baseline ratio for 5m volume", () => {
+  expect(
+    explainReasons({ ...base, signal: { components: { drawdown: 10 } } })[0]
+      .text,
+  ).toBe(
+    "Market cap is 82% below its all-time-high market cap, inside the configured recovery range",
+  );
+  const noValue = explainReasons({
+    ...base,
+    token: null,
+    signal: { components: { drawdown: 10 } },
+  });
+  expect(noValue[0].text).toBe(
+    "Market cap sits inside the configured range below its all-time high",
+  );
+  const [volume] = explainReasons({
+    ...base,
+    signal: {
+      components: { volume_5m: 15 },
+      acceleration: { volume_acceleration_5m: 9, volume_ratio_5m: null },
+    },
+  });
+  expect(volume.text).toBe(
+    "5-minute volume ($33K) cleared the acceleration threshold",
+  );
+  expect(volume.text).not.toContain("9");
+});
+
 it("ranks by points and shows at most three reasons", () => {
   const reasons = explainReasons(base);
   expect(reasons).toHaveLength(3);

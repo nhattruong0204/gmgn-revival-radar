@@ -124,8 +124,8 @@ const positiveSentence = (
   switch (key) {
     case "drawdown":
       return num(t.drawdown_from_ath) == null
-        ? "Price sits inside the configured range below its all-time high"
-        : `Price is ${percent(t.drawdown_from_ath, true)} below its all-time high, inside the configured recovery range`;
+        ? "Market cap sits inside the configured range below its all-time high"
+        : `Market cap is ${percent(t.drawdown_from_ath, true)} below its all-time-high market cap, inside the configured recovery range`;
     case "liquidity":
       return num(t.liquidity) == null
         ? "Liquidity met the configured minimum"
@@ -145,7 +145,7 @@ const positiveSentence = (
     case "compression":
       return "Volatility tightened inside the price base";
     case "volume_5m": {
-      const ratio = times(a?.volume_ratio_5m ?? a?.volume_acceleration_5m);
+      const ratio = times(a?.volume_ratio_5m);
       return ratio == null
         ? `5-minute volume${usd(t.volume_5m)} cleared the acceleration threshold`
         : `5-minute volume was ${ratio} its recent baseline${usd(t.volume_5m)}`;
