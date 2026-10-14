@@ -58,7 +58,7 @@
   "clientWidth": 390,
   "cards": 1,
   "minContrast": 8,
-  "worstText": "Latest market cap",
+  "worstText": "Market cap",
   "keyboardOrder": [
    "View token",
    "Open GMGN"
@@ -227,7 +227,7 @@
   "clientWidth": 1366,
   "cards": 1,
   "minContrast": 8,
-  "worstText": "Latest market cap",
+  "worstText": "Market cap",
   "keyboardOrder": [
    "View token",
    "Open GMGN"

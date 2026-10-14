@@ -422,6 +422,18 @@ function readyRequest(path: string): unknown {
       first_observation: now - 86400,
       last_finished: now - 140,
       multiple_configurations: false,
+      market_context: {
+        scan_finished: now - 140,
+        chain: "sol",
+        sources: ["hot_search"],
+        universe_size: 20,
+        median_price_change_1h: -2.1,
+        median_price_change_24h: -14.8,
+        share_positive_1h: 0.3,
+        eligible_count: 1,
+        coverage: { price_change_1h: 20, price_change_24h: 19 },
+        minimum_sample: 5,
+      },
       entries: demoObservations.slice(0, 10).map((o) => ({
         symbol: o.symbol,
         observations: 6,
@@ -482,6 +494,7 @@ export function demoRequest(
     if (path.includes("/reports"))
       return {
         ...(data as Report),
+        market_context: null,
         entries: [],
         evaluations: 0,
         unique_tokens: 0,
@@ -508,6 +521,25 @@ export function demoRequest(
       };
     if (path.includes("/radar") || path.includes("/alerts"))
       return { ...(data as ListResponse<Observation>), items: [], total: 0 };
+  }
+  if (state === "partial" && path.includes("/reports")) {
+    // Undersampled regime: unknown values stay unknown, never zero.
+    const report = data as Report;
+    return {
+      ...report,
+      market_context: report.market_context && {
+        ...report.market_context,
+        universe_size: 3,
+        median_price_change_1h: null,
+        median_price_change_1h_reason: "insufficient_sample",
+        median_price_change_24h: null,
+        median_price_change_24h_reason: "insufficient_sample",
+        share_positive_1h: null,
+        share_positive_1h_reason: "insufficient_sample",
+        eligible_count: null,
+        coverage: { price_change_1h: 3, price_change_24h: 2 },
+      },
+    };
   }
   if (state === "partial" && path.includes("/history")) {
     return { ...(data as History), candles: [] };

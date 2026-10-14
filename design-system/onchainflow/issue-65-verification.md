@@ -36,7 +36,7 @@ plus legacy/stale/no-latest details; results in `browser.json`.
 ## Automated
 `web/src/call-card.test.tsx` (every state, no check icon on risks, unknown never
 0%), updated `publications.test.tsx` and `website.test.tsx`. `npm run
-format:check`, `npm test` (92 passed) and `npm run build` pass; ruff and pytest
+format:check`, `npm test` (94 passed) and `npm run build` pass; ruff and pytest
 (946 passed) pass.
 
 Not measured: reduced motion (no motion added); loading/error/permission states

@@ -73,3 +73,14 @@ The feature adds an evaluation lookup index to schema 4; it does not change the
 database schema version. Scheduled delivery status is stored in
 `state.market_report_delivery`; period claims and snapshots use `market_report:*`
 state keys. Continue using consistent SQLite backups when upgrading the VPS.
+
+## Market regime context (#72)
+
+Each scan computes, per chain and from tokens it already discovered (no extra provider
+requests), the universe size, median 1h and 24h price change, share of tokens up over 1h,
+eligible count and per-value coverage. Unknown values are excluded from medians and the
+share; fewer than 5 known values gives null with reason `insufficient_sample`. It is
+saved as `market_context` in the existing `scan:metrics:<scan id>` state JSON and in new
+`telegram:alert:<id>` presentations (with `eligible_count` null, as the scan is still
+running). No schema change; old rows are untouched. The Reports page shows the latest
+completed scan as context only: it is never a score input or alert gate.

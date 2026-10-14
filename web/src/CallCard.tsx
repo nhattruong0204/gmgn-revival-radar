@@ -1,4 +1,5 @@
 import { Icon, Link, Score, Stage } from "./components";
+import { labels } from "./labels";
 import { explainReasons, explainRisks } from "./explain";
 import {
   chains,
@@ -144,6 +145,9 @@ export function CallPerformanceCard({
         <>
           <section className="call-card-hero" aria-label="Market cap change">
             <div className="call-card-caps">
+              <span className="call-card-caption call-card-caps-label">
+                {labels.marketCap}
+              </span>
               {p.call_market_cap == null ? (
                 <>
                   <strong className="call-card-unknown-cap">
@@ -247,10 +251,16 @@ export function CallPerformanceCard({
 
           {!small && (
             <section aria-label="Price change at checkpoints">
-              <h3 className="call-card-sub">Price change at checkpoints</h3>
+              <h3 className="call-card-sub">
+                {labels.priceChange} at checkpoints
+              </h3>
               <ol className="call-card-checkpoints">
                 {checkpoints(alert, p).map((c) => (
-                  <li key={c.horizon} className={`cp-${c.state}`}>
+                  <li
+                    key={c.horizon}
+                    className={`cp-${c.state}`}
+                    title={labels.checkpointPriceChange(c.horizon)}
+                  >
                     <span>+{c.horizon}h</span>
                     {c.state === "observed" ? (
                       <strong
@@ -277,6 +287,7 @@ export function CallPerformanceCard({
                   </li>
                 ))}
               </ol>
+              <p className="call-card-note">{labels.checkpointNote}</p>
             </section>
           )}
         </>
