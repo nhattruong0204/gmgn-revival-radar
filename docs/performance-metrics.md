@@ -34,6 +34,40 @@ Circulating vs fully diluted (FDV):
   which is unverified. A snapshot may also switch basis if enrichment succeeds on one
   scan and not the next.
 
+### Recorded source and verification (#81)
+
+Every new snapshot records `market_cap_source` (`rank` or `circulating_enriched`) and,
+when known, `circulating_supply` in its saved payload JSON (no column, no migration).
+Rows saved before #81 carry neither and stay **unknown**; they are never rewritten.
+
+The rank basis is still **pending verification**. Each time a snapshot is saved after
+token-info enrichment, the scanner keeps the raw rank-row and token-info values it
+already fetched (price, market cap, circulating and total supply, timestamps) in the
+private `state` key `market_cap_basis:sample`, capped at the newest 50 pairs. It makes
+no extra provider request. After enough live scans, the owner runs
+`python scripts/market_cap_basis_report.py <database>` (read-only) to see the ratio of
+rank `market_cap` to `price x circulating_supply` and to `price x total_supply`. Until
+that report is run on live data, do not claim the rank basis is circulating or FDV.
+
+### Call performance basis
+
+`CallPerformance.basis` is `same`, `mixed` or `unknown`:
+
+- The call's source is read from the latest snapshot at or before the alert, accepted
+  only when its market cap equals the one frozen with the alert. Otherwise (legacy
+  rows, no snapshot, source missing) the basis is `unknown` and the legacy all-snapshot
+  arithmetic is used.
+- Known call source and at least one later snapshot with the **same** source: latest
+  market cap, MFE and MAE use only those snapshots; `basis` is `same`.
+  `other_basis_observations` counts later snapshots on another or unlabelled basis that
+  were left out, so nothing is dropped silently.
+- Known call source but only other-source or unlabelled later snapshots: all later
+  snapshots are used and `basis` is `mixed`.
+- No later observation: nothing is compared and `basis` is `unknown`.
+
+`ath_market_cap` still comes from the provider rank row whatever the source, so
+drawdown from ATH remains on the unverified provider basis.
+
 ## Headline: market-cap change since call
 
 `(latest_market_cap / call_market_cap - 1) * 100`, from the alert-time saved market cap
@@ -75,7 +109,7 @@ larger. Gaps in scanning (downtime, budget exhaustion) widen this.
 The MFE can be negative when the token only fell after the call; it is shown as
 observed and is not clamped to zero. Because market cap may mix supply bases across
 snapshots (rank-sourced vs enriched), an excursion can partly reflect a basis change;
-this is tracked in #81.
+this is handled by the basis rule below (#81).
 
 ## Unknown handling
 

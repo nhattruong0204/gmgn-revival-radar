@@ -12,6 +12,7 @@ from pydantic import ValidationError
 
 from revival_radar.analysis.acceleration import fresh_history
 from revival_radar.analysis.filters import first_pass
+from revival_radar.analysis.market_cap_basis import SAMPLE_KEY, append_pair, build_pair
 from revival_radar.config import Settings
 from revival_radar.metrics import sqlite_timed
 from revival_radar.models.brief import build_brief
@@ -45,6 +46,19 @@ class Repository:
             )
             if cursor.rowcount:
                 self.record_origin("snapshot", cursor.lastrowid, origin)
+                self._record_basis_sample(token)
+
+    def _record_basis_sample(self, token: TokenSnapshot) -> None:
+        """Keep the newest raw rank/token-info pairs (capped) in state; no provider calls."""
+        pair = build_pair(token.chain, token.contract_address, token._basis_sample)
+        if pair is None:
+            return
+        row = self.db.execute("SELECT value FROM state WHERE key=?", (SAMPLE_KEY,)).fetchone()
+        self.db.execute(
+            """INSERT INTO state (key,value,updated_at) VALUES (?,?,?)
+            ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at""",
+            (SAMPLE_KEY, append_pair(row["value"] if row else None, pair), time.time()),
+        )
 
     def record_origin(self, kind: str, identity: int, origin: str) -> None:
         if kind not in {"scan", "snapshot", "evaluation", "alert"} or origin not in {

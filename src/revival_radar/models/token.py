@@ -11,6 +11,7 @@ Finite = Annotated[float, Field(allow_inf_nan=False)]
 Fraction = Annotated[float, Field(ge=0, le=1, allow_inf_nan=False)]
 Count = Annotated[int, Field(ge=0)]
 Source = Literal["hot_search", "trending"]
+MarketCapSource = Literal["rank", "circulating_enriched"]
 
 
 class SolanaMintVerification(BaseModel):
@@ -62,6 +63,8 @@ class TokenSnapshot(BaseModel):
     # Private attributes never enter snapshots, database columns, or Telegram output.
     _market_security_info: dict = PrivateAttr(default_factory=dict)
     _gmgn_security: Security | None = PrivateAttr(default=None)
+    # Raw rank/token-info pair for the private basis sample; never part of the snapshot.
+    _basis_sample: dict | None = PrivateAttr(default=None)
     timestamp: Nonnegative = Field(default_factory=time.time)
     chain: Literal["sol", "bsc", "base", "robinhood", "arc"]
     contract_address: str
@@ -74,6 +77,10 @@ class TokenSnapshot(BaseModel):
     trending_rank: Annotated[int, Field(ge=1)] | None = None
     price: Nonnegative | None = None
     market_cap: Nonnegative | None = None
+    # Supply basis of market_cap; None for legacy rows or unknown market cap. Payload JSON only
+    # (no column); legacy rows are never rewritten.
+    market_cap_source: MarketCapSource | None = None
+    circulating_supply: Nonnegative | None = None
     ath_market_cap: Nonnegative | None = None
     drawdown_from_ath: Finite | None = None
     liquidity: Nonnegative | None = None

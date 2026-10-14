@@ -12,18 +12,30 @@ from .test_web_public import web as web
 CALL_MC = 1_000_000.0
 
 
-def make_call(repo, token, config, *, timestamp, call_mc=CALL_MC, score=88):
+def make_call(repo, token, config, *, timestamp, call_mc=CALL_MC, score=88, source=None):
     live = config.model_copy(update={"dry_run": False})
     snapshot, signal, context = observe(
-        repo, changed(token, market_cap=call_mc), live, timestamp=timestamp, score=score
+        repo,
+        changed(token, market_cap=call_mc, market_cap_source=source),
+        live,
+        timestamp=timestamp,
+        score=score,
     )
     identity = repo.reserve_alert(snapshot, signal, live, context)
     repo.finish_alert(identity, "sent", message_id=123456789)
     return identity
 
 
-def snap(repo, token, timestamp, market_cap, price=0.5):
-    repo.save_snapshot(changed(token, timestamp=timestamp, market_cap=market_cap, price=price))
+def snap(repo, token, timestamp, market_cap, price=0.5, source=None):
+    repo.save_snapshot(
+        changed(
+            token,
+            timestamp=timestamp,
+            market_cap=market_cap,
+            price=price,
+            market_cap_source=source,
+        )
+    )
 
 
 def set_call_mc(repo, identity, value):
@@ -207,4 +219,107 @@ async def test_large_history_page_stays_within_deadline(web, repo, token, config
     assert response.status_code == 200 and len(response.json()["items"]) == 25
     item = response.json()["items"][0]["performance"]
     assert item["observations"] == 5000 and item["max_gap_seconds"] == 30
+    assert elapsed < 1.5
+
+
+ENR, RANK = "circulating_enriched", "rank"
+
+
+async def test_legacy_rows_yield_unknown_basis(web, repo, token, config):
+    client, _ = web
+    identity = make_call(repo, token, config, timestamp=NOW - 7200)
+    snap(repo, token, NOW - 60, 1_250_000)
+    p = await perf(client, identity)
+    assert p["basis"] == "unknown" and p["call_market_cap_source"] is None
+    assert p["change_since_call_pct"] == pytest.approx(25.0)  # legacy arithmetic unchanged
+
+
+async def test_same_source_history_is_same(web, repo, token, config):
+    client, _ = web
+    identity = make_call(repo, token, config, timestamp=NOW - 7200, source=ENR)
+    snap(repo, token, NOW - 3000, 1_500_000, source=ENR)
+    snap(repo, token, NOW - 60, 1_250_000, source=ENR)
+    p = await perf(client, identity)
+    assert p["basis"] == "same" and p["call_market_cap_source"] == ENR
+    assert p["other_basis_observations"] == 0 and p["observations"] == 2
+    assert p["mfe_pct"] == pytest.approx(50.0) and p["change_since_call_pct"] == pytest.approx(25.0)
+
+
+async def test_same_basis_preferred_and_excluded_rows_are_counted(web, repo, token, config):
+    client, _ = web
+    identity = make_call(repo, token, config, timestamp=NOW - 7200, source=ENR)
+    snap(repo, token, NOW - 5000, 9_000_000, source=RANK)  # different basis spike
+    snap(repo, token, NOW - 4000, 1_100_000, source=ENR)
+    snap(repo, token, NOW - 3000, 100_000)  # unlabelled legacy-style row
+    snap(repo, token, NOW - 60, 1_250_000, source=RANK)
+    p = await perf(client, identity)
+    assert p["basis"] == "same" and p["observations"] == 1
+    assert p["other_basis_observations"] == 3
+    assert p["mfe_pct"] == pytest.approx(10.0) and p["mae_pct"] == pytest.approx(10.0)
+    assert p["latest_market_cap"] == 1_100_000
+
+
+async def test_mixed_source_history_is_mixed_and_keeps_data(web, repo, token, config):
+    client, _ = web
+    identity = make_call(repo, token, config, timestamp=NOW - 7200, source=ENR)
+    snap(repo, token, NOW - 3000, 1_500_000, source=RANK)
+    snap(repo, token, NOW - 60, 1_250_000)
+    p = await perf(client, identity)
+    assert p["basis"] == "mixed" and p["observations"] == 2
+    assert p["mfe_pct"] == pytest.approx(50.0) and p["change_since_call_pct"] == pytest.approx(25.0)
+    assert p["other_basis_observations"] is None
+
+
+async def test_no_later_observation_has_unknown_basis(web, repo, token, config):
+    client, _ = web
+    identity = make_call(repo, token, config, timestamp=NOW - 7200, source=ENR)
+    p = await perf(client, identity)
+    assert p["basis"] == "unknown" and p["call_market_cap_source"] == ENR
+
+
+async def test_basis_reads_leave_rows_unchanged(web, repo, token, config):
+    client, app = web
+    identity = make_call(repo, token, config, timestamp=NOW - 7200, source=ENR)
+    snap(repo, token, NOW - 3000, 1_500_000, source=RANK)
+    snap(repo, token, NOW - 60, 1_250_000, source=ENR)
+    before = table_hashes(str(app.state.config.database_path))
+    assert (await perf(client, identity))["basis"] == "same"
+    assert table_hashes(str(app.state.config.database_path)) == before
+
+
+async def test_large_labelled_history_stays_within_deadline(web, repo, token, config):
+    client, app = web
+    app.state.config.web_read_timeout_ms = 1500
+    tokens = [
+        changed(token, contract_address="123456789ABCDEFGHJKLMNPQRSTUVWXYZ"[i] * 32)
+        for i in range(25)
+    ]
+    start = NOW - 86_400 * 3
+    padding = "x" * 1500  # realistic payload size so json_extract is not trivially cheap
+    for t in tokens:
+        make_call(repo, t, config, timestamp=start, call_mc=1e6, source=ENR)
+        repo.db.executemany(
+            "INSERT INTO token_snapshots(chain,contract_address,timestamp,market_cap,price,payload)"
+            " VALUES(?,?,?,?,?,?)",
+            [
+                (
+                    t.chain,
+                    t.contract_address,
+                    start + 30 * (n + 1),
+                    1e6 + n,
+                    0.5,
+                    json.dumps({"market_cap_source": ENR if n % 2 else RANK, "pad": padding}),
+                )
+                for n in range(5000)
+            ],
+        )
+    repo.db.commit()
+    started = time.perf_counter()
+    response = await client.get("/api/v1/alerts?page_size=25")
+    elapsed = time.perf_counter() - started
+    print(f"cold 25-call page with source filtering, 5000 snapshots each: {elapsed:.3f}s")
+    assert response.status_code == 200 and len(response.json()["items"]) == 25
+    item = response.json()["items"][0]["performance"]
+    assert item["basis"] == "same" and item["observations"] == 2500
+    assert item["other_basis_observations"] == 2500
     assert elapsed < 1.5
