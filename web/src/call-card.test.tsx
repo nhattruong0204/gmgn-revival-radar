@@ -6,7 +6,10 @@ import { demoRequest } from "./demo";
 import type { Alert, AlertDetail } from "./types";
 
 afterEach(cleanup);
-const alerts = (demoRequest("/api/v1/alerts") as { items: Alert[] }).items;
+// The feed is newest first; fixtures below are addressed by their stable ids.
+const alerts = (demoRequest("/api/v1/alerts") as { items: Alert[] }).items
+  .slice()
+  .sort((a, b) => a.id - b.id);
 const text = (c: Element | null) => c?.textContent ?? "";
 
 it("shows a positive change with sign and the word up", () => {
@@ -55,7 +58,7 @@ it("labels best and worst observed and allows a negative best", () => {
   const { container } = render(
     <CallPerformanceCard alert={alerts[1]} variant="compact" />,
   );
-  const dl = container.querySelector("dl") as HTMLElement;
+  const dl = container.querySelector(".call-card-extremes") as HTMLElement;
   expect(within(dl).getByText("Best observed")).toBeTruthy();
   expect(within(dl).getByText("Worst observed")).toBeTruthy();
   expect(text(dl)).toContain("−3.1%");

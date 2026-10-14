@@ -86,8 +86,9 @@ it("shows call performance at the top and keeps the original evidence", async ()
   expect(
     screen.queryByRole("heading", { name: "Latest saved evaluation" }),
   ).toBeNull();
-  expect(container.querySelector(".stats-grid")?.textContent).toContain(
-    "Alert-time liquidity",
+  expect(container.querySelector(".stats-grid")).toBeNull();
+  expect(container.querySelector(".call-record")?.textContent).toContain(
+    "Liquidity at call",
   );
 });
 it("renders the Signals list as compact call cards with performance", async () => {
@@ -217,7 +218,7 @@ it("keeps legacy alert detail unknown while preserving the original score", asyn
   });
   render(<Alerts id="1" />);
   await screen.findByText(/Original detail evidence is unavailable/);
-  expect(screen.getByText("Original confirmed signal")).toBeTruthy();
+  expect(screen.getByText(/Liquidity at call/)).toBeTruthy();
   expect(screen.getAllByText("Unknown").length).toBeGreaterThan(0);
 });
 it("uses the configured public Telegram destination in navigation", async () => {
@@ -272,7 +273,7 @@ it("labels checkpoint values as price change and market cap as market cap", asyn
   expect(section?.textContent).toContain("not market-cap change");
   expect(screen.getAllByText(labels.marketCap).length).toBeGreaterThan(0);
 });
-it("lists the risk warnings saved with an alert in the Risk panel", async () => {
+it("lists the risk warnings saved with an alert in the call record", async () => {
   const saved = [
     "Insider holdings unavailable",
     "Token-2022 extension risks not assessed: metadataPointer",
@@ -293,8 +294,8 @@ it("lists the risk warnings saved with an alert in the Risk panel", async () => 
   });
   render(<Alerts id="1" />);
   const panel = (
-    await screen.findByRole("heading", { name: "Risk & data coverage" })
-  ).closest("section");
+    await screen.findByText(/Every saved reason and risk/)
+  ).closest("details");
   // Plain-language rendering (#68): "bundler penalty" is replaced by the
   // sentence built from the matching scorer component, not shown raw.
   const text = panel?.textContent ?? "";

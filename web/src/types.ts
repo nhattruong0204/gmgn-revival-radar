@@ -186,8 +186,19 @@ export interface Observation extends Token {
   token: Token | null;
   signal: Signal | null;
 }
+/** One token in `/alerts?group=token`; `alert_ids` index into `items`, newest first. */
+export interface AlertGroup {
+  chain: string;
+  contract_address: string;
+  symbol: string;
+  call_count: number;
+  latest_call_at: number;
+  alert_ids: number[];
+  truncated: boolean;
+}
 export interface ListResponse<T> {
   items: T[];
+  groups?: AlertGroup[] | null;
   total: number;
   page: number;
   page_size: number;

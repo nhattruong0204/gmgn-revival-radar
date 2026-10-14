@@ -315,6 +315,89 @@ const alerts: Alert[] = demoObservations
       },
     };
   });
+// A token with three calls (#67): the grouped Signals view needs a repeat caller.
+// The existing first call is "2 of 3"; these are the first and the third.
+{
+  const base = alerts[0];
+  const extra = (
+    id: number,
+    age: number,
+    perf: Partial<CallPerformance>,
+  ): Alert => ({
+    ...base,
+    id,
+    timestamp: now - age,
+    score: base.score - (id === 7 ? 8 : 0),
+    performance: {
+      ...base.performance!,
+      elapsed_seconds: age,
+      ...perf,
+    },
+  });
+  alerts.push(
+    extra(7, 80 * H, {
+      call_market_cap: 2500000,
+      change_since_call_pct: 68,
+      mfe_pct: 80,
+      mae_pct: -4,
+      observations: 120,
+      token_call_index: 1,
+    }),
+    extra(8, 4 * H, {
+      call_market_cap: 4000000,
+      change_since_call_pct: 5,
+      mfe_pct: 7,
+      mae_pct: -1.5,
+      observations: 9,
+      token_call_index: 3,
+    }),
+  );
+  alertOutcomes.set(7, [
+    { horizon_hours: 1, return_pct: 6 },
+    { horizon_hours: 6, return_pct: 21 },
+    { horizon_hours: 24, return_pct: 44 },
+    { horizon_hours: 72, return_pct: 61 },
+  ]);
+  alertOutcomes.set(8, []);
+}
+const newestFirst = [...alerts].sort(
+  (a, b) => b.timestamp - a.timestamp || b.id - a.id,
+);
+function groupedAlerts(q: URLSearchParams): ListResponse<Alert> {
+  const order: string[] = [];
+  const by = new Map<string, Alert[]>();
+  for (const a of newestFirst) {
+    const key = `${a.chain}:${a.contract_address}`;
+    if (!by.has(key)) {
+      by.set(key, []);
+      order.push(key);
+    }
+    by.get(key)!.push(a);
+  }
+  const page = Number(q.get("page") ?? 1),
+    size = Number(q.get("page_size") ?? 10);
+  const keys = order.slice((page - 1) * size, page * size);
+  return {
+    items: keys.flatMap((k) => by.get(k)!),
+    groups: keys.map((k) => {
+      const calls = by.get(k)!;
+      return {
+        chain: calls[0].chain,
+        contract_address: calls[0].contract_address,
+        symbol: calls[0].symbol,
+        call_count: calls.length,
+        latest_call_at: calls[0].timestamp,
+        alert_ids: calls.map((a) => a.id),
+        truncated: false,
+      };
+    }),
+    total: order.length,
+    page,
+    page_size: size,
+    as_of: now,
+    last_scan_at: now - 140,
+  };
+}
 function readyRequest(path: string): unknown {
   const url = new URL(path, "https://demo.local"),
     q = url.searchParams;
@@ -407,7 +490,8 @@ function readyRequest(path: string): unknown {
       })),
     };
   }
-  if (url.pathname.endsWith("/alerts")) return list(alerts, q);
+  if (url.pathname.endsWith("/alerts"))
+    return q.get("group") === "token" ? groupedAlerts(q) : list(newestFirst, q);
   if (url.pathname.endsWith("/reports"))
     return {
       since: now - Number(q.get("hours") ?? 24) * 3600,
