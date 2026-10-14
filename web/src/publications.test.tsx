@@ -234,3 +234,33 @@ it("lists the risk warnings saved with an alert in the Risk panel", async () => 
     "Token-2022 extension risks not assessed: metadataPointer",
   );
 });
+
+it("shows the saved market regime as context, and unknown values as unknown", async () => {
+  const report = demoRequest("/api/v1/reports") as Report;
+  const context = {
+    scan_finished: Date.UTC(2026, 9, 14, 9, 5) / 1000,
+    chain: "sol",
+    sources: ["hot_search"],
+    universe_size: 20,
+    median_price_change_1h: -2.1,
+    median_price_change_24h: null,
+    median_price_change_24h_reason: "insufficient_sample",
+    share_positive_1h: 0.3,
+    eligible_count: 1,
+    coverage: { price_change_1h: 20, price_change_24h: 3 },
+    minimum_sample: 5,
+  };
+  respond({ ...report, market_context: context });
+  const first = render(<Reports />);
+  await screen.findByText(
+    /Universe of 20 Hot Search tokens: median 1h change -2\.1%, 30% up \(scan at 09:05 UTC\)/,
+  );
+  expect(screen.getByText(/Context, not a signal/)).toBeTruthy();
+  expect(
+    screen.getByText(/Median 24h change unknown \(fewer than 5/),
+  ).toBeTruthy();
+  first.unmount();
+  respond({ ...report, market_context: null });
+  render(<Reports />);
+  await screen.findByText(/No saved regime context yet/);
+});
