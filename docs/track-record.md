@@ -112,5 +112,10 @@ avoiding repeated Python progress callbacks. A final elapsed-time check enforces
 the same budget for short SQL/model work or cache waits; the timer is cancelled
 and joined before closing its connection. The production read deadline remains
 1,500 ms. Over-budget results remain service errors rather than partial data.
+Server startup warms the 24-hour/seven-day saved reports before accepting requests,
+with at most three attempts per window under that same per-read budget. Missing
+storage remains unavailable and is never created/migrated by the website. Record
+startup time separately from request latency; do not label pre-startup diagnostics
+as serving readiness. Failed or over-budget models are never response-cached.
 Measure archive/database/backup growth and sustained production capacity before
 rollout; local fixture capacity is not VPS or Internet capacity certification.

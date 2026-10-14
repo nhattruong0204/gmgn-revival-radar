@@ -22,6 +22,7 @@ from .test_web_public import web as web
 async def test_short_saved_query_cannot_bypass_deadline_after_slow_model_work(web, monkeypatch):
     client, app = web
     app.state.config.web_read_timeout_ms = 100
+    app.state.config.web_cache_seconds = 60
     original = PublicQueries.report
 
     def slow_model_work(queries, until, hours):
@@ -32,6 +33,35 @@ async def test_short_saved_query_cannot_bypass_deadline_after_slow_model_work(we
     response = await client.get("/api/v1/reports")
     assert response.status_code == 503
     assert response.json()["detail"] == "Saved observations temporarily unavailable"
+    # A rejected over-budget model must not become a cached success.
+    monkeypatch.setattr(PublicQueries, "report", original)
+    assert (await client.get("/api/v1/reports")).status_code == 200
+
+
+async def test_startup_warms_saved_reports_and_new_scans_still_invalidate(web, repo, token, config):
+    client, app = web
+    app.state.config.web_cache_seconds = 60
+    observe(repo, token, config)
+    async with app.router.lifespan_context(app):
+        assert app.state.report_warmup_complete
+        cached = (await client.get("/api/v1/reports")).json()
+        assert cached["evaluations"] == 1
+        observe(repo, token, config, timestamp=NOW - 50, score=95)
+        assert (await client.get("/api/v1/reports")).json()["evaluations"] == 2
+
+
+async def test_startup_with_absent_storage_never_creates_or_migrates(tmp_path, monkeypatch):
+    path = tmp_path / "absent" / "database.db"
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Startup must not migrate or call providers")
+
+    monkeypatch.setattr("revival_radar.storage.database.connect", forbidden)
+    monkeypatch.setattr("revival_radar.clients.gmgn.GMGNClient.__init__", forbidden)
+    app = create_app(WebConfig(database_path=path), clock=lambda: NOW)
+    async with app.router.lifespan_context(app):
+        assert not app.state.report_warmup_complete
+        assert not path.parent.exists()
 
 
 @pytest.mark.parametrize("route", ["meta", "radar", "reports"])

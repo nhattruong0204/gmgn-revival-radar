@@ -1,8 +1,11 @@
+import asyncio
 import time
 from collections import OrderedDict, deque
 from collections.abc import Callable
+from contextlib import asynccontextmanager
 from pathlib import Path
 from threading import Lock
+from types import SimpleNamespace
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -11,7 +14,35 @@ from starlette.responses import JSONResponse
 from starlette.staticfiles import StaticFiles
 
 from revival_radar.web.config import WebConfig
-from revival_radar.web.public import ResponseCache, router
+from revival_radar.web.public import ResponseCache, read, router
+
+
+@asynccontextmanager
+async def research_startup(app):
+    # Construction stays inert. At server startup, warm only saved public reports
+    # before accepting traffic. Each attempt retains its normal read deadline;
+    # failed/over-budget results never enter the response cache.
+    completed = []
+    if app.state.config.database_path.is_file():
+        request = SimpleNamespace(app=app)
+        for hours in (24, 168):
+            for _ in range(3):
+                try:
+                    await asyncio.to_thread(
+                        read,
+                        request,
+                        None,
+                        ("reports", hours),
+                        lambda queries, until, h=hours: queries.report(until, h),
+                    )
+                except HTTPException as exc:
+                    if exc.status_code != 503:
+                        raise
+                else:
+                    completed.append(hours)
+                    break
+    app.state.report_warmup_complete = completed == [24, 168]
+    yield
 
 
 class WebsiteFiles(StaticFiles):
@@ -34,7 +65,7 @@ def create_app(
 ) -> FastAPI:
     """Construct routes without database access, migrations, scans or provider clients."""
     config = config if config is not None else WebConfig()
-    app = FastAPI(title="Revival Radar website API", version="1.0.0")
+    app = FastAPI(title="Revival Radar website API", version="1.0.0", lifespan=research_startup)
     app.state.config = config
     app.state.clock = clock
     app.state.public_cache = ResponseCache()

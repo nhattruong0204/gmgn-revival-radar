@@ -86,7 +86,7 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
         db.execute("BEGIN")
         if db.execute("PRAGMA user_version").fetchone()[0] != SCHEMA_VERSION:
             raise sqlite3.DatabaseError("Unsupported public storage schema")
-        yield PublicQueries(db, allow_synthetic=config.web_allow_synthetic_data)
+        yield PublicQueries(db, allow_synthetic=config.web_allow_synthetic_data, deadline=deadline)
         if time.monotonic() > deadline:
             raise sqlite3.OperationalError("Saved read deadline exceeded")
     finally:
@@ -169,11 +169,22 @@ def public_field(payload, chain, address, timestamp, score, status, eligible, na
 
 
 class PublicQueries:
-    def __init__(self, db: sqlite3.Connection, *, allow_synthetic: bool = False):
+    def __init__(
+        self,
+        db: sqlite3.Connection,
+        *,
+        allow_synthetic: bool = False,
+        deadline: float | None = None,
+    ):
         self.db = db
+        self.deadline = deadline
         self.allow_synthetic = allow_synthetic
         self.repo = Repository(db)
         db.create_function("public_field", 8, public_field, deterministic=True)
+
+    def check_deadline(self):
+        if self.deadline is not None and time.monotonic() > self.deadline:
+            raise sqlite3.OperationalError("Saved read deadline exceeded")
 
     def last_scan_at(self, until: float) -> float | None:
         row = self.db.execute(
