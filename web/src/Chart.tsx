@@ -1,9 +1,21 @@
-import { useMemo, useState, type PointerEvent } from "react";
+import {
+  useMemo,
+  useState,
+  type KeyboardEvent,
+  type PointerEvent,
+} from "react";
 import { dateTime, exactTime, number, price } from "./format";
 import type { Candle } from "./types";
-import { Empty } from "./components";
+import { Empty, Link } from "./components";
 export { chartSegments } from "./chartData";
 import { chartSegments } from "./chartData";
+export interface ChartMarker {
+  id: string | number;
+  timestamp: number;
+  /** Accessible name; also the visible readout when the marker is selected. */
+  label: string;
+  href?: string;
+}
 export interface Point {
   timestamp: number;
   value: number | null | undefined;
@@ -14,14 +26,17 @@ export function ObservedChart({
   money = false,
   score = false,
   candles,
+  markers,
 }: {
   points: Point[];
   label: string;
   money?: boolean;
   score?: boolean;
   candles?: Candle[];
+  markers?: ChartMarker[];
 }) {
   const [active, setActive] = useState<number | null>(null);
+  const [marked, setMarked] = useState<string | number | null>(null);
   const data = useMemo(
     () =>
       points
@@ -57,6 +72,28 @@ export function ObservedChart({
     y = (v: number) =>
       top + (1 - (v - lo) / (hi - lo || 1)) * (h - top - bottom);
   const segments = chartSegments(points);
+  const inWindow = (markers ?? []).filter(
+    (m) => m.timestamp >= start && m.timestamp <= end,
+  );
+  const outside = (markers?.length ?? 0) - inWindow.length;
+  const markedItem = inWindow.find((m) => m.id === marked) ?? null;
+  const moveMarker = (event: KeyboardEvent<SVGGElement>, m: ChartMarker) => {
+    event.stopPropagation();
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      setMarked(m.id);
+    } else if (event.key === "Escape") setMarked(null);
+    else if (["ArrowLeft", "ArrowRight"].includes(event.key)) {
+      event.preventDefault();
+      const all = Array.from(
+        event.currentTarget.parentElement?.querySelectorAll<SVGGElement>(
+          "[data-call-marker]",
+        ) ?? [],
+      );
+      const i = all.indexOf(event.currentTarget);
+      all[i + (event.key === "ArrowLeft" ? -1 : 1)]?.focus();
+    }
+  };
   const selected =
     active == null ? data.at(-1)! : data[Math.min(active, data.length - 1)];
   const display = (v: number) =>
@@ -82,6 +119,21 @@ export function ObservedChart({
         <strong>{display(selected.value as number)}</strong>
         <small>{dateTime(selected.timestamp)}</small>
       </div>
+      {markedItem && (
+        <div className="chart-marker-readout" aria-live="polite">
+          <strong>{markedItem.label}</strong>
+          {markedItem.href && (
+            <Link href={markedItem.href}>Open call record</Link>
+          )}
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => setMarked(null)}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       <div
         className="chart-scroll"
         role="region"
@@ -237,6 +289,47 @@ export function ObservedChart({
               />
             </>
           )}
+          {inWindow.map((m) => {
+            const mx = x(m.timestamp),
+              on = m.id === marked;
+            return (
+              <g
+                key={m.id}
+                data-call-marker
+                role="button"
+                tabIndex={0}
+                aria-label={m.label}
+                aria-pressed={on}
+                className={`call-marker${on ? " active" : ""}`}
+                onKeyDown={(event) => moveMarker(event, m)}
+                onFocus={() => setMarked(m.id)}
+                onPointerDown={(event) => {
+                  event.stopPropagation();
+                  setMarked(m.id);
+                }}
+                onPointerMove={(event) => event.stopPropagation()}
+              >
+                <line
+                  x1={mx}
+                  x2={mx}
+                  y1={top + 12}
+                  y2={h - bottom}
+                  className="call-marker-line"
+                />
+                <rect
+                  x={mx - 22}
+                  y={top - 8}
+                  width="44"
+                  height={h - bottom - top + 8}
+                  fill="transparent"
+                />
+                <path
+                  className="call-marker-glyph"
+                  d={`M${mx},${top - 6} l9,9 l-9,9 l-9,-9 Z`}
+                />
+              </g>
+            );
+          })}
           {[0, 0.25, 0.5, 0.75, 1].map((r) => (
             <text
               key={r}
@@ -262,6 +355,10 @@ export function ObservedChart({
         Coverage: {dateTime(start)} – {dateTime(end)} · {data.length} saved{" "}
         {candles?.length ? "closed 1h candles" : "observations"} · Missing
         intervals remain visible · Use pointer or arrow keys to inspect
+        {inWindow.length > 0 &&
+          ` · ${inWindow.length} call marker${inWindow.length === 1 ? "" : "s"} (Tab to focus)`}
+        {outside > 0 &&
+          ` · ${outside} call${outside === 1 ? "" : "s"} outside this window`}
       </div>
       <details className="research-disclosure chart-data">
         <summary>Saved chart values</summary>

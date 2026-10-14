@@ -315,6 +315,66 @@ const alerts: Alert[] = demoObservations
       },
     };
   });
+// Two more calls on the first token so it has three (indexes 1, 2, 3 of 3).
+const first = demoObservations[0];
+[
+  {
+    id: 7,
+    age: 60 * H,
+    index: 1,
+    call: 2400000,
+    latest: 4200000,
+    change: 75,
+    mfe: 80,
+    mae: -4,
+    outcomes: [
+      { horizon_hours: 1, return_pct: 3.1 },
+      { horizon_hours: 6, return_pct: 21 },
+      { horizon_hours: 24, return_pct: 48 },
+      { horizon_hours: 72, return_pct: 70 },
+    ],
+  },
+  {
+    id: 8,
+    age: 3 * H,
+    index: 3,
+    call: 4100000,
+    latest: 4200000,
+    change: 2.4,
+    mfe: 5.1,
+    mae: -1.2,
+    outcomes: [{ horizon_hours: 1, return_pct: 1.8 }],
+  },
+].forEach((c) => {
+  alertOutcomes.set(c.id, c.outcomes);
+  alerts.push({
+    id: c.id,
+    timestamp: now - c.age,
+    chain: first.chain,
+    contract_address: first.contract_address,
+    symbol: first.symbol,
+    score: first.score,
+    preset: first.preset ?? undefined,
+    revision: 4,
+    observation: first,
+    performance: {
+      ...blank,
+      call_market_cap: c.call,
+      latest_market_cap: c.latest,
+      latest_observed_at: now - 240,
+      freshness: "fresh",
+      change_since_call_pct: c.change,
+      change_reason: null,
+      mfe_pct: c.mfe,
+      mae_pct: c.mae,
+      observations: 30,
+      max_gap_seconds: 1800,
+      elapsed_seconds: c.age,
+      token_call_index: c.index,
+      token_call_count: 3,
+    },
+  });
+});
 function readyRequest(path: string): unknown {
   const url = new URL(path, "https://demo.local"),
     q = url.searchParams;
@@ -407,7 +467,19 @@ function readyRequest(path: string): unknown {
       })),
     };
   }
-  if (url.pathname.endsWith("/alerts")) return list(alerts, q);
+  if (url.pathname.endsWith("/alerts")) {
+    const chain = q.get("chain"),
+      address = q.get("address");
+    const matched = alerts
+      .filter(
+        (a) =>
+          (!chain || a.chain === chain) &&
+          (!address || a.contract_address === address),
+      )
+      // The API lists newest first; the unfiltered preview keeps fixture order.
+      .sort((a, b) => (address ? b.timestamp - a.timestamp : 0));
+    return list(matched, q);
+  }
   if (url.pathname.endsWith("/reports"))
     return {
       since: now - Number(q.get("hours") ?? 24) * 3600,

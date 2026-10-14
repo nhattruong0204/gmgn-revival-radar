@@ -740,12 +740,16 @@ class PublicQueries:
         chain: str | None,
         page: int,
         page_size: int,
+        address: str | None = None,
     ) -> AlertsPage:
         where = "WHERE " + self.alert_visibility()
         parameters = [until, until, until]
         if chain:
             where += " AND a.chain=?"
             parameters.append(chain)
+        if chain and address:
+            where += " AND a.contract_address=?"
+            parameters.append(address)
         count = self.db.execute(
             "SELECT COUNT(*) FROM alerts a " + where,
             parameters,

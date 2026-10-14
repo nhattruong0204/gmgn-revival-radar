@@ -225,15 +225,20 @@ def briefs(
 def alerts(
     request: Request,
     chain: Chain | None = None,
+    address: str | None = None,
     page: Page = 1,
     page_size: PageSize = 25,
     as_of: Cutoff = None,
 ) -> AlertsPage:
+    if address is not None:
+        if chain is None:
+            raise HTTPException(status_code=422, detail="address requires chain")
+        address = address_for(chain, address)
     return read(
         request,
         as_of,
-        ("alerts", chain, page, page_size),
-        lambda queries, until: queries.alerts(until, chain, page, page_size),
+        ("alerts", chain, address, page, page_size),
+        lambda queries, until: queries.alerts(until, chain, page, page_size, address),
     )
 
 
