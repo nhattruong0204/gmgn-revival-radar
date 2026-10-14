@@ -1,5 +1,6 @@
 import type {
   Alert,
+  CallPerformance,
   History,
   ListResponse,
   Meta,
@@ -156,19 +157,164 @@ function history(observation: Observation): History {
     truncated: false,
   };
 }
+const H = 3600;
+type Spec = {
+  age: number;
+  perf: Omit<
+    CallPerformance,
+    "elapsed_seconds" | "latest_observed_at" | "token_call_index"
+  > & { latest_age: number | null; index: number | null };
+  outcomes: Array<{ horizon_hours: number; return_pct: number }>;
+};
+const blank = {
+  call_price: null,
+  latest_price: null,
+  max_gap_seconds: null,
+  token_call_count: null,
+  index: null,
+};
+// Synthetic call performance: positive, negative, legacy-unknown, stale,
+// no-later-observation and zero. Values are fixtures, not market data.
+const specs: Spec[] = [
+  {
+    age: 30 * H,
+    perf: {
+      ...blank,
+      call_market_cap: 3000000,
+      latest_market_cap: 4200000,
+      latest_age: 240,
+      freshness: "fresh",
+      change_since_call_pct: 40,
+      change_reason: null,
+      mfe_pct: 52,
+      mae_pct: -6.5,
+      observations: 61,
+      max_gap_seconds: 1800,
+      token_call_count: 3,
+      index: 2,
+    },
+    outcomes: [
+      { horizon_hours: 1, return_pct: 4.2 },
+      { horizon_hours: 6, return_pct: 18.5 },
+      { horizon_hours: 24, return_pct: 31 },
+    ],
+  },
+  {
+    age: 7 * H,
+    perf: {
+      ...blank,
+      call_market_cap: 1200000,
+      latest_market_cap: 900000,
+      latest_age: 420,
+      freshness: "fresh",
+      change_since_call_pct: -25,
+      change_reason: null,
+      mfe_pct: -3.1,
+      mae_pct: -31,
+      observations: 24,
+      max_gap_seconds: 900,
+    },
+    outcomes: [
+      { horizon_hours: 1, return_pct: -3.1 },
+      { horizon_hours: 6, return_pct: -22 },
+    ],
+  },
+  {
+    age: 50 * 60,
+    perf: {
+      ...blank,
+      call_market_cap: null,
+      latest_market_cap: 2100000,
+      latest_age: 300,
+      freshness: "fresh",
+      change_since_call_pct: null,
+      change_reason: "no_call_mc",
+      mfe_pct: null,
+      mae_pct: null,
+      observations: 5,
+      max_gap_seconds: 600,
+    },
+    outcomes: [],
+  },
+  {
+    age: 5 * 86400,
+    perf: {
+      ...blank,
+      call_market_cap: 800000,
+      latest_market_cap: 640000,
+      latest_age: 9 * H,
+      freshness: "stale",
+      change_since_call_pct: -20,
+      change_reason: null,
+      mfe_pct: 12,
+      mae_pct: -33,
+      observations: 18,
+      max_gap_seconds: 21600,
+    },
+    outcomes: [
+      { horizon_hours: 1, return_pct: 2 },
+      { horizon_hours: 6, return_pct: -8 },
+    ],
+  },
+  {
+    age: 2 * H,
+    perf: {
+      ...blank,
+      call_market_cap: 5000000,
+      latest_market_cap: null,
+      latest_age: null,
+      freshness: "none",
+      change_since_call_pct: null,
+      change_reason: "no_later_observation",
+      mfe_pct: null,
+      mae_pct: null,
+      observations: 0,
+    },
+    outcomes: [],
+  },
+  {
+    age: 3 * H,
+    perf: {
+      ...blank,
+      call_market_cap: 700000,
+      latest_market_cap: 700000,
+      latest_age: 600,
+      freshness: "fresh",
+      change_since_call_pct: 0,
+      change_reason: null,
+      mfe_pct: 0,
+      mae_pct: 0,
+      observations: 1,
+      max_gap_seconds: 10800,
+    },
+    outcomes: [],
+  },
+];
+const alertOutcomes = new Map<number, Spec["outcomes"]>();
 const alerts: Alert[] = demoObservations
-  .filter((_, i) => i < 5)
-  .map((o, i) => ({
-    id: i + 1,
-    timestamp: now - i * 3700,
-    chain: o.chain,
-    contract_address: o.contract_address,
-    symbol: o.symbol,
-    score: o.score,
-    preset: o.preset ?? undefined,
-    revision: 4,
-    observation: o,
-  }));
+  .filter((_, i) => i < specs.length)
+  .map((o, i) => {
+    const { perf, age } = specs[i];
+    const { latest_age, index, ...rest } = perf;
+    alertOutcomes.set(i + 1, specs[i].outcomes);
+    return {
+      id: i + 1,
+      timestamp: now - age,
+      chain: o.chain,
+      contract_address: o.contract_address,
+      symbol: o.symbol,
+      score: o.score,
+      preset: o.preset ?? undefined,
+      revision: 4,
+      observation: o,
+      performance: {
+        ...rest,
+        latest_observed_at: latest_age == null ? null : now - latest_age,
+        elapsed_seconds: age,
+        token_call_index: index,
+      },
+    };
+  });
 function readyRequest(path: string): unknown {
   const url = new URL(path, "https://demo.local"),
     q = url.searchParams;
@@ -255,10 +401,10 @@ function readyRequest(path: string): unknown {
     return {
       ...a,
       latest_observation: a?.observation,
-      outcomes: [
-        { horizon_hours: 1, return_pct: 4.2, observed_at: now - 3600 },
-        { horizon_hours: 6, return_pct: 9.8, observed_at: now - 1800 },
-      ],
+      outcomes: (alertOutcomes.get(a.id) ?? []).map((v) => ({
+        ...v,
+        observed_at: a.timestamp + v.horizon_hours * H,
+      })),
     };
   }
   if (url.pathname.endsWith("/alerts")) return list(alerts, q);

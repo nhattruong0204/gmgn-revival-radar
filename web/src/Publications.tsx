@@ -19,12 +19,12 @@ import {
   dateTime,
   percent,
   relative,
-  shortAddress,
   tokenPath,
   researchLink,
   researchReturn,
 } from "./format";
 import type { Alert, AlertDetail, ListResponse, Report } from "./types";
+import { CallPerformanceCard } from "./CallCard";
 import { SignalEvidence } from "./TokenDetail";
 import { ResearchBrief } from "./ResearchBrief";
 import { CheckpointTable } from "./TrackRecord";
@@ -85,6 +85,7 @@ export function Alerts({ id }: { id?: string }) {
         <Loading />
       ) : id && detail.data ? (
         <>
+          <CallPerformanceCard alert={detail.data} variant="full" />
           <p className="contract-address">
             {chains[detail.data.chain] ?? detail.data.chain} ·{" "}
             {detail.data.contract_address}
@@ -131,10 +132,6 @@ export function Alerts({ id }: { id?: string }) {
               detail="Original confirmed signal"
             />
             <Stat
-              label="Alert-time market cap"
-              value={compact(detail.data.observation?.market_cap, true)}
-            />
-            <Stat
               label="Alert-time liquidity"
               value={compact(detail.data.observation?.liquidity, true)}
             />
@@ -152,27 +149,6 @@ export function Alerts({ id }: { id?: string }) {
                 Unknown fields have not been replaced with current metrics.
               </Notice>
             )}
-          {detail.data.latest_observation && (
-            <section className="panel">
-              <h2>Latest saved evaluation</h2>
-              <p>
-                Observed {dateTime(detail.data.latest_observation.timestamp)}.
-                Separate from the original alert above.
-              </p>
-              <div className="structure-grid">
-                <div>
-                  <span>Score</span>
-                  <strong>{detail.data.latest_observation.score}/100</strong>
-                </div>
-                <div>
-                  <span>Market cap</span>
-                  <strong>
-                    {compact(detail.data.latest_observation.market_cap, true)}
-                  </strong>
-                </div>
-              </div>
-            </section>
-          )}
           {(detail.data.checkpoint_research?.length ?? 0) > 0 && (
             <section className="panel">
               <h2>Saved checkpoint coverage</h2>
@@ -265,42 +241,14 @@ export function Alerts({ id }: { id?: string }) {
           </div>
           {feed.data?.items.length ? (
             <>
-              <div className="alerts-list">
+              <div className="call-card-list-grid">
                 {feed.data.items.map((a) => (
-                  <Link
+                  <CallPerformanceCard
                     key={a.id}
-                    href={researchLink(`/alerts/${a.id}`)}
-                    className="alert-row"
-                  >
-                    <div className="alert-symbol">
-                      <div className="signal-icon">
-                        <Icon name="alerts" />
-                      </div>
-                      <div>
-                        <strong>{a.symbol}</strong>
-                        <small title={a.contract_address}>
-                          {chains[a.chain] ?? a.chain} ·{" "}
-                          {shortAddress(a.contract_address)}
-                        </small>
-                        <small>
-                          {a.preset ?? "Unlabeled strategy"} · rev{" "}
-                          {a.revision ?? "unknown"}
-                        </small>
-                      </div>
-                    </div>
-                    <div className="alert-stage">
-                      <Stage stage={a.observation?.status ?? "UNKNOWN"} />
-                      {a.observation && (
-                        <ObservationStamp
-                          observation={a.observation}
-                          kind="signal"
-                        />
-                      )}
-                    </div>
-                    <Score value={a.score} />
-                    <span className="muted">{relative(a.timestamp)}</span>
-                    <Icon name="chevron" />
-                  </Link>
+                    alert={a}
+                    variant="compact"
+                    headingLevel={3}
+                  />
                 ))}
               </div>
               <div className="panel-footer">

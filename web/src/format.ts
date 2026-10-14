@@ -124,3 +124,7 @@ export function researchReturn(): string {
     ? value
     : "/";
 }
+/** Same URL shape as the backend `ChainConfig.links` GMGN link. */
+export function gmgnLink(chain: string, address: string): string {
+  return `https://gmgn.ai/${chain}/token/${encodeURIComponent(address)}`;
+}

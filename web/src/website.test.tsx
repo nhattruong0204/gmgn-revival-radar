@@ -115,7 +115,7 @@ describe("saved evidence contracts", () => {
 
   it("keeps legacy alert stages unknown", async () => {
     render(<Alerts id="1" />);
-    await screen.findByText("unknown");
+    await screen.findAllByText("unknown");
     expect(screen.queryByText("Confirmed revival")).toBeNull();
   });
 
