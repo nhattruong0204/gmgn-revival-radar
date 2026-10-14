@@ -378,7 +378,7 @@ export function RegimeSummary({
       : percent(context.median_price_change_24h, false, true);
   const share =
     context.share_positive_1h === null
-      ? unknown(context.share_positive_1h_reason)
+      ? `share up ${unknown(context.share_positive_1h_reason)}`
       : `${percent(context.share_positive_1h, true)} up`;
   return (
     <section className="panel regime-panel" aria-label="Market regime context">

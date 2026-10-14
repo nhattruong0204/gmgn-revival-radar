@@ -1,0 +1,155 @@
+[
+ {
+  "w": 390,
+  "name": "ready",
+  "state": "ready",
+  "errs": [],
+  "ext": [],
+  "overflow": false,
+  "noteVisible": true,
+  "minContrast": 6.15,
+  "contrast": [
+   13.35,
+   6.15,
+   8.42,
+   8.42
+  ],
+  "summary": "Market regime\n\nUniverse of 20 Hot Search tokens: median 1h change -2.1%, 30% up (scan at 15:29 UTC)\n\nMedian 24h change -14.8% · 20 tokens with 1h data, 19 with 24h data · 1 eligible\n\nContext, not a signal. Regime figures explain market conditions around the scan; they do not change any score or alert.",
+  "tabOrderSample": [
+   "Skip to research content",
+   "BUTTON",
+   "readyloadingemptypartial",
+   "Refresh",
+   "1h",
+   "4h",
+   "12h",
+   "24h",
+   "72h",
+   "7d",
+   "WWIFdogwifhat",
+   "A"
+  ]
+ },
+ {
+  "w": 390,
+  "name": "insufficient",
+  "state": "partial",
+  "errs": [],
+  "ext": [],
+  "overflow": false,
+  "noteVisible": true,
+  "minContrast": 6.15,
+  "contrast": [
+   13.35,
+   6.15,
+   8.42,
+   8.42
+  ],
+  "summary": "Market regime\n\nUniverse of 3 Hot Search tokens: median 1h change unknown (fewer than 5 tokens), share up unknown (fewer than 5 tokens) (scan at 15:29 UTC)\n\nMedian 24h change unknown (fewer than 5 tokens) · 3 tokens with 1h data, 2 with 24h data · eligible count unknown\n\nContext, not a signal. Regime figures explain market conditions around the scan; they do not change any score or alert.",
+  "tabOrderSample": [
+   "Skip to research content",
+   "BUTTON",
+   "readyloadingemptypartial",
+   "Refresh",
+   "1h",
+   "4h",
+   "12h",
+   "24h",
+   "72h",
+   "7d",
+   "WWIFdogwifhat",
+   "A"
+  ]
+ },
+ {
+  "w": 390,
+  "name": "none",
+  "state": "empty",
+  "errs": [],
+  "ext": [],
+  "overflow": false,
+  "noteVisible": false,
+  "minContrast": 8.42,
+  "contrast": [
+   13.35,
+   8.42
+  ],
+  "summary": "Market regime\n\nNo saved regime context yet. It appears after the next completed scan.",
+  "tabOrderSample": [
+   "Skip to research content",
+   "BUTTON",
+   "readyloadingemptypartial",
+   "Refresh",
+   "1h",
+   "4h",
+   "12h",
+   "24h",
+   "72h",
+   "7d",
+   "Report window & collecti",
+   "Methodology & coverage"
+  ]
+ },
+ {
+  "w": 1366,
+  "name": "ready",
+  "state": "ready",
+  "errs": [],
+  "ext": [],
+  "overflow": false,
+  "noteVisible": true,
+  "minContrast": 6.15,
+  "contrast": [
+   13.35,
+   6.15,
+   8.42,
+   8.42
+  ],
+  "summary": "Market regime\n\nUniverse of 20 Hot Search tokens: median 1h change -2.1%, 30% up (scan at 15:30 UTC)\n\nMedian 24h change -14.8% · 20 tokens with 1h data, 19 with 24h data · 1 eligible\n\nContext, not a signal. Regime figures explain market conditions around the scan; they do not change any score or alert.",
+  "tabOrderSample": [
+   "Skip to research content",
+   "OnchainFlowSaved market ",
+   "Radar",
+   "Signals",
+   "Reports",
+   "Track record",
+   "Methodology",
+   "Owner areaPRIVATE",
+   "readyloadingemptypartial",
+   "Refresh",
+   "1h",
+   "4h"
+  ]
+ },
+ {
+  "w": 1366,
+  "name": "insufficient",
+  "state": "partial",
+  "errs": [],
+  "ext": [],
+  "overflow": false,
+  "noteVisible": true,
+  "minContrast": 6.15,
+  "contrast": [
+   13.35,
+   6.15,
+   8.42,
+   8.42
+  ],
+  "summary": "Market regime\n\nUniverse of 3 Hot Search tokens: median 1h change unknown (fewer than 5 tokens), share up unknown (fewer than 5 tokens) (scan at 15:29 UTC)\n\nMedian 24h change unknown (fewer than 5 tokens) · 3 tokens with 1h data, 2 with 24h data · eligible count unknown\n\nContext, not a signal. Regime figures explain market conditions around the scan; they do not change any score or alert.",
+  "tabOrderSample": [
+   "Skip to research content",
+   "OnchainFlowSaved market ",
+   "Radar",
+   "Signals",
+   "Reports",
+   "Track record",
+   "Methodology",
+   "Owner areaPRIVATE",
+   "readyloadingemptypartial",
+   "Refresh",
+   "1h",
+   "4h"
+  ]
+ }
+]
