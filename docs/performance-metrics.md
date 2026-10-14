@@ -66,10 +66,16 @@ data error. Compare like with like: market cap against market cap, price against
 
 ## MFE / MAE
 
-Maximum favorable / adverse excursion are **observed** extremes among saved snapshot
-prices (or market caps) after the call. Snapshots are about five minutes apart, so
-true intrabar highs and lows are not seen and real extremes may be larger. Gaps in
-scanning (downtime, budget exhaustion) widen this.
+Maximum favorable / adverse excursion are **observed** extremes. The headline MFE/MAE
+(implemented in #62 / PR #82) is computed on **market cap** relative to the call market
+cap, from saved snapshots strictly after the call time. Snapshots are about five
+minutes apart, so true intrabar highs and lows are not seen and real extremes may be
+larger. Gaps in scanning (downtime, budget exhaustion) widen this.
+
+The MFE can be negative when the token only fell after the call; it is shown as
+observed and is not clamped to zero. Because market cap may mix supply bases across
+snapshots (rank-sourced vs enriched), an excursion can partly reflect a basis change;
+this is tracked in #81.
 
 ## Unknown handling
 
