@@ -364,3 +364,55 @@ export interface Command {
   updated_at?: number;
   [key: string]: unknown;
 }
+
+export interface JournalGroup {
+  key: string;
+  calls: number;
+  measurable: number;
+  positive: number;
+  negative: number;
+  flat: number;
+  unknown: number;
+  median_change_pct: number | null;
+}
+export interface JournalSummary {
+  calls: number;
+  measurable: number;
+  positive: number;
+  negative: number;
+  flat: number;
+  unknown: number;
+  unknown_reasons: Record<string, number>;
+  positive_rate_pct: number | null;
+  median_change_pct: number | null;
+  mean_change_pct: number | null;
+  distribution: Array<{ label: string; count: number }>;
+  mfe_known: number;
+  mfe_median_pct: number | null;
+  mae_known: number;
+  mae_median_pct: number | null;
+  by_stage: JournalGroup[];
+  by_revision: JournalGroup[];
+  revisions: string[];
+  mixed_configurations: boolean;
+  small_sample: boolean;
+  small_sample_threshold: number;
+  stale_latest: number;
+  checkpoint_24h: ResearchCounts;
+}
+export interface CallJournalData {
+  methodology_version: string;
+  since: number;
+  as_of: number;
+  last_scan_at: number | null;
+  filters: Record<string, string | number | null>;
+  sort: string;
+  definition: string;
+  limitations: string[];
+  reconciliation: Record<string, number>;
+  summary: JournalSummary;
+  items: Alert[];
+  total: number;
+  page: number;
+  page_size: number;
+}

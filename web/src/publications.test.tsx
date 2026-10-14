@@ -175,6 +175,7 @@ it("uses the known-return denominator and keeps null medians unknown", async () 
       distribution: [],
     },
   });
+  window.history.replaceState(null, "", "/outcomes?view=checkpoints");
   const { container } = render(<OutcomePage />);
   await screen.findByText(/Positive 1 \/ 2/);
   expect(container.textContent).toContain("Positive-return rate: 50%");
@@ -183,6 +184,7 @@ it("uses the known-return denominator and keeps null medians unknown", async () 
 });
 it("does not invent a zero denominator on a failed outcome request", async () => {
   respond({ detail: "Saved observations temporarily unavailable" }, 503);
+  window.history.replaceState(null, "", "/outcomes?view=checkpoints");
   render(<OutcomePage />);
   await screen.findByRole("heading", { name: "Outcome data unavailable" });
   expect(screen.queryByText("(0 / 0)")).toBeNull();

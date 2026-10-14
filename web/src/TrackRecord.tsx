@@ -2,6 +2,7 @@ import { labels } from "./labels";
 import { useState } from "react";
 import { Modal } from "./Modal";
 import { navigate, useData, useLocation } from "./api";
+import { CallJournalView } from "./CallJournal";
 import { Empty, Link, Loading, Notice, PageHeading, Stat } from "./components";
 import { dateTime, humanKey, percent, researchLink, chains } from "./format";
 import type { CheckpointResearch, TrackRecordData } from "./types";
@@ -203,7 +204,7 @@ export function CheckpointTable({ items }: { items: CheckpointResearch[] }) {
   );
 }
 
-export function TrackRecordPage() {
+export function CheckpointRecordPage() {
   const location = useLocation();
   const query = trackQuery(location.split("?")[1] ?? "");
   const source = useData<TrackRecordData>(`/api/v1/track-record?${query}`);
@@ -218,6 +219,7 @@ export function TrackRecordPage() {
     if (!["cohort", "page", "checkpoint", "bucket"].includes(key))
       next.delete("cohort");
     next.delete("page_size");
+    next.set("view", "checkpoints");
     navigate(`/outcomes?${next}`);
   };
   const control = (
@@ -279,20 +281,6 @@ export function TrackRecordPage() {
   const counts = data?.summary;
   return (
     <>
-      <PageHeading
-        eyebrow="SAVED SIGNAL RESEARCH"
-        title="Track record"
-        description="Audit delivered alerts and their observed checkpoints. This is research evidence, not realized trading performance."
-        action={
-          <button
-            className="button button-secondary"
-            disabled={!data || exporting}
-            onClick={exportCsv}
-          >
-            {exporting ? "Exporting…" : "Export complete cohort (UTC CSV)"}
-          </button>
-        }
-      />
       <div className="brief-controls">
         {" "}
         {control(
@@ -314,6 +302,13 @@ export function TrackRecordPage() {
           onClick={() => setFiltersOpen(true)}
         >
           Cohort filters
+        </button>
+        <button
+          className="button button-secondary"
+          disabled={!data || exporting}
+          onClick={exportCsv}
+        >
+          {exporting ? "Exporting…" : "Export complete cohort (UTC CSV)"}
         </button>
       </div>
       <p className="small muted">
@@ -417,7 +412,7 @@ export function TrackRecordPage() {
             </label>
             <button
               className="text-button"
-              onClick={() => navigate("/outcomes")}
+              onClick={() => navigate("/outcomes?view=checkpoints")}
             >
               Reset filters
             </button>
@@ -633,6 +628,42 @@ export function TrackRecordPage() {
           </details>
         </>
       ) : null}
+    </>
+  );
+}
+
+export function TrackRecordPage() {
+  const location = useLocation();
+  const search = location.split("?")[1] ?? "";
+  const checkpoints = new URLSearchParams(search).get("view") === "checkpoints";
+  return (
+    <>
+      <PageHeading
+        eyebrow="SAVED SIGNAL RESEARCH"
+        title="Track record"
+        description="If you had followed the radar's previous calls, which moved favourably, which failed, and by how much? Saved observations, not realized trading performance."
+      />
+      <nav className="journal-tabs" aria-label="Track record views">
+        <Link
+          href="/outcomes"
+          aria-current={checkpoints ? undefined : "page"}
+          className={checkpoints ? "" : "active"}
+        >
+          Call journal
+        </Link>
+        <Link
+          href="/outcomes?view=checkpoints"
+          aria-current={checkpoints ? "page" : undefined}
+          className={checkpoints ? "active" : ""}
+        >
+          Checkpoint detail
+        </Link>
+      </nav>
+      {checkpoints ? (
+        <CheckpointRecordPage />
+      ) : (
+        <CallJournalView search={search} />
+      )}
     </>
   );
 }

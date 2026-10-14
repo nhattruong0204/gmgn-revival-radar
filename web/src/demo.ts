@@ -1,7 +1,9 @@
 import type {
   Alert,
+  CallJournalData,
   CallPerformance,
   History,
+  JournalGroup,
   ListResponse,
   Meta,
   Observation,
@@ -315,6 +317,258 @@ const alerts: Alert[] = demoObservations
       },
     };
   });
+
+// Call journal fixtures (#66): the six Signals calls plus six more, mixing outcomes,
+// two strategy revisions and a token (WIF) called three times. Values are fixtures.
+type Extra = [
+  id: number,
+  token: number,
+  age: number,
+  revision: number,
+  change: number | null,
+  mfe: number | null,
+  mae: number | null,
+  freshness: "fresh" | "stale",
+  index?: number,
+  count?: number,
+];
+const extras: Extra[] = [
+  [7, 0, 4 * 86400, 3, -35, 10, -48, "fresh", 1, 3],
+  [8, 0, 2 * H, 4, 12, 18, -4, "fresh", 3, 3],
+  [9, 6, 6 * 86400, 3, 160, 210, -12, "fresh"],
+  [10, 7, 3 * 86400, 3, -62, 4, -71, "fresh"],
+  [11, 8, 9 * H, 4, 8.5, 15, -2, "fresh"],
+  [12, 9, 20 * H, 3, -12, 3, -26, "stale"],
+];
+function extraAlert(row: Extra): Alert {
+  const [id, t, age, revision, change, mfe, mae, freshness, index, count] = row;
+  const o = demoObservations[t];
+  const call = 1000000 + id * 90000;
+  return {
+    id,
+    timestamp: now - age,
+    chain: o.chain,
+    contract_address: o.contract_address,
+    symbol: o.symbol,
+    score: 76 + ((id * 7) % 20),
+    preset: "Balanced",
+    revision,
+    observation: o,
+    performance: {
+      call_market_cap: call,
+      call_price: null,
+      latest_market_cap: change == null ? null : call * (1 + change / 100),
+      latest_price: null,
+      latest_observed_at: now - (freshness === "stale" ? 11 * H : 300),
+      freshness,
+      change_since_call_pct: change,
+      change_reason: change == null ? "no_later_observation" : null,
+      mfe_pct: mfe,
+      mae_pct: mae,
+      observations: 30,
+      max_gap_seconds: 900,
+      elapsed_seconds: age,
+      token_call_index: index ?? null,
+      token_call_count: count ?? null,
+    },
+  };
+}
+const journalBase: Alert[] = [...alerts, ...extras.map(extraAlert)];
+// Optional build-time size for layout measurement; the default preview has 12 calls.
+const demoCalls = Number(import.meta.env.VITE_DEMO_CALLS ?? journalBase.length);
+export const journalAlerts: Alert[] = Array.from(
+  { length: Math.max(demoCalls, 0) },
+  (_, i) => {
+    const base = journalBase[i % journalBase.length];
+    if (i < journalBase.length) return base;
+    const lap = Math.floor(i / journalBase.length);
+    return {
+      ...base,
+      id: 100 + i,
+      timestamp: base.timestamp - lap * 600,
+      performance: base.performance && {
+        ...base.performance,
+        token_call_index: null,
+        token_call_count: null,
+      },
+    };
+  },
+);
+const median = (values: number[]) => {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+};
+const changeOf = (a: Alert) => a.performance?.change_since_call_pct ?? null;
+const outcomeOf = (a: Alert) => {
+  const c = changeOf(a);
+  return c == null
+    ? "unknown"
+    : c > 0
+      ? "positive"
+      : c < 0
+        ? "negative"
+        : "flat";
+};
+function groupOf(key: string, calls: Alert[]): JournalGroup {
+  const known = calls.map(changeOf).filter((v): v is number => v != null);
+  return {
+    key,
+    calls: calls.length,
+    measurable: known.length,
+    positive: known.filter((v) => v > 0).length,
+    negative: known.filter((v) => v < 0).length,
+    flat: known.filter((v) => v === 0).length,
+    unknown: calls.length - known.length,
+    median_change_pct: median(known),
+  };
+}
+function journal(q: URLSearchParams): CallJournalData {
+  const days = Number(q.get("days") ?? 7);
+  const windowed = journalAlerts.filter(
+    (a) => a.timestamp >= now - days * 86400,
+  );
+  let calls = windowed;
+  const keep = (test: (a: Alert) => boolean) => (calls = calls.filter(test));
+  if (q.get("chain")) keep((a) => a.chain === q.get("chain"));
+  if (q.get("stage")) keep((a) => a.observation?.status === q.get("stage"));
+  if (q.get("min_score")) keep((a) => a.score >= Number(q.get("min_score")));
+  if (q.get("max_score")) keep((a) => a.score <= Number(q.get("max_score")));
+  if (q.get("revision"))
+    keep((a) => String(a.revision ?? "unknown") === q.get("revision"));
+  if (q.get("min_age_hours"))
+    keep((a) => now - a.timestamp >= Number(q.get("min_age_hours")) * H);
+  if (q.get("max_age_hours"))
+    keep((a) => now - a.timestamp <= Number(q.get("max_age_hours")) * H);
+  if (q.get("outcome")) keep((a) => outcomeOf(a) === q.get("outcome"));
+  const known = calls.map(changeOf).filter((v): v is number => v != null);
+  const mfe = calls.flatMap((a) => a.performance?.mfe_pct ?? []);
+  const mae = calls.flatMap((a) => a.performance?.mae_pct ?? []);
+  const revisions = Array.from(
+    new Set(calls.map((a) => String(a.revision ?? "unknown"))),
+  ).sort((a, b) => Number(b) - Number(a));
+  const key = (a: Alert) => ({
+    best: -(changeOf(a) ?? Infinity),
+    worst: changeOf(a) ?? Infinity,
+    mfe: -(a.performance?.mfe_pct ?? Infinity),
+    mae: a.performance?.mae_pct ?? Infinity,
+    score: -a.score,
+    newest: -a.timestamp,
+    age: a.timestamp,
+  });
+  const sort = (q.get("sort") ?? "newest") as keyof ReturnType<typeof key>;
+  const ordered = [...calls].sort(
+    (a, b) => key(a)[sort] - key(b)[sort] || b.timestamp - a.timestamp,
+  );
+  const page = Number(q.get("page") ?? 1),
+    size = Number(q.get("page_size") ?? 25);
+  const due = calls.filter(
+    (a) => (a.performance?.elapsed_seconds ?? 0) >= 24 * H,
+  );
+  const measured = calls.flatMap(
+    (a) => alertOutcomes.get(a.id)?.find((o) => o.horizon_hours === 24) ?? [],
+  );
+  const stages = Array.from(
+    new Set(calls.map((a) => a.observation?.status ?? "UNKNOWN")),
+  ).sort();
+  const reason = (name: string) =>
+    calls.filter((a) => a.performance?.change_reason === name).length;
+  const bins: Array<[string, (v: number) => boolean]> = [
+    ["Below -50%", (v) => v < -50],
+    ["-50% to below 0%", (v) => v >= -50 && v < 0],
+    ["Exactly 0%", (v) => v === 0],
+    ["Above 0% through 50%", (v) => v > 0 && v <= 50],
+    ["Above 50%", (v) => v > 50],
+  ];
+  return {
+    methodology_version: "call-journal-v1",
+    since: now - days * 86400,
+    as_of: now,
+    last_scan_at: now - 140,
+    filters: { days },
+    sort: String(sort),
+    definition:
+      "Synthetic preview: fixtures, not market data. One call per row; change since call compares the market cap frozen with the alert with the latest saved snapshot.",
+    limitations: [
+      "Saved snapshot observations, not executed trades or realized P&L.",
+      "Fees, slippage, liquidity depth and latency are ignored.",
+      "Repeated alerts on one token are separate calls, not independent trades.",
+    ],
+    reconciliation: {
+      visible_alerts_in_window: windowed.length,
+      excluded_by_filters: windowed.length - calls.length,
+      after_filters: calls.length,
+    },
+    summary: {
+      calls: calls.length,
+      measurable: known.length,
+      positive: known.filter((v) => v > 0).length,
+      negative: known.filter((v) => v < 0).length,
+      flat: known.filter((v) => v === 0).length,
+      unknown: calls.length - known.length,
+      unknown_reasons: {
+        no_call_mc: reason("no_call_mc"),
+        no_later_observation: reason("no_later_observation"),
+        unspecified: 0,
+      },
+      positive_rate_pct: known.length
+        ? (known.filter((v) => v > 0).length / known.length) * 100
+        : null,
+      median_change_pct: median(known),
+      mean_change_pct: known.length
+        ? known.reduce((a, b) => a + b, 0) / known.length
+        : null,
+      distribution: bins.map(([label, test]) => ({
+        label,
+        count: known.filter(test).length,
+      })),
+      mfe_known: mfe.length,
+      mfe_median_pct: median(mfe),
+      mae_known: mae.length,
+      mae_median_pct: median(mae),
+      by_stage: stages.map((s) =>
+        groupOf(
+          s,
+          calls.filter((a) => (a.observation?.status ?? "UNKNOWN") === s),
+        ),
+      ),
+      by_revision: revisions.map((r) =>
+        groupOf(
+          r,
+          calls.filter((a) => String(a.revision ?? "unknown") === r),
+        ),
+      ),
+      revisions,
+      mixed_configurations: revisions.length > 1,
+      small_sample: known.length < 20,
+      small_sample_threshold: 20,
+      stale_latest: calls.filter((a) => a.performance?.freshness === "stale")
+        .length,
+      checkpoint_24h: {
+        total: calls.length,
+        observed: measured.length,
+        returns_available: measured.length,
+        positive: measured.filter((o) => o.return_pct > 0).length,
+        negative: measured.filter((o) => o.return_pct < 0).length,
+        zero: 0,
+        missing_price: 0,
+        unresolved: 0,
+        pending: calls.length - due.length,
+        missed: due.length - measured.length,
+        median_return_pct: median(measured.map((o) => o.return_pct)),
+        positive_rate_pct: null,
+        small_sample: true,
+        comparable: true,
+        distribution: [],
+      },
+    },
+    items: ordered.slice((page - 1) * size, page * size),
+    total: calls.length,
+    page,
+    page_size: size,
+  };
+}
 function readyRequest(path: string): unknown {
   const url = new URL(path, "https://demo.local"),
     q = url.searchParams;
@@ -345,6 +599,7 @@ function readyRequest(path: string): unknown {
     );
     return list(items, q);
   }
+  if (url.pathname.endsWith("/track-record/calls")) return journal(q);
   if (url.pathname.endsWith("/track-record"))
     return {
       methodology_version: "checkpoint-cohort-v1",
