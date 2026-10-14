@@ -3632,3 +3632,11 @@ textarea,
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+@media (min-width: 1180px) {
+  .call-row {
+    grid-template-columns: minmax(180px, 1fr) minmax(250px, 1.2fr) minmax(
+        0,
+        2fr
+      ) minmax(130px, 0.7fr);
+  }
+}
