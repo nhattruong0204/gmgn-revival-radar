@@ -1,3 +1,4 @@
+import { labels } from "./labels";
 import { useState } from "react";
 import { useSmallScreen } from "./Modal";
 import { useData } from "./api";
@@ -274,7 +275,7 @@ export function TokenDetail({
         detail="Observed evidence, not a probability"
       />
       <Stat
-        label="Market cap"
+        label={labels.marketCap}
         value={compact(o.market_cap, true)}
         detail={`${percent(o.drawdown_from_ath, true)} below ATH`}
         icon="outcomes"
@@ -406,7 +407,7 @@ export function TokenDetail({
                       onClick={() => setMetric(m)}
                     >
                       {m === "market_cap"
-                        ? "Market cap"
+                        ? labels.marketCap
                         : m === "candles"
                           ? "1h candles"
                           : humanKey(m)}
@@ -513,7 +514,7 @@ export function TokenDetail({
                     <strong>{price(data.latest_market.price)}</strong>
                   </div>
                   <div>
-                    <span>Market cap</span>
+                    <span>{labels.marketCap}</span>
                     <strong>
                       {compact(data.latest_market.market_cap, true)}
                     </strong>

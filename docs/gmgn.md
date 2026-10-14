@@ -55,7 +55,7 @@ The candle interface supports `1s` (Pro), `30s,1m,5m,15m,1h,4h,1d`; V1 uses only
 | Address and identity | rank `address,chain,symbol,name` |
 | Hot Search rank | `data[]` block `tokens[].rank`, within chain and interval |
 | Trending rank | `data.rank[].rank`; row position if rank missing |
-| Market cap | rank `market_cap`; token info `price.price × circulating_supply` |
+| Market cap | rank `market_cap` (circulating vs FDV unverified); token info `price.price × circulating_supply` (circulating). See [performance metrics](performance-metrics.md) |
 | ATH market cap | rank `history_highest_market_cap` |
 | Drawdown | `1 − current_market_cap / ath_market_cap` |
 | Liquidity | rank/info `liquidity` (reported total pool liquidity, not executable depth) |
