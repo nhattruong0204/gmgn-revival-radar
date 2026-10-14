@@ -326,7 +326,7 @@ export function EvidenceList({
     <ul className={`evidence-list ${tone}`}>
       {items.map((v, i) => (
         <li key={i}>
-          <Icon name={tone === "danger" ? "warning" : "check"} size={16} />
+          <Icon name={tone === "neutral" ? "check" : "warning"} size={16} />
           {v}
         </li>
       ))}

@@ -2579,6 +2579,266 @@ textarea,
   }
 }
 
+/* CallPerformanceCard (#65). Mobile first; colour never carries direction alone. */
+.call-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  color: var(--research-text);
+}
+.call-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+.call-card-head h2,
+.call-card-head h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  overflow-wrap: anywhere;
+}
+.call-card-ident {
+  color: var(--research-muted);
+  font-weight: 400;
+  font-size: var(--research-type-body);
+}
+.call-card-title-link {
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.call-card-badge {
+  font-size: var(--research-type-metadata);
+  color: var(--research-text);
+  border: 1px solid var(--research-control-border);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+.call-card-hero {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  background: var(--panel-alt);
+  border-radius: 8px;
+}
+.call-card-caps strong {
+  font-size: var(--research-type-value);
+  font-weight: 650;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.call-card-unknown-cap {
+  font-size: 1.125rem !important;
+}
+.call-card-caption,
+.call-card-change span:last-child,
+.call-card-note,
+.call-card-unknown {
+  color: var(--research-muted);
+  font-size: var(--research-type-metadata);
+}
+.call-card-change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+  font-size: var(--research-type-body);
+}
+.call-card-change strong {
+  font-size: 2rem;
+  line-height: 1.1;
+  font-weight: 700;
+}
+.call-card-change.positive,
+.call-card-change.positive span {
+  color: var(--green);
+}
+.call-card-change.danger,
+.call-card-change.danger span {
+  color: var(--danger);
+}
+.call-card-change.unknown {
+  display: grid;
+}
+.call-card-change.unknown strong {
+  font-size: 1.125rem;
+  color: var(--research-text);
+}
+.call-card-meta {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+.call-card-meta dt {
+  color: var(--research-muted);
+  font-size: var(--research-type-metadata);
+}
+.call-card-meta dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.call-card-meta svg {
+  vertical-align: -2px;
+}
+.call-card-fresh {
+  grid-column: 1 / -1;
+}
+.call-card-fresh.fresh-stale dd {
+  color: var(--amber);
+}
+.call-card-exact {
+  display: block;
+  color: var(--research-muted);
+  font-size: var(--research-type-metadata);
+  font-weight: 400;
+}
+.call-card-note {
+  margin: 0;
+}
+.call-card-sub {
+  margin: 0 0 8px;
+  font-size: var(--research-type-body);
+  color: var(--research-muted);
+  font-weight: 600;
+}
+.call-card-checkpoints {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.call-card-checkpoints li {
+  display: grid;
+  gap: 2px;
+  padding: 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: var(--research-type-metadata);
+  min-width: 0;
+}
+.call-card-checkpoints li > span {
+  color: var(--research-muted);
+}
+.call-card-checkpoints strong {
+  font-size: var(--research-type-body);
+  overflow-wrap: anywhere;
+}
+.call-card-checkpoints small {
+  font-weight: 400;
+}
+.call-card-checkpoints em {
+  font-style: normal;
+  color: var(--research-muted);
+  border-top: 1px dashed var(--research-control-border);
+  padding-top: 2px;
+}
+.call-card-config {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  font-size: var(--research-type-metadata);
+  color: var(--research-muted);
+}
+.call-card-score {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.call-card-why {
+  display: grid;
+  gap: 14px;
+}
+.call-card-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  font-size: var(--research-type-body);
+}
+.call-card-list li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.call-card-list svg {
+  flex: none;
+  margin-top: 4px;
+  color: var(--green);
+}
+.call-card-list.risks svg {
+  color: var(--amber);
+}
+.call-card-list span {
+  overflow-wrap: anywhere;
+}
+.call-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.call-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--research-control-border);
+  border-radius: var(--research-radius-control);
+  color: var(--research-text);
+  font-size: var(--research-type-body);
+  text-decoration: none;
+}
+.call-action:hover {
+  background: var(--panel-alt);
+}
+.call-card-list-grid {
+  display: grid;
+  gap: 14px;
+  padding: 0 16px 16px;
+}
+.call-card-list-grid .call-card {
+  margin-bottom: 0;
+}
+@media (min-width: 720px) {
+  .call-card {
+    padding: 20px;
+  }
+  .call-card-meta {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .call-card-fresh {
+    grid-column: auto;
+  }
+  .call-card-why {
+    grid-template-columns: 1fr 1fr;
+  }
+  .call-card-hero {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+}
+.call-card-caps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
 .regime-panel {
   margin-bottom: 20px;
   padding: 16px 24px;
@@ -2592,4 +2852,7 @@ textarea,
 }
 .regime-line {
   font-variant-numeric: tabular-nums;
+}
+.call-card-caps-label {
+  flex-basis: 100%;
 }

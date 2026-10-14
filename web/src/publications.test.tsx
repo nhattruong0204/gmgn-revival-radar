@@ -44,7 +44,7 @@ function respond(body: unknown, status = 200) {
   );
 }
 
-it("retains original alert metrics and labels the newer evaluation separately", async () => {
+it("shows call performance at the top and keeps the original evidence", async () => {
   respond({
     id: 1,
     symbol: "SAMPLE",
@@ -57,15 +57,48 @@ it("retains original alert metrics and labels the newer evaluation separately", 
     observation: peak,
     latest_observation: latest,
     outcomes: [],
+    performance: {
+      call_market_cap: 100,
+      call_price: null,
+      latest_market_cap: 900,
+      latest_price: null,
+      latest_observed_at: latest.timestamp,
+      freshness: "stale",
+      change_since_call_pct: 800,
+      change_reason: null,
+      mfe_pct: 900,
+      mae_pct: -3,
+      observations: 4,
+      max_gap_seconds: 60,
+      elapsed_seconds: 7200,
+      token_call_index: null,
+      token_call_count: null,
+    },
   });
   const { container } = render(<Alerts id="1" />);
-  await screen.findByText("Peak risk");
-  expect(container.querySelector(".stats-grid")?.textContent).toContain("$100");
+  await screen.findAllByText("Peak risk");
+  const card = container.querySelector(".call-card");
+  expect(card?.textContent).toContain("$100");
+  expect(card?.textContent).toContain("$900");
+  expect(card?.textContent).toContain("+800.0%");
+  // The separate alert-time market cap stat and latest-evaluation panel are gone.
+  expect(screen.queryByText("Alert-time market cap")).toBeNull();
   expect(
-    screen
-      .getByRole("heading", { name: "Latest saved evaluation" })
-      .closest("section")?.textContent,
-  ).toContain("$900");
+    screen.queryByRole("heading", { name: "Latest saved evaluation" }),
+  ).toBeNull();
+  expect(container.querySelector(".stats-grid")?.textContent).toContain(
+    "Alert-time liquidity",
+  );
+});
+it("renders the Signals list as compact call cards with performance", async () => {
+  respond(demoRequest("/api/v1/alerts"));
+  const { container } = render(<Alerts />);
+  await screen.findByRole("heading", { name: "Sent signals" });
+  await screen.findAllByText(/since call/);
+  expect(
+    container.querySelectorAll(".call-card-compact").length,
+  ).toBeGreaterThan(3);
+  expect(container.querySelector(".call-card-checkpoints")).toBeNull();
 });
 it("shows an unavailable alert rather than silently falling back to the list", async () => {
   respond({ detail: "Saved record not found" }, 404);
@@ -213,6 +246,23 @@ it("labels checkpoint values as price change and market cap as market cap", asyn
     observation: peak,
     latest_observation: latest,
     outcomes: [{ horizon_hours: 6, return_pct: 12.5, observed_at: 100 }],
+    performance: {
+      call_market_cap: 100,
+      call_price: null,
+      latest_market_cap: 110,
+      latest_price: null,
+      latest_observed_at: 100,
+      freshness: "fresh",
+      change_since_call_pct: 10,
+      change_reason: null,
+      mfe_pct: 10,
+      mae_pct: 0,
+      observations: 2,
+      max_gap_seconds: 60,
+      elapsed_seconds: 7200,
+      token_call_index: null,
+      token_call_count: null,
+    },
   });
   render(<Alerts id="1" />);
   const section = (

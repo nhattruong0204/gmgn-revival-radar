@@ -1,0 +1,317 @@
+[
+ {
+  "viewport": "390",
+  "page": "signals",
+  "screenshot": "signals-390.png",
+  "overflow": false,
+  "scrollWidth": 390,
+  "clientWidth": 390,
+  "cards": 6,
+  "minContrast": 7.56,
+  "worstText": "−6.5%",
+  "keyboardOrder": [
+   "$WIF",
+   "View token",
+   "Open GMGN",
+   "Original call"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px",
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 27,
+  "minTargetWidth": 44,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "390",
+  "page": "detail-positive",
+  "screenshot": "detail-positive-390.png",
+  "overflow": false,
+  "scrollWidth": 390,
+  "clientWidth": 390,
+  "cards": 1,
+  "minContrast": 7.56,
+  "worstText": "−6.5%",
+  "keyboardOrder": [
+   "View token",
+   "Open GMGN"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 44,
+  "minTargetWidth": 121,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "390",
+  "page": "detail-legacy",
+  "screenshot": "detail-legacy-390.png",
+  "overflow": false,
+  "scrollWidth": 390,
+  "clientWidth": 390,
+  "cards": 1,
+  "minContrast": 8,
+  "worstText": "Market cap",
+  "keyboardOrder": [
+   "View token",
+   "Open GMGN"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 44,
+  "minTargetWidth": 121,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "390",
+  "page": "detail-stale",
+  "screenshot": "detail-stale-390.png",
+  "overflow": false,
+  "scrollWidth": 390,
+  "clientWidth": 390,
+  "cards": 1,
+  "minContrast": 7.19,
+  "worstText": "▼",
+  "keyboardOrder": [
+   "View token",
+   "Open GMGN"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 44,
+  "minTargetWidth": 121,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "390",
+  "page": "detail-nolatest",
+  "screenshot": "detail-nolatest-390.png",
+  "overflow": false,
+  "scrollWidth": 390,
+  "clientWidth": 390,
+  "cards": 1,
+  "minContrast": 7.22,
+  "worstText": "Early revival",
+  "keyboardOrder": [
+   "View token",
+   "Open GMGN"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 44,
+  "minTargetWidth": 121,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "768",
+  "page": "signals",
+  "screenshot": "signals-768.png",
+  "overflow": false,
+  "scrollWidth": 768,
+  "clientWidth": 768,
+  "cards": 6,
+  "minContrast": 7.56,
+  "worstText": "−6.5%",
+  "keyboardOrder": [
+   "$WIF",
+   "View token",
+   "Open GMGN",
+   "Original call"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px",
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 27,
+  "minTargetWidth": 44,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "768",
+  "page": "detail-positive",
+  "screenshot": "detail-positive-768.png",
+  "overflow": false,
+  "scrollWidth": 768,
+  "clientWidth": 768,
+  "cards": 1,
+  "minContrast": 7.56,
+  "worstText": "−6.5%",
+  "keyboardOrder": [
+   "View token",
+   "Open GMGN"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 44,
+  "minTargetWidth": 121,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "1366",
+  "page": "signals",
+  "screenshot": "signals-1366.png",
+  "overflow": false,
+  "scrollWidth": 1366,
+  "clientWidth": 1366,
+  "cards": 6,
+  "minContrast": 7.56,
+  "worstText": "−6.5%",
+  "keyboardOrder": [
+   "$WIF",
+   "View token",
+   "Open GMGN",
+   "Original call"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px",
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 27,
+  "minTargetWidth": 44,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "1366",
+  "page": "detail-positive",
+  "screenshot": "detail-positive-1366.png",
+  "overflow": false,
+  "scrollWidth": 1366,
+  "clientWidth": 1366,
+  "cards": 1,
+  "minContrast": 7.56,
+  "worstText": "−6.5%",
+  "keyboardOrder": [
+   "View token",
+   "Open GMGN"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 44,
+  "minTargetWidth": 121,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "1366",
+  "page": "detail-legacy",
+  "screenshot": "detail-legacy-1366.png",
+  "overflow": false,
+  "scrollWidth": 1366,
+  "clientWidth": 1366,
+  "cards": 1,
+  "minContrast": 8,
+  "worstText": "Market cap",
+  "keyboardOrder": [
+   "View token",
+   "Open GMGN"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 44,
+  "minTargetWidth": 121,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "1366",
+  "page": "detail-stale",
+  "screenshot": "detail-stale-1366.png",
+  "overflow": false,
+  "scrollWidth": 1366,
+  "clientWidth": 1366,
+  "cards": 1,
+  "minContrast": 7.19,
+  "worstText": "▼",
+  "keyboardOrder": [
+   "View token",
+   "Open GMGN"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 44,
+  "minTargetWidth": 121,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "1366-zoom200",
+  "page": "signals",
+  "screenshot": "signals-1366-zoom200.png",
+  "overflow": false,
+  "scrollWidth": 683,
+  "clientWidth": 683,
+  "cards": 6,
+  "minContrast": 7.56,
+  "worstText": "−6.5%",
+  "keyboardOrder": [
+   "$WIF",
+   "View token",
+   "Open GMGN",
+   "Original call"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px",
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 27,
+  "minTargetWidth": 44,
+  "pageErrors": [],
+  "externalRequests": []
+ },
+ {
+  "viewport": "1366-zoom200",
+  "page": "detail-positive",
+  "screenshot": "detail-positive-1366-zoom200.png",
+  "overflow": false,
+  "scrollWidth": 683,
+  "clientWidth": 683,
+  "cards": 1,
+  "minContrast": 7.56,
+  "worstText": "−6.5%",
+  "keyboardOrder": [
+   "View token",
+   "Open GMGN"
+  ],
+  "focusOutline": [
+   "solid 2px",
+   "solid 2px"
+  ],
+  "minTargetHeight": 44,
+  "minTargetWidth": 121,
+  "pageErrors": [],
+  "externalRequests": []
+ }
+]
