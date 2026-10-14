@@ -26,6 +26,7 @@ from revival_radar.web.models import (
     PublicSignal,
     PublicToken,
     RadarPage,
+    RegimeContext,
     ScorePoint,
     SnapshotPoint,
     TokenDetail,
@@ -702,6 +703,28 @@ class PublicQueries:
             as_of=until,
         )
 
+    def regime_context(self, until: float, chain: str = "sol") -> dict | None:
+        """Latest completed scan's saved regime context; saved data only."""
+        rows = self.db.execute(
+            """SELECT s.finished, json_extract(m.value,'$.market_context') AS context
+            FROM (SELECT id,finished FROM scan_runs WHERE finished IS NOT NULL
+                AND finished<=? ORDER BY finished DESC LIMIT 5) s
+            JOIN state m ON m.key='scan:metrics:' || s.id
+            ORDER BY s.finished DESC""",
+            (until,),
+        ).fetchall()
+        for row in rows:
+            try:
+                context = json.loads(row["context"]) if row["context"] else None
+                value = context.get(chain) if isinstance(context, dict) else None
+                if value:
+                    return RegimeContext.model_validate(
+                        {**value, "scan_finished": row["finished"], "chain": chain}
+                    ).model_dump()
+            except (ValueError, TypeError, ValidationError):
+                continue
+        return None
+
     def report(self, until: float, hours: int) -> MarketReport:
         report = self.repo.market_report(until - hours * 3600, until, timezone="Asia/Ho_Chi_Minh")
         entries = []
@@ -727,7 +750,9 @@ class PublicQueries:
                     },
                 }
             )
-        return MarketReport.model_validate({**report, "entries": entries})
+        return MarketReport.model_validate(
+            {**report, "entries": entries, "market_context": self.regime_context(until)}
+        )
 
     def outcomes(self, until: float, days: int) -> Outcomes:
         since = until - days * 86400

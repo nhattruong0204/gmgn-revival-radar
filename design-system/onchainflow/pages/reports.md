@@ -14,3 +14,5 @@ in #51. Verify desktop/mobile, keyboard/touch, loading/empty/stale/partial/error
 and permission states when migrating this surface.
 
 #40 implementation: Window controls are URL-backed for back navigation. Window totals follow leaders in a disclosure; peak/latest evidence remains distinct.
+
+#72 implementation: a compact regime summary precedes the leaders. It states that it is context, not a signal, and shows unknown (not zero) for undersampled values.
