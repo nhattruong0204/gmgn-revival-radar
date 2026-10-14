@@ -198,3 +198,28 @@ it("uses the configured public Telegram destination in navigation", async () => 
   expect(link.getAttribute("href")).toBe("https://t.me/example_public");
   expect(link.getAttribute("rel")).toContain("noopener");
 });
+it("lists the risk warnings saved with an alert in the Risk panel", async () => {
+  const saved = [
+    "Insider holdings unavailable",
+    "Token-2022 extension risks not assessed: metadataPointer",
+    "bundler penalty",
+  ];
+  respond({
+    id: 1,
+    symbol: "SAMPLE",
+    score: 58,
+    timestamp: peak.timestamp,
+    chain: "sol",
+    contract_address: peak.contract_address,
+    preset: "Custom",
+    revision: 10,
+    observation: { ...peak, blockers: [], warnings: saved },
+    latest_observation: null,
+    outcomes: [],
+  });
+  render(<Alerts id="1" />);
+  const panel = (
+    await screen.findByRole("heading", { name: "Risk & data coverage" })
+  ).closest("section");
+  for (const warning of saved) expect(panel?.textContent).toContain(warning);
+});

@@ -193,6 +193,34 @@ async def test_sent_alerts_preserve_original_and_exclude_other_deliveries(web, r
     assert SECRET not in json.dumps(result) and "telegram_message_id" not in json.dumps(detail)
 
 
+async def test_alert_observation_lists_warnings_saved_with_the_call(web, repo, token, config):
+    client, _ = web
+    live = config.model_copy(update={"dry_run": False})
+    saved = [
+        "Helius mint authorities cached (301s old)",
+        "Token-2022 extension risks not assessed: metadataPointer, tokenMetadata",
+    ]
+    candidate = changed(token, data_warnings=saved)
+    snapshot, signal, context = observe(
+        repo,
+        candidate,
+        live,
+        timestamp=NOW - 7200,
+        warnings=[*saved, "Security cached (1200s old)", "bundler penalty"],
+    )
+    identity = repo.reserve_alert(snapshot, signal, live, context)
+    repo.finish_alert(identity, "sent", message_id=123456789)
+    payload = json.loads(repo.get_state(f"telegram:alert:{identity}"))
+    assert "warnings" not in payload and payload["signal"]["warnings"]
+    expected = [*saved, "Security cached (1200s old)", "bundler penalty"]
+    listed = (await client.get("/api/v1/alerts")).json()["items"][0]["observation"]
+    detail = (await client.get(f"/api/v1/alerts/{identity}")).json()["observation"]
+    assert listed["warnings"] == detail["warnings"] == expected
+    # Evaluation observations already carried the same union; they must not change.
+    radar = (await client.get("/api/v1/radar")).json()["items"][0]
+    assert radar["warnings"] == expected
+
+
 async def test_reports_and_outcomes_agree_with_bot_and_do_not_leak_state(web, repo, token, config):
     client, _ = web
     live = config.model_copy(update={"dry_run": False})
