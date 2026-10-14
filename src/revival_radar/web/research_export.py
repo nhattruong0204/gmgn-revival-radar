@@ -26,7 +26,11 @@ def export_track_record(data):
         "definition": data.definition,
         "exclusions": " | ".join(data.exclusions),
         "limitations": " | ".join(data.limitations),
-        "price_units": "Quote currency/provider identity unknown; returns in percent",
+        "price_units": (
+            "Quote currency/provider identity unknown; return_pct and "
+            "reported_return_pct are checkpoint price change in percent "
+            "(later_price/initial_price-1)*100, not market-cap change"
+        ),
     }
     from revival_radar.web.models import CheckpointResearch
 

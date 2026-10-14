@@ -369,6 +369,29 @@ class ReportEntry(PublicModel):
     latest: Observation
 
 
+class RegimeCoverage(PublicModel):
+    price_change_1h: int = 0
+    price_change_24h: int = 0
+
+
+class RegimeContext(PublicModel):
+    """Saved per-scan market regime; explanatory context, never a signal."""
+
+    scan_finished: Finite
+    chain: str
+    sources: list[str] = Field(default_factory=list)
+    universe_size: int
+    median_price_change_1h: Finite | None = None
+    median_price_change_1h_reason: str | None = None
+    median_price_change_24h: Finite | None = None
+    median_price_change_24h_reason: str | None = None
+    share_positive_1h: Finite | None = None
+    share_positive_1h_reason: str | None = None
+    eligible_count: int | None = None
+    coverage: RegimeCoverage = Field(default_factory=RegimeCoverage)
+    minimum_sample: int = 5
+
+
 class MarketReport(PublicModel):
     since: Finite
     until: Finite
@@ -383,6 +406,7 @@ class MarketReport(PublicModel):
     last_finished: Finite | None
     multiple_configurations: bool
     entries: list[ReportEntry]
+    market_context: RegimeContext | None = None
 
 
 class ChainInfo(PublicModel):

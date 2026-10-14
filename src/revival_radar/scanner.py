@@ -13,6 +13,7 @@ from revival_radar.clients.telegram import TelegramClient, alert_buttons, format
 from revival_radar.config import Settings
 from revival_radar.config_context import configuration_context
 from revival_radar.enrichment import Enrichment, EnrichmentDeferred
+from revival_radar.market_regime import regime_context
 from revival_radar.metrics import CURRENT_SCAN, ScanMetrics
 from revival_radar.models.signal import RevivalResult, Structure, has_returning_activity
 from revival_radar.models.token import Security, TokenSnapshot
@@ -91,6 +92,7 @@ class ScanReport:
     discovered_keys: set[tuple[str, str]] = field(default_factory=set)
     performance: dict = field(default_factory=dict)
     funnel: dict[str, dict[str, int]] = field(default_factory=dict)
+    market_context: dict[str, dict] = field(default_factory=dict)
 
 
 class Scanner:
@@ -301,7 +303,12 @@ class Scanner:
             log.info("alerts paused chain=%s symbol=%s", token.chain, token.symbol)
             return
         alert_id = self.repository.reserve_alert(
-            token, result, self.config, self.configuration, origin=self.origin
+            token,
+            result,
+            self.config,
+            self.configuration,
+            origin=self.origin,
+            market_context=self._alert_context(report, token.chain),
         )
         if alert_id is None:
             log.info("alert cooldown chain=%s symbol=%s", token.chain, token.symbol)
@@ -325,6 +332,12 @@ class Scanner:
             report.errors += 1
             self.metrics.failures["telegram"] += 1
             self.metrics.error("telegram", RuntimeError("Delivery failed or unknown"), token)
+
+    @staticmethod
+    def _alert_context(report: ScanReport, chain: str) -> dict | None:
+        context = report.market_context.get(chain)
+        # The scan is still running, so the eligible total is not final yet.
+        return None if context is None else {**context, "eligible_count": None}
 
     async def scan_chain(self, chain: str, report: ScanReport) -> list[TokenSnapshot]:
         found = []
@@ -354,6 +367,10 @@ class Scanner:
         report.discovered_by_chain[chain] = len(keys)
         report.funnel.setdefault(chain, {})["discovered"] = len(keys)
         report.discovered_keys.update(keys)
+        # One pass over tokens already in memory; context only, never a score input.
+        report.market_context[chain] = regime_context(
+            candidates, report.discovered_by_source[chain]
+        )
         now = time.time()
         for token in candidates:
             self.repository.watch_discovered(token)
@@ -446,6 +463,8 @@ class Scanner:
                         type(exc).__name__,
                     )
             await self.track_outcomes(report)
+            for chain, context in report.market_context.items():
+                context["eligible_count"] = report.funnel.get(chain, {}).get("eligible", 0)
             report.finished_at = time.time()
             self.repository.finish_scan(report.scan_id, report, report.finished_at)
             report.finished_at = time.time()

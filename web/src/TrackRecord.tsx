@@ -1,3 +1,4 @@
+import { labels } from "./labels";
 import { useState } from "react";
 import { Modal } from "./Modal";
 import { navigate, useData, useLocation } from "./api";
@@ -87,8 +88,8 @@ export function CheckpointTable({ items }: { items: CheckpointResearch[] }) {
     >
       <table className="checkpoint-table">
         <caption>
-          Saved checkpoint evidence; prices have unknown quote currency. Changes
-          are percentages.
+          Saved checkpoint evidence; prices have unknown quote currency.{" "}
+          {labels.checkpointNote} Changes are percentages.
         </caption>
         <thead>
           <tr>
@@ -97,7 +98,7 @@ export function CheckpointTable({ items }: { items: CheckpointResearch[] }) {
               "Checkpoint window",
               "Observed / recorded",
               "Saved prices",
-              "Outcome",
+              labels.priceChange,
               "Source",
             ].map((h) => (
               <th scope="col" key={h}>
@@ -173,7 +174,7 @@ export function CheckpointTable({ items }: { items: CheckpointResearch[] }) {
                 <details>
                   <summary>Exact saved values</summary>
                   <p>
-                    Computable change:{" "}
+                    Computable price change:{" "}
                     {row.return_pct == null ? "Unknown" : `${row.return_pct}%`}.
                     Stored scalar:{" "}
                     {row.reported_return_pct == null
@@ -482,12 +483,12 @@ export function TrackRecordPage() {
               detail="Observed / matched alerts"
             />
             <Stat
-              label="Computable returns"
+              label={labels.computablePriceChanges}
               value={`${counts.returns_available} / ${counts.total}`}
               detail="Available / matched alerts"
             />
             <Stat
-              label="Median observed change"
+              label={labels.medianPriceChange}
               value={
                 counts.comparable
                   ? percent(counts.median_return_pct, false, true)
