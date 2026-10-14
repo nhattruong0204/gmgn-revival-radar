@@ -41,6 +41,12 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
     db = sqlite3.connect(uri, uri=True, timeout=config.web_read_timeout_ms / 1000)
     try:
         db.row_factory = sqlite3.Row
+        # Connection-local page-cache targets avoid repeated spill/read churn on
+        # week-long saved cohorts. Keep temporary storage file-backed; neither
+        # these settings nor the read-only projections change persisted data.
+        db.execute("PRAGMA temp_store=FILE")
+        db.execute("PRAGMA cache_size=-8192")
+        db.execute("PRAGMA temp.cache_size=-8192")
         # Keep the same indexed projections in fixture-mode load tests. Opt-in
         # fixtures bypass exclusion through a reserved, never-recorded origin.
         excluded = (

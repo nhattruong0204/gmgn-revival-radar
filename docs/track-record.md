@@ -102,5 +102,9 @@ indexes the same nullable saved configuration/version fields and preserves malfo
 or missing presentations as unknown; no historical state is rewritten. Build and
 measure this index on the staged copy before cutover: uniform-configuration reports
 must also meet the unchanged read deadline, not just mixed synthetic replay cohorts.
+Public readers use connection-local 8 MiB page-cache targets for main and temporary
+pages, retaining file-backed temporary storage and the same 1,500 ms read deadline.
+These are cache targets, not hard process-memory limits; measure concurrency and
+memory on the actual host. No persistent database/owner/provider setting changes.
 Measure archive/database/backup growth and sustained production capacity before
 rollout; local fixture capacity is not VPS or Internet capacity certification.
