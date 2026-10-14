@@ -293,6 +293,26 @@ class Outcomes(PublicModel):
     horizons: dict[str, OutcomeHorizon]
 
 
+class CallPerformance(PublicModel):
+    """Call-to-latest performance computed on read from saved snapshots; nulls carry a reason."""
+
+    call_market_cap: Finite | None = None
+    call_price: Finite | None = None
+    latest_market_cap: Finite | None = None
+    latest_price: Finite | None = None
+    latest_observed_at: Finite | None = None
+    freshness: Literal["fresh", "stale", "none"] = "none"
+    change_since_call_pct: Finite | None = None
+    change_reason: Literal["no_call_mc", "no_later_observation"] | None = None
+    mfe_pct: Finite | None = None
+    mae_pct: Finite | None = None
+    observations: int = 0
+    max_gap_seconds: Finite | None = None
+    elapsed_seconds: Finite | None = None
+    token_call_index: int | None = None
+    token_call_count: int | None = None
+
+
 class Alert(PublicModel):
     recorded_at: Finite | None = None
     confirmed_at: Finite | None = None
@@ -305,6 +325,7 @@ class Alert(PublicModel):
     preset: str | None
     revision: int | None
     observation: Observation
+    performance: CallPerformance
 
 
 class AlertsPage(PublicModel):
@@ -342,6 +363,29 @@ class ReportEntry(PublicModel):
     latest: Observation
 
 
+class RegimeCoverage(PublicModel):
+    price_change_1h: int = 0
+    price_change_24h: int = 0
+
+
+class RegimeContext(PublicModel):
+    """Saved per-scan market regime; explanatory context, never a signal."""
+
+    scan_finished: Finite
+    chain: str
+    sources: list[str] = Field(default_factory=list)
+    universe_size: int
+    median_price_change_1h: Finite | None = None
+    median_price_change_1h_reason: str | None = None
+    median_price_change_24h: Finite | None = None
+    median_price_change_24h_reason: str | None = None
+    share_positive_1h: Finite | None = None
+    share_positive_1h_reason: str | None = None
+    eligible_count: int | None = None
+    coverage: RegimeCoverage = Field(default_factory=RegimeCoverage)
+    minimum_sample: int = 5
+
+
 class MarketReport(PublicModel):
     since: Finite
     until: Finite
@@ -356,6 +400,7 @@ class MarketReport(PublicModel):
     last_finished: Finite | None
     multiple_configurations: bool
     entries: list[ReportEntry]
+    market_context: RegimeContext | None = None
 
 
 class ChainInfo(PublicModel):

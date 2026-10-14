@@ -1,3 +1,4 @@
+import { labels } from "./labels";
 import { useEffect, useState } from "react";
 import { Modal, useSmallScreen } from "./Modal";
 import { navigate, useData } from "./api";
@@ -360,7 +361,7 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
                     </th>
                     <th>
                       <button onClick={() => sorting("market_cap")}>
-                        Market cap{" "}
+                        {labels.marketCap}{" "}
                         {q.get("sort") === "market_cap"
                           ? q.get("order") === "desc"
                             ? "↓"
@@ -488,7 +489,7 @@ export function Radar({ search, meta }: { search: string; meta: Meta | null }) {
                   <Stage stage={o.status} />
                   <div className="token-card-metrics">
                     <div>
-                      <small>Market cap</small>
+                      <small>{labels.marketCap}</small>
                       <strong>{compact(o.market_cap, true)}</strong>
                     </div>
                     <div>

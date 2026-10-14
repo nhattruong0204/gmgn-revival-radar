@@ -298,7 +298,7 @@ Telegram (or dry-run log)
 8. Persist each alert's price, market cap, scores, stage and preset/revision atomically.
    Once delivery is confirmed, observe **+1h, +6h, +24h and +72h** outcomes. Reuse
    fresh market polls; any extra checkpoint polls share the market request budget.
-   Tracking continues after watchlist expiry on enabled chains. See [outcome tracking](docs/outcomes.md).
+   Tracking continues after watchlist expiry on enabled chains. See [outcome tracking](docs/outcomes.md) and [performance metric definitions](docs/performance-metrics.md).
 
 Each completed scan records operation timings, endpoint attempts including retries,
 and candidate counts. Open **Health → Performance / Funnel** to inspect the latest

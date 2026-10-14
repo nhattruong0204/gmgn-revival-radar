@@ -2,8 +2,10 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { labels } from "./labels";
 import { Alerts, Reports, OutcomePage, Methodology } from "./Publications";
 import { App } from "./App";
+import { explainText } from "./explain";
 import { demoObservations, demoRequest } from "./demo";
 import type { Report } from "./types";
 
@@ -197,4 +199,91 @@ it("uses the configured public Telegram destination in navigation", async () => 
   const link = await screen.findByRole("link", { name: "Open Telegram" });
   expect(link.getAttribute("href")).toBe("https://t.me/example_public");
   expect(link.getAttribute("rel")).toContain("noopener");
+});
+it("labels checkpoint values as price change and market cap as market cap", async () => {
+  respond({
+    id: 1,
+    symbol: "SAMPLE",
+    score: 58,
+    timestamp: peak.timestamp,
+    chain: "sol",
+    contract_address: peak.contract_address,
+    preset: "Balanced",
+    revision: 4,
+    observation: peak,
+    latest_observation: latest,
+    outcomes: [{ horizon_hours: 6, return_pct: 12.5, observed_at: 100 }],
+  });
+  render(<Alerts id="1" />);
+  const section = (
+    await screen.findByRole("heading", { name: "Observed after the alert" })
+  ).closest("section");
+  expect(section?.textContent).toContain("+6h price change");
+  expect(section?.textContent).toContain("not market-cap change");
+  expect(screen.getAllByText(labels.marketCap).length).toBeGreaterThan(0);
+});
+it("lists the risk warnings saved with an alert in the Risk panel", async () => {
+  const saved = [
+    "Insider holdings unavailable",
+    "Token-2022 extension risks not assessed: metadataPointer",
+    "bundler penalty",
+  ];
+  respond({
+    id: 1,
+    symbol: "SAMPLE",
+    score: 58,
+    timestamp: peak.timestamp,
+    chain: "sol",
+    contract_address: peak.contract_address,
+    preset: "Custom",
+    revision: 10,
+    observation: { ...peak, blockers: [], warnings: saved },
+    latest_observation: null,
+    outcomes: [],
+  });
+  render(<Alerts id="1" />);
+  const panel = (
+    await screen.findByRole("heading", { name: "Risk & data coverage" })
+  ).closest("section");
+  // Plain-language rendering (#68): "bundler penalty" is replaced by the
+  // sentence built from the matching scorer component, not shown raw.
+  const text = panel?.textContent ?? "";
+  expect(text).toContain("Bundled wallets hold 12% of supply");
+  expect(text).not.toContain("bundler penalty");
+  for (const warning of saved.filter((w) => w !== "bundler penalty"))
+    expect(text).toContain(explainText(warning));
+  expect(text).toContain("Insider holdings unavailable");
+  expect(text).toContain(
+    "Token-2022 extension risks not assessed: metadataPointer",
+  );
+});
+
+it("shows the saved market regime as context, and unknown values as unknown", async () => {
+  const report = demoRequest("/api/v1/reports") as Report;
+  const context = {
+    scan_finished: Date.UTC(2026, 9, 14, 9, 5) / 1000,
+    chain: "sol",
+    sources: ["hot_search"],
+    universe_size: 20,
+    median_price_change_1h: -2.1,
+    median_price_change_24h: null,
+    median_price_change_24h_reason: "insufficient_sample",
+    share_positive_1h: 0.3,
+    eligible_count: 1,
+    coverage: { price_change_1h: 20, price_change_24h: 3 },
+    minimum_sample: 5,
+  };
+  respond({ ...report, market_context: context });
+  const first = render(<Reports />);
+  await screen.findByText(
+    /Universe of 20 Hot Search tokens: median 1h change -2\.1%, 30% up \(scan at 09:05 UTC\)/,
+  );
+  expect(screen.getByText(/Context, not a signal/)).toBeTruthy();
+  expect(
+    screen.getByText(/Median 24h change unknown \(fewer than 5/),
+  ).toBeTruthy();
+  first.unmount();
+  respond({ ...report, market_context: null });
+  render(<Reports />);
+  await screen.findByText(/No saved regime context yet/);
 });

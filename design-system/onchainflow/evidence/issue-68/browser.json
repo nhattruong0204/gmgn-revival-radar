@@ -1,0 +1,46 @@
+[
+ {
+  "w": 390,
+  "name": "token",
+  "errs": [],
+  "ext": [],
+  "snake": [],
+  "reasons": "5-minute volume was 4.1× its recent baseline ($93K)\nMarket cap is 67% below its all-time-high market cap, inside the configured recovery range\nLiquidity of $340K met the configured minimum",
+  "overflow": false,
+  "disclosureReachedByTab": true,
+  "openedWithEnter": true
+ },
+ {
+  "w": 390,
+  "name": "alert",
+  "errs": [],
+  "ext": [],
+  "snake": [],
+  "reasons": "5-minute volume was 4.1× its recent baseline ($93K)\nMarket cap is 67% below its all-time-high market cap, inside the configured recovery range\nLiquidity of $340K met the configured minimum",
+  "overflow": false,
+  "disclosureReachedByTab": true,
+  "openedWithEnter": true
+ },
+ {
+  "w": 1366,
+  "name": "token",
+  "errs": [],
+  "ext": [],
+  "snake": [],
+  "reasons": "5-minute volume was 4.1× its recent baseline ($93K)\nMarket cap is 67% below its all-time-high market cap, inside the configured recovery range\nLiquidity of $340K met the configured minimum",
+  "overflow": false,
+  "disclosureReachedByTab": true,
+  "openedWithEnter": true
+ },
+ {
+  "w": 1366,
+  "name": "alert",
+  "errs": [],
+  "ext": [],
+  "snake": [],
+  "reasons": "5-minute volume was 4.1× its recent baseline ($93K)\nMarket cap is 67% below its all-time-high market cap, inside the configured recovery range\nLiquidity of $340K met the configured minimum",
+  "overflow": false,
+  "disclosureReachedByTab": true,
+  "openedWithEnter": true
+ }
+]

@@ -111,7 +111,7 @@ it("shows contradictory and missing evidence together and opens keyboard-accessi
   expect(screen.getByText("Volume unavailable")).toBeTruthy();
   await user.selectOptions(screen.getByLabelText("Compare with"), brief.id);
   expect(screen.getByRole("region", { name: "Version changes" })).toBeTruthy();
-  await user.click(screen.getByRole("link", { name: "Source: blocker" }));
+  await user.click(screen.getAllByRole("link", { name: "Saved source" })[0]);
   expect(document.activeElement?.id).toContain("evaluation-1");
   expect(document.activeElement?.closest("details")?.open).toBe(true);
 });
@@ -187,4 +187,74 @@ it("compares stable versions across archive pages without losing the selected ca
     (screen.getByLabelText("Saved version") as HTMLSelectElement).value,
   ).toBe(newest.id);
   expect(screen.getByRole("region", { name: "Version changes" })).toBeTruthy();
+});
+
+it("keeps rule keys and Source identifiers out of the visible brief text", async () => {
+  const keyed = {
+    ...brief,
+    counter_evidence: [
+      {
+        key: "blockers.0",
+        text: "no_base",
+        source_id: "evaluation:1",
+        field: "blockers.0",
+        value: "no_base",
+      },
+    ],
+    unresolved: [
+      {
+        key: "missing_fields.1",
+        text: "security.dev_ratio",
+        source_id: "evaluation:1",
+        field: "missing_fields.1",
+        value: "security.dev_ratio",
+      },
+      {
+        key: "volume_5m",
+        text: "volume_5m is unavailable",
+        source_id: "evaluation:1",
+        field: "volume_5m",
+        value: null,
+      },
+    ],
+    sources: [
+      {
+        ...brief.sources[0],
+        values: {
+          "blockers.0": "no_base",
+          "missing_fields.1": "security.dev_ratio",
+        },
+      },
+    ],
+  };
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            items: [keyed],
+            total: 1,
+            page: 1,
+            page_size: 10,
+            as_of: 1800000002,
+          }),
+        ),
+    ),
+  );
+  const { container } = render(
+    <ResearchBrief chain="sol" address={brief.contract_address} />,
+  );
+  await screen.findByText("No price base detected");
+  expect(screen.getByText("Developer holdings")).toBeTruthy();
+  expect(screen.getByText("5m volume is unavailable")).toBeTruthy();
+  const clone = container.cloneNode(true) as HTMLElement;
+  clone.querySelectorAll("details").forEach((d) => d.remove());
+  expect(clone.textContent).not.toMatch(/[a-z]+_[a-z0-9_]+/);
+  expect(clone.textContent).not.toMatch(
+    /Source:|missing_fields\.|blockers\.\d/,
+  );
+  expect(
+    container.querySelector("details.research-disclosure")?.textContent,
+  ).toContain("blockers.0");
 });
