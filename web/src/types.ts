@@ -239,6 +239,24 @@ export interface History {
   since: number;
   truncated: boolean;
 }
+export type CallFreshness = "fresh" | "stale" | "none";
+export interface CallPerformance {
+  call_market_cap: number | null;
+  call_price: number | null;
+  latest_market_cap: number | null;
+  latest_price: number | null;
+  latest_observed_at: number | null;
+  freshness: CallFreshness;
+  change_since_call_pct: number | null;
+  change_reason: "no_call_mc" | "no_later_observation" | null;
+  mfe_pct: number | null;
+  mae_pct: number | null;
+  observations: number;
+  max_gap_seconds: number | null;
+  elapsed_seconds: number | null;
+  token_call_index: number | null;
+  token_call_count: number | null;
+}
 export interface Alert {
   recorded_at?: number | null;
   confirmed_at?: number | null;
@@ -251,6 +269,7 @@ export interface Alert {
   preset?: string;
   revision?: number;
   observation: Observation | null;
+  performance?: CallPerformance;
 }
 export interface AlertDetail extends Alert {
   checkpoint_research?: CheckpointResearch[];

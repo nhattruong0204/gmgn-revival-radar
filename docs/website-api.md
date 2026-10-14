@@ -18,8 +18,8 @@ future observations cannot supply a saved score. Missing historical evidence rem
 | `GET /radar` | `search` (100 characters), `chain`, `status`, `min_score` (0–100, default 0), `include_ignore` (default false), `sort` (`score`, `timestamp`, `market_cap`, `liquidity`, `volume_5m`), `order` (`desc`/`asc`), `page` (1–10000), `page_size` (1–100, default 25) | `{items,total,page,page_size,as_of,last_scan_at}` |
 | `GET /tokens/{chain}/{address}` | `as_of` | `{observation,latest_market,links,as_of,last_scan_at}` |
 | `GET /tokens/{chain}/{address}/history` | `hours` (1–168, default 168), `max_points` (1–1000, default 500) | `{snapshots,scores,candles,candles_fetched_at,candles_expires_at,since,as_of,truncated}` |
-| `GET /alerts` | `chain`, `page`, `page_size` | Paginated confirmed sent alerts |
-| `GET /alerts/{id}` | `as_of` | Original alert observation, separately named `latest_observation`, saved `outcomes`, `as_of` |
+| `GET /alerts` | `chain`, `page`, `page_size` | Paginated confirmed sent alerts, each with `performance` |
+| `GET /alerts/{id}` | `as_of` | Original alert observation, separately named `latest_observation`, saved `outcomes`, `performance`, `as_of` |
 | `GET /reports` | `hours` (1, 4, 12, 24, 72 or 168; default 24) | Existing Solana top-ten report with sanitized `peak` and `latest` observations |
 | `GET /outcomes` | `days` (1–7, default 7) | `{since,until,horizons}` using the bot's existing outcome calculation |
 | `GET /meta` | `as_of` | Available observed chains, configured public Telegram link, observation cutoff and latest completed scan |
@@ -30,6 +30,30 @@ An observation contains `id`, `timestamp`, `chain`, `contract_address`, `symbol`
 `token` and `signal` fields. It contains no raw configuration, state, control commands,
 provider credentials, owner IDs or Telegram delivery identifiers. `latest_market`
 has its own timestamp and cannot overwrite historical scoring evidence.
+
+### Call performance
+
+Every alert in `/alerts` and `/alerts/{id}` carries a `performance` object computed
+on read from saved `token_snapshots` only (no provider calls, no stored data is
+changed). The immutable call fields stay unchanged. Snapshots after the `as_of`
+cutoff are ignored; a page computes at most 25 calls and its cache key includes the
+newest snapshot id, so new observations invalidate cached pages.
+
+| Field | Definition |
+| --- | --- |
+| `call_market_cap`, `call_price` | Values saved with the call (`alert_signals`); `null` for legacy calls or non-positive/non-finite values |
+| `latest_market_cap`, `latest_price`, `latest_observed_at` | Newest saved snapshot of the same token after the call with a finite `market_cap > 0` |
+| `freshness` | `fresh` if the latest observation is at most 30 minutes before the cutoff, `stale` if older, `none` without an observation |
+| `change_since_call_pct` | `(latest_market_cap / call_market_cap - 1) * 100`; `null` unless both are finite and positive |
+| `change_reason` | `no_call_mc` or `no_later_observation` when the change is `null` (`no_call_mc` wins when both apply), otherwise `null` |
+| `mfe_pct`, `mae_pct` | Highest and lowest saved market cap in `(call, latest_observed_at]` relative to the call market cap; `null` when not computable |
+| `observations` | Count of saved observations in that range |
+| `max_gap_seconds` | Largest gap between consecutive observations, counting from the call time to the first one; `null` without observations |
+| `elapsed_seconds` | Call time to the response cutoff (`as_of`) |
+| `token_call_index`, `token_call_count` | 1-based position of this call among visible sent calls for the same token, and the total |
+
+Unknown values are `null`, never `0`. Performance is observational: it does not
+imply a forecast, a safe asset or a tradable price.
 
 Statuses are `IGNORE`, `WATCH`, `EARLY_REVIVAL`, `REVIVING`, `STRONG_REVIVAL` and
 `CONFIRMED_REVIVAL`. Supported chains are `sol`, `bsc`, `base`, `robinhood` and `arc`.
