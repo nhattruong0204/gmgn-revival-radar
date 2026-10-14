@@ -555,15 +555,52 @@ class PublicQueries:
         called = row["timestamp"]
         call_mc, call_price = finite(row["market_cap"]), finite(row["price"])
         call_mc = call_mc if call_mc is not None and call_mc > 0 else None
+        chain, address = row["chain"], row["contract_address"]
+        # Alert-time market-cap source: the latest snapshot at or before the call (indexed
+        # LIMIT 1), accepted only if its market cap is the one the alert froze. Legacy
+        # payloads carry no source and stay unknown; nothing is inferred or rewritten.
+        call_source = None
+        if call_mc is not None:
+            at_call = self.db.execute(
+                """SELECT market_cap,json_extract(payload,'$.market_cap_source')
+                FROM token_snapshots WHERE chain=? AND contract_address=? AND timestamp<=?
+                ORDER BY timestamp DESC LIMIT 1""",
+                (chain, address, called),
+            ).fetchone()
+            if (
+                at_call
+                and at_call[1] in ("rank", "circulating_enriched")
+                and finite(at_call[0]) is not None
+                and abs(at_call[0] - call_mc) <= 1e-9 * call_mc
+            ):
+                call_source = at_call[1]
         # Finite, positive market caps only; 1e300 excludes +inf without Python callbacks.
         # One indexed range read (chain, contract_address, timestamp) bounded by the cutoff.
-        agg = self.db.execute(
-            """WITH r AS (SELECT timestamp t,market_cap mc FROM token_snapshots
+        source_filter, source_args = "", ()
+        basis, other_basis = "unknown", 0
+        if call_source:
+            total, same = self.db.execute(
+                """SELECT COUNT(*),COALESCE(SUM(json_extract(payload,'$.market_cap_source')=?),0)
+                FROM token_snapshots
                 WHERE chain=? AND contract_address=? AND timestamp>? AND timestamp<=?
-                AND market_cap>0 AND market_cap<1e300)
+                AND market_cap>0 AND market_cap<1e300""",
+                (call_source, chain, address, called, until),
+            ).fetchone()
+            if same:
+                # Prefer like-with-like; the excluded count is reported, never dropped silently.
+                basis, other_basis = "same", total - same
+                if other_basis:
+                    source_filter = " AND json_extract(payload,'$.market_cap_source')=?"
+                    source_args = (call_source,)
+            elif total:
+                basis = "mixed"  # only other-basis or unlabelled snapshots exist to compare
+        agg = self.db.execute(
+            f"""WITH r AS (SELECT timestamp t,market_cap mc FROM token_snapshots
+                WHERE chain=? AND contract_address=? AND timestamp>? AND timestamp<=?
+                AND market_cap>0 AND market_cap<1e300{source_filter})
             SELECT COUNT(*),MAX(mc),MIN(mc),MAX(t),
                 (SELECT MAX(g) FROM (SELECT t-LAG(t,1,?) OVER (ORDER BY t) g FROM r)) FROM r""",
-            (row["chain"], row["contract_address"], called, until, called),
+            (chain, address, called, until, *source_args, called),
         ).fetchone()
         count, high, low, latest_at, gap = agg
         latest_mc = latest_price = None
@@ -611,6 +648,9 @@ class PublicQueries:
             elapsed_seconds=max(0.0, until - called),
             token_call_index=position[1] or None,
             token_call_count=position[0] or None,
+            basis=basis,
+            call_market_cap_source=call_source,
+            other_basis_observations=other_basis if basis == "same" else None,
         )
 
     def _alert(self, row: sqlite3.Row, until: float) -> Alert:

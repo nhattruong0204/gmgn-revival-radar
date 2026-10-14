@@ -256,6 +256,10 @@ export interface CallPerformance {
   elapsed_seconds: number | null;
   token_call_index: number | null;
   token_call_count: number | null;
+  /** Optional: absent on older API responses. */
+  basis?: 'same' | 'mixed' | 'unknown' | null;
+  call_market_cap_source?: 'rank' | 'circulating_enriched' | null;
+  other_basis_observations?: number | null;
 }
 export interface Alert {
   recorded_at?: number | null;

@@ -311,6 +311,12 @@ class CallPerformance(PublicModel):
     elapsed_seconds: Finite | None = None
     token_call_index: int | None = None
     token_call_count: int | None = None
+    # Supply basis of the comparison: same (like-with-like snapshots), mixed (had to compare
+    # across sources) or unknown (legacy/unlabelled call). Optional for older clients.
+    basis: Literal["same", "mixed", "unknown"] | None = None
+    call_market_cap_source: Literal["rank", "circulating_enriched"] | None = None
+    # Later snapshots on another/unlabelled basis that were left out of a `same` comparison.
+    other_basis_observations: int | None = None
 
 
 class Alert(PublicModel):

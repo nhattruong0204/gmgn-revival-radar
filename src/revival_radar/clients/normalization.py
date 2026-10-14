@@ -146,8 +146,20 @@ def ranked_token(
         values[f"sells_{interval}"] = count(raw.get("sells"))
     # Rank change fields have ambiguous % vs ratio documentation. Obtain exact
     # percentage points from token-info start prices instead of guessing units.
+    if values["market_cap"] is not None:
+        values["market_cap_source"] = "rank"
     values.update(asset_fields(raw, values))
-    return TokenSnapshot(**values)
+    token = TokenSnapshot(**values)
+    token._basis_sample = {
+        "rank": {
+            "price": number(raw.get("price")),
+            "market_cap": number(raw.get("market_cap")),
+            "circulating_supply": number(raw.get("circulating_supply")),
+            "total_supply": number(raw.get("total_supply")),
+            "timestamp": now,
+        }
+    }
+    return token
 
 
 def enriched_token(seed: TokenSnapshot, info: dict, raw_security: dict) -> TokenSnapshot:
@@ -159,8 +171,11 @@ def enriched_token(seed: TokenSnapshot, info: dict, raw_security: dict) -> Token
     current, supply = number(prices.get("price")), number(info.get("circulating_supply"))
     if current is not None:
         values["price"] = current
+    if supply is not None:
+        values["circulating_supply"] = supply
     if current is not None and supply is not None:
         values["market_cap"] = current * supply
+        values["market_cap_source"] = "circulating_enriched"
     # Do not multiply ATH price by today's supply and claim an observed ATH cap.
     for key, raw in (("liquidity", info.get("liquidity")), ("holders", info.get("holder_count"))):
         parsed = count(raw) if key == "holders" else number(raw)
@@ -186,7 +201,18 @@ def enriched_token(seed: TokenSnapshot, info: dict, raw_security: dict) -> Token
             values[f"price_change_{window}"] = (current / before - 1) * 100
     values["security"] = security_from(info, raw_security, seed.chain, seed.security)
     values.update(asset_fields(info, values))
-    return TokenSnapshot(**values)
+    token = TokenSnapshot(**values)
+    if seed._basis_sample and "rank" in seed._basis_sample:
+        token._basis_sample = {
+            **seed._basis_sample,
+            "info": {
+                "price": current,
+                "circulating_supply": supply,
+                "total_supply": number(info.get("total_supply")),
+                "timestamp": seed.timestamp,
+            },
+        }
+    return token
 
 
 def parse_candles(data: Any, now: float) -> list[Candle]:

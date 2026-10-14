@@ -13,7 +13,9 @@ TEXT_FIELDS = {
     "asset_type",
     "asset_classification_reason",
 }
-SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in {"security", "data_warnings"}]
+# market_cap_source and circulating_supply live only in the payload JSON (no migration).
+PAYLOAD_ONLY_FIELDS = {"security", "data_warnings", "market_cap_source", "circulating_supply"}
+SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in PAYLOAD_ONLY_FIELDS]
 SCHEMA_VERSION = 7
 
 
