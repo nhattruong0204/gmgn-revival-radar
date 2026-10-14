@@ -12,6 +12,7 @@ from pydantic import ValidationError
 
 from revival_radar.analysis.acceleration import fresh_history
 from revival_radar.analysis.filters import first_pass
+from revival_radar.analysis.market_cap_basis import SAMPLE_KEY, append_pair, build_pair
 from revival_radar.config import Settings
 from revival_radar.metrics import sqlite_timed
 from revival_radar.models.brief import build_brief
@@ -45,6 +46,19 @@ class Repository:
             )
             if cursor.rowcount:
                 self.record_origin("snapshot", cursor.lastrowid, origin)
+                self._record_basis_sample(token)
+
+    def _record_basis_sample(self, token: TokenSnapshot) -> None:
+        """Keep the newest raw rank/token-info pairs (capped) in state; no provider calls."""
+        pair = build_pair(token.chain, token.contract_address, token._basis_sample)
+        if pair is None:
+            return
+        row = self.db.execute("SELECT value FROM state WHERE key=?", (SAMPLE_KEY,)).fetchone()
+        self.db.execute(
+            """INSERT INTO state (key,value,updated_at) VALUES (?,?,?)
+            ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at""",
+            (SAMPLE_KEY, append_pair(row["value"] if row else None, pair), time.time()),
+        )
 
     def record_origin(self, kind: str, identity: int, origin: str) -> None:
         if kind not in {"scan", "snapshot", "evaluation", "alert"} or origin not in {
@@ -94,6 +108,7 @@ class Repository:
         configuration: dict | None = None,
         *,
         origin: str = "unknown",
+        market_context: dict | None = None,
     ) -> int | None:
         if config.dry_run or not result.eligible or result.score < config.alert_score_threshold:
             return None
@@ -124,7 +139,7 @@ class Repository:
                 "INSERT INTO state (key,value,updated_at) VALUES (?,?,?)",
                 (
                     f"telegram:alert:{cursor.lastrowid}",
-                    self._presentation(token, result, configuration),
+                    self._presentation(token, result, configuration, market_context),
                     token.timestamp,
                 ),
             )
@@ -174,16 +189,20 @@ class Repository:
 
     @staticmethod
     def _presentation(
-        token: TokenSnapshot, result: RevivalResult, configuration: dict | None
+        token: TokenSnapshot,
+        result: RevivalResult,
+        configuration: dict | None,
+        market_context: dict | None = None,
     ) -> str:
         # The caller supplies an allowlisted nonsecret configuration snapshot.
-        return json.dumps(
-            {
-                "token": token.model_dump(mode="json"),
-                "signal": result.model_dump(mode="json"),
-                "configuration": configuration or {},
-            }
-        )
+        value = {
+            "token": token.model_dump(mode="json"),
+            "signal": result.model_dump(mode="json"),
+            "configuration": configuration or {},
+        }
+        if market_context is not None:
+            value["market_context"] = market_context
+        return json.dumps(value)
 
     def presentation_detail(self, kind: str, identity: int) -> dict | None:
         if kind not in {"a", "e"} or not 0 < identity < 2**63:
@@ -447,7 +466,13 @@ class Repository:
 
     def persist_scan_metrics(self, scan_id: int, report: object) -> None:
         """Final metric persistence is excluded from the measured scan's operations."""
-        payload = json.dumps({"performance": report.performance, "funnel": report.funnel})
+        payload = json.dumps(
+            {
+                "performance": report.performance,
+                "funnel": report.funnel,
+                "market_context": getattr(report, "market_context", None) or None,
+            }
+        )
         with self.db:
             if report.finished_at:
                 self.db.execute(

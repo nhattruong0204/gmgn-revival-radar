@@ -51,6 +51,9 @@ newest snapshot id, so new observations invalidate cached pages.
 | `max_gap_seconds` | Largest gap between consecutive observations, counting from the call time to the first one; `null` without observations |
 | `elapsed_seconds` | Call time to the response cutoff (`as_of`) |
 | `token_call_index`, `token_call_count` | 1-based position of this call among visible sent calls for the same token, and the total |
+| `basis` | `same`, `mixed` or `unknown` (optional in clients). `same`: latest market cap, MFE and MAE use only later snapshots with the call's market-cap source. `mixed`: no same-source later snapshot exists, so other-source snapshots were used. `unknown`: legacy or unlabelled call source, or nothing to compare. Rule in [performance metrics](performance-metrics.md) |
+| `call_market_cap_source` | `rank` or `circulating_enriched` when the call snapshot recorded it, otherwise `null` |
+| `other_basis_observations` | With `basis: same`, count of later snapshots on another or unlabelled basis that were excluded; otherwise `null` |
 
 Unknown values are `null`, never `0`. Performance is observational: it does not
 imply a forecast, a safe asset or a tradable price.

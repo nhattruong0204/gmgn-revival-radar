@@ -256,6 +256,10 @@ export interface CallPerformance {
   elapsed_seconds: number | null;
   token_call_index: number | null;
   token_call_count: number | null;
+  /** Optional: absent on older API responses. */
+  basis?: "same" | "mixed" | "unknown" | null;
+  call_market_cap_source?: "rank" | "circulating_enriched" | null;
+  other_basis_observations?: number | null;
 }
 export interface Alert {
   recorded_at?: number | null;
@@ -305,6 +309,22 @@ export interface Report {
   last_finished: number | null;
   multiple_configurations: boolean;
   entries: ReportEntry[];
+  market_context?: RegimeContext | null;
+}
+export interface RegimeContext {
+  scan_finished: number;
+  chain: string;
+  sources: string[];
+  universe_size: number;
+  median_price_change_1h: number | null;
+  median_price_change_1h_reason?: string | null;
+  median_price_change_24h: number | null;
+  median_price_change_24h_reason?: string | null;
+  share_positive_1h: number | null;
+  share_positive_1h_reason?: string | null;
+  eligible_count: number | null;
+  coverage: { price_change_1h: number; price_change_24h: number };
+  minimum_sample: number;
 }
 export interface OutcomeStats {
   observed: number;

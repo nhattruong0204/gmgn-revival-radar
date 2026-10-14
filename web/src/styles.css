@@ -2578,3 +2578,18 @@ textarea,
     grid-column: 1 / -1;
   }
 }
+
+.regime-panel {
+  margin-bottom: 20px;
+  padding: 16px 24px;
+}
+.regime-panel h2 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+.regime-panel p {
+  margin: 4px 0;
+}
+.regime-line {
+  font-variant-numeric: tabular-nums;
+}

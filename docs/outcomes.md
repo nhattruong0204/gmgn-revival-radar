@@ -1,5 +1,8 @@
 # Post-alert outcome tracking
 
+Metric definitions (market cap, market-cap change, checkpoint price change, MFE/MAE) are in
+[performance metrics](performance-metrics.md).
+
 Schema 4 adds `alert_signals` and `signal_outcomes`. Existing alerts, snapshot bytes,
 Telegram presentation and cooldown semantics remain intact. Back up the running DB
 with `scripts/backup_database.py` before upgrading; retain the backup for rollback.

@@ -100,7 +100,7 @@ it("opens filters with focus isolation, resets pagination, preserves context and
   window.history.replaceState(null, "", "/outcomes?days=7&horizon=1&page=3");
   const user = userEvent.setup();
   render(<TrackRecordPage />);
-  await screen.findByText("Computable returns");
+  await screen.findByText("Computable price changes");
   const trigger = screen.getByRole("button", { name: "Cohort filters" });
   await user.click(trigger);
   expect(screen.getByRole("dialog")).toBeTruthy();

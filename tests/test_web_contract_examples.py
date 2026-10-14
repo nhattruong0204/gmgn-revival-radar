@@ -36,5 +36,8 @@ def test_call_performance_contract_keeps_unknowns_null_with_reason():
         "elapsed_seconds",
         "token_call_index",
         "token_call_count",
+        "basis",
+        "call_market_cap_source",
+        "other_basis_observations",
     }
     assert dump["change_since_call_pct"] is None and dump["freshness"] == "none"
