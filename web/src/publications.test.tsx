@@ -2,6 +2,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { labels } from "./labels";
 import { Alerts, Reports, OutcomePage, Methodology } from "./Publications";
 import { App } from "./App";
 import { demoObservations, demoRequest } from "./demo";
@@ -197,6 +198,28 @@ it("uses the configured public Telegram destination in navigation", async () => 
   const link = await screen.findByRole("link", { name: "Open Telegram" });
   expect(link.getAttribute("href")).toBe("https://t.me/example_public");
   expect(link.getAttribute("rel")).toContain("noopener");
+});
+it("labels checkpoint values as price change and market cap as market cap", async () => {
+  respond({
+    id: 1,
+    symbol: "SAMPLE",
+    score: 58,
+    timestamp: peak.timestamp,
+    chain: "sol",
+    contract_address: peak.contract_address,
+    preset: "Balanced",
+    revision: 4,
+    observation: peak,
+    latest_observation: latest,
+    outcomes: [{ horizon_hours: 6, return_pct: 12.5, observed_at: 100 }],
+  });
+  render(<Alerts id="1" />);
+  const section = (
+    await screen.findByRole("heading", { name: "Observed after the alert" })
+  ).closest("section");
+  expect(section?.textContent).toContain("+6h price change");
+  expect(section?.textContent).toContain("not market-cap change");
+  expect(screen.getAllByText(labels.marketCap).length).toBeGreaterThan(0);
 });
 it("lists the risk warnings saved with an alert in the Risk panel", async () => {
   const saved = [

@@ -1,3 +1,4 @@
+import { labels } from "./labels";
 import { navigate, useData, useLocation } from "./api";
 import {
   Avatar,
@@ -165,7 +166,7 @@ export function Alerts({ id }: { id?: string }) {
                   <strong>{detail.data.latest_observation.score}/100</strong>
                 </div>
                 <div>
-                  <span>Market cap</span>
+                  <span>{labels.marketCap}</span>
                   <strong>
                     {compact(detail.data.latest_observation.market_cap, true)}
                   </strong>
@@ -216,14 +217,18 @@ export function Alerts({ id }: { id?: string }) {
           <section className="panel">
             <h2>Observed after the alert</h2>
             <p className="muted">
-              Recorded prices at supported horizons. These are signal returns,
-              not executed-trade P&amp;L.
+              {labels.checkpointNote} Recorded at supported horizons from saved
+              observations; not executed-trade P&amp;L.
             </p>
             {detail.data.outcomes?.length ? (
               <div className="structure-grid">
                 {detail.data.outcomes.map((v, i) => (
                   <div key={i}>
-                    <span>+{v.horizon_hours ?? v.hours ?? "?"}h</span>
+                    <span>
+                      {labels.checkpointPriceChange(
+                        v.horizon_hours ?? v.hours ?? "?",
+                      )}
+                    </span>
                     <strong
                       className={
                         v.return_pct != null && v.return_pct >= 0

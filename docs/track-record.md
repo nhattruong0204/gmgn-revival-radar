@@ -1,5 +1,8 @@
 # Saved checkpoint cohorts and schema seven
 
+Checkpoint values are **price change**, not market-cap change; see
+[performance metrics](performance-metrics.md).
+
 Issue #45 adds `checkpoint-cohort-v1` and scanner-owned schema **7**, on top of
 #43's schema six. This is saved research, not executed or realized trading P&L.
 
