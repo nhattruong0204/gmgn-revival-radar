@@ -3639,3 +3639,8 @@ textarea,
       minmax(130px, 0.7fr);
   }
 }
+.call-card-checkpoints .cp-time {
+  color: var(--research-muted);
+  font-size: var(--research-type-metadata);
+  overflow-wrap: anywhere;
+}

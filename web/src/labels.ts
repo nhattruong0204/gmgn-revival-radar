@@ -7,5 +7,5 @@ export const labels = {
   medianPriceChange: "Median observed price change",
   computablePriceChanges: "Computable price changes",
   checkpointNote:
-    "Checkpoint values are price change since the alert price, not market-cap change.",
+    "Checkpoint values are price change since the alert price, not market-cap change; not executed-trade P&L.",
 } as const;
