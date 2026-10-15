@@ -71,6 +71,7 @@ class Settings(BaseSettings):
     database_path: Path = Path("data/revival_radar.db")
     scan_interval_seconds: Positive = 300
     call_performance_active_days: Positive = 30
+    report_projection_budget_seconds: Positive = 15
     token_min_age_hours: Positive = 48
     min_market_cap: Positive = 100_000
     max_market_cap: Positive = 10_000_000
