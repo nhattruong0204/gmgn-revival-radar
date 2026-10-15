@@ -1,0 +1,145 @@
+{
+ "before_user_version": 7,
+ "after_user_version": 9,
+ "integrity_check": [
+  "ok"
+ ],
+ "migration_seconds_including_integrity_check": 2.19,
+ "second_connect_seconds": 0.01,
+ "hash_pass_seconds": 2.64,
+ "pre_existing_tables": 17,
+ "new_tables": [
+  "call_performance",
+  "replay_candles",
+  "replay_evaluations"
+ ],
+ "row_counts_identical": true,
+ "row_hashes_identical": true,
+ "idempotent": true,
+ "per_table": {
+  "alert_signals": {
+   "rows_before": 49,
+   "rows_after": 49,
+   "sha256_before": "4a720a2b0f825c68",
+   "sha256_after": "4a720a2b0f825c68",
+   "identical": true
+  },
+  "alerts": {
+   "rows_before": 49,
+   "rows_after": 49,
+   "sha256_before": "07eab8b8ea5cecaf",
+   "sha256_after": "07eab8b8ea5cecaf",
+   "identical": true
+  },
+  "enrichment_cache": {
+   "rows_before": 555,
+   "rows_after": 555,
+   "sha256_before": "14c26492e80386ad",
+   "sha256_after": "14c26492e80386ad",
+   "identical": true
+  },
+  "evaluations": {
+   "rows_before": 102782,
+   "rows_after": 102782,
+   "sha256_before": "f285b9d962fcb084",
+   "sha256_after": "f285b9d962fcb084",
+   "identical": true
+  },
+  "research_alert_facts": {
+   "rows_before": 2,
+   "rows_after": 2,
+   "sha256_before": "f8f92c49728180c7",
+   "sha256_after": "f8f92c49728180c7",
+   "identical": true
+  },
+  "research_brief_publications": {
+   "rows_before": 606,
+   "rows_after": 606,
+   "sha256_before": "53242c8f5407b08d",
+   "sha256_after": "53242c8f5407b08d",
+   "identical": true
+  },
+  "research_briefs": {
+   "rows_before": 606,
+   "rows_after": 606,
+   "sha256_before": "fca877e62c4a3df7",
+   "sha256_after": "fca877e62c4a3df7",
+   "identical": true
+  },
+  "research_checkpoint_facts": {
+   "rows_before": 2,
+   "rows_after": 2,
+   "sha256_before": "7cbd507ec209998d",
+   "sha256_after": "7cbd507ec209998d",
+   "identical": true
+  },
+  "research_delivery_receipts": {
+   "rows_before": 2,
+   "rows_after": 2,
+   "sha256_before": "ca73808941de6fb4",
+   "sha256_after": "ca73808941de6fb4",
+   "identical": true
+  },
+  "scan_runs": {
+   "rows_before": 2019,
+   "rows_after": 2019,
+   "sha256_before": "fd3480cb3927b7e5",
+   "sha256_after": "fd3480cb3927b7e5",
+   "identical": true
+  },
+  "signal_outcomes": {
+   "rows_before": 131,
+   "rows_after": 131,
+   "sha256_before": "190d06e73cfb7baf",
+   "sha256_after": "190d06e73cfb7baf",
+   "identical": true
+  },
+  "state": {
+   "rows_before": 108540,
+   "rows_after": 108540,
+   "sha256_before": "476a74e2b69c5639",
+   "sha256_after": "476a74e2b69c5639",
+   "identical": true
+  },
+  "token_snapshots": {
+   "rows_before": 97719,
+   "rows_after": 97719,
+   "sha256_before": "b6a8ff65779bc4ad",
+   "sha256_after": "b6a8ff65779bc4ad",
+   "identical": true
+  },
+  "watch_state": {
+   "rows_before": 2478,
+   "rows_after": 2478,
+   "sha256_before": "e74d981044b5caa6",
+   "sha256_after": "e74d981044b5caa6",
+   "identical": true
+  },
+  "web_commands": {
+   "rows_before": 2,
+   "rows_after": 2,
+   "sha256_before": "455b1363abec5909",
+   "sha256_after": "455b1363abec5909",
+   "identical": true
+  },
+  "web_previews": {
+   "rows_before": 1,
+   "rows_after": 1,
+   "sha256_before": "708e85c1e64abfe6",
+   "sha256_after": "708e85c1e64abfe6",
+   "identical": true
+  },
+  "web_sessions": {
+   "rows_before": 1,
+   "rows_after": 1,
+   "sha256_before": "3fa83ac37fe279c4",
+   "sha256_after": "3fa83ac37fe279c4",
+   "identical": true
+  }
+ },
+ "new_table_rows": {
+  "replay_evaluations": 0,
+  "replay_candles": 0,
+  "call_performance": 0
+ }
+}

@@ -1,0 +1,144 @@
+{
+ "migrated_schema9": {
+  "audit_figures": {
+   "calls": 49,
+   "measurable": 43,
+   "positive": 7,
+   "negative": 36,
+   "flat": 0,
+   "unknown": 6,
+   "median_change_pct": -11.522856134653658,
+   "items_returned": 49,
+   "total": 49
+  },
+  "audit_expected_match": true,
+  "calls_csv_rows": 49,
+  "calls_csv_ids_equal_api": true,
+  "calls_csv_vs_api_field_mismatches": 0,
+  "calls_csv_rows_equal_total": true,
+  "calls_csv_change_reason": {
+   "": 43,
+   "no_call_mc": 6
+  },
+  "api_outcome_counts": {
+   "positive": 7,
+   "negative": 36,
+   "flat": 0,
+   "unknown": 6
+  },
+  "checkpoint_summary": {
+   "total": 44,
+   "observed": 31,
+   "returns_available": 30,
+   "positive": 9,
+   "negative": 21,
+   "zero": 0,
+   "missing_price": 1,
+   "unresolved": 0,
+   "pending": 13,
+   "missed": 0,
+   "median_return_pct": null,
+   "positive_rate_pct": null,
+   "small_sample": false,
+   "comparable": false,
+   "distribution": [
+    {
+     "label": "Below -50%",
+     "count": 1
+    },
+    {
+     "label": "-50% to below 0%",
+     "count": 20
+    },
+    {
+     "label": "Exactly 0%",
+     "count": 0
+    },
+    {
+     "label": "Above 0% through 50%",
+     "count": 9
+    },
+    {
+     "label": "Above 50%",
+     "count": 0
+    }
+   ]
+  },
+  "checkpoint_csv_rows": 44,
+  "checkpoint_csv_rows_equal_total": true,
+  "checkpoint_csv_returns_equal": true,
+  "journal_vs_alerts_performance_mismatch": 0,
+  "alerts_items": 49
+ },
+ "unmigrated_schema7": {
+  "audit_figures": {
+   "calls": 49,
+   "measurable": 43,
+   "positive": 7,
+   "negative": 36,
+   "flat": 0,
+   "unknown": 6,
+   "median_change_pct": -11.522856134653658,
+   "items_returned": 49,
+   "total": 49
+  },
+  "audit_expected_match": true,
+  "calls_csv_rows": 49,
+  "calls_csv_ids_equal_api": true,
+  "calls_csv_vs_api_field_mismatches": 0,
+  "calls_csv_rows_equal_total": true,
+  "calls_csv_change_reason": {
+   "": 43,
+   "no_call_mc": 6
+  },
+  "api_outcome_counts": {
+   "positive": 7,
+   "negative": 36,
+   "flat": 0,
+   "unknown": 6
+  },
+  "checkpoint_summary": {
+   "total": 44,
+   "observed": 31,
+   "returns_available": 30,
+   "positive": 9,
+   "negative": 21,
+   "zero": 0,
+   "missing_price": 1,
+   "unresolved": 0,
+   "pending": 13,
+   "missed": 0,
+   "median_return_pct": null,
+   "positive_rate_pct": null,
+   "small_sample": false,
+   "comparable": false,
+   "distribution": [
+    {
+     "label": "Below -50%",
+     "count": 1
+    },
+    {
+     "label": "-50% to below 0%",
+     "count": 20
+    },
+    {
+     "label": "Exactly 0%",
+     "count": 0
+    },
+    {
+     "label": "Above 0% through 50%",
+     "count": 9
+    },
+    {
+     "label": "Above 50%",
+     "count": 0
+    }
+   ]
+  },
+  "checkpoint_csv_rows": 44,
+  "checkpoint_csv_rows_equal_total": true,
+  "checkpoint_csv_returns_equal": true,
+  "journal_vs_alerts_performance_mismatch": 0,
+  "alerts_items": 49
+ }
+}

@@ -157,6 +157,7 @@ async def measure(
     read_timeout_ms=1500,
     include_briefs=False,
     include_track_record=False,
+    include_calls=False,
 ):
     with tempfile.TemporaryDirectory(prefix="radar-web-load-") as directory:
         root = Path(directory)
@@ -304,6 +305,12 @@ async def measure(
                 routes[5] = f"/tokens/sol/{address}/briefs"
             if include_track_record:
                 routes[5] = "/track-record?days=7&horizon=24"
+            if include_calls:
+                # V2 (#75): call-performance reads. Alerts keep their route (they carry
+                # per-call performance) and the grouped feed replaces the trivial metadata
+                # read; the call journal replaces the duplicate radar route. Same 672 reads.
+                routes[4] = "/alerts?group=token"
+                routes[5] = "/track-record/calls?days=30&sort=worst"
             durations = []
             api = None
             transport = httpx.ASGITransport(app=app)
@@ -423,6 +430,7 @@ async def measure(
             "identical_initial_database": hashes[0] == hashes[1],
             "initial_rows": counts,
             "production_copy": initial_database is not None,
+            "include_calls": include_calls,
             "separate_api_process": separate_api_process,
             "replay_wait_per_provider_operation_seconds": replay_wait,
             "clients": CLIENTS,
@@ -487,6 +495,11 @@ if __name__ == "__main__":
         action="store_true",
         help="Add 1000 synthetic alert fixtures and replace duplicate Radar reads; same gates",
     )
+    parser.add_argument(
+        "--include-calls",
+        action="store_true",
+        help="V2 release gate: add grouped alerts and the call journal to the read mix; same gates",
+    )
     args = parser.parse_args()
     if args.include_track_record and args.initial_database:
         parser.error("Track-record fixture replay requires a new synthetic database")
@@ -508,6 +521,7 @@ if __name__ == "__main__":
                 args.read_timeout_ms,
                 args.include_briefs,
                 args.include_track_record,
+                args.include_calls,
             )
         )
     )

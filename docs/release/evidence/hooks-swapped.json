@@ -1,0 +1,111 @@
+{
+ "steady_50ms": {
+  "hooks_off": {
+   "scan_seconds": [
+    3.7662,
+    2.5278,
+    2.4604,
+    2.4665,
+    2.4791,
+    2.5078,
+    2.4909,
+    2.4908
+   ],
+   "median": 2.4908837290004158,
+   "errors": 0,
+   "refresh_seconds": [],
+   "tables_after": {
+    "replay_candles": 0,
+    "replay_evaluations": 0,
+    "call_performance": 49
+   }
+  },
+  "hooks_on": {
+   "scan_seconds": [
+    3.6915,
+    2.4586,
+    2.5232,
+    2.5645,
+    2.5588,
+    2.5606,
+    2.555,
+    2.6043
+   ],
+   "median": 2.5597106854997946,
+   "errors": 0,
+   "refresh_seconds": [
+    0.0024,
+    0.0023,
+    0.0025,
+    0.0032,
+    0.0026,
+    0.0028,
+    0.0024,
+    0.0025
+   ],
+   "tables_after": {
+    "replay_candles": 0,
+    "replay_evaluations": 0,
+    "call_performance": 49
+   }
+  },
+  "allowance_s": 0.6227209322501039,
+  "overhead_s": 0.06882695649937887,
+  "passed": true
+ },
+ "burst_5ms": {
+  "hooks_off": {
+   "scan_seconds": [
+    2.1334,
+    0.8705,
+    0.881,
+    0.9058,
+    0.9187,
+    0.8592,
+    0.9241,
+    0.8427
+   ],
+   "median": 0.8933971335000024,
+   "errors": 0,
+   "refresh_seconds": [],
+   "tables_after": {
+    "replay_candles": 0,
+    "replay_evaluations": 0,
+    "call_performance": 49
+   }
+  },
+  "hooks_on": {
+   "scan_seconds": [
+    0.93,
+    0.4147,
+    0.446,
+    0.4218,
+    0.428,
+    0.4607,
+    0.8927,
+    0.8726
+   ],
+   "median": 0.45338266750013645,
+   "errors": 0,
+   "refresh_seconds": [
+    0.0013,
+    0.0012,
+    0.0012,
+    0.0011,
+    0.0013,
+    0.0026,
+    0.0024,
+    0.0025
+   ],
+   "tables_after": {
+    "replay_candles": 0,
+    "replay_evaluations": 0,
+    "call_performance": 49
+   }
+  },
+  "allowance_s": 0.2233492833750006,
+  "overhead_s": -0.44001446599986593,
+  "passed": true
+ },
+ "passed": true
+}
