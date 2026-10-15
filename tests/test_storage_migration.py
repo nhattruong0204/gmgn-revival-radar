@@ -18,7 +18,7 @@ def test_existing_schema_seven_adds_configuration_index_without_rewriting_state(
     db.close()
     for _ in range(2):
         db = connect(path)
-        assert db.execute("PRAGMA user_version").fetchone()[0] == 7
+        assert db.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
         assert [tuple(r) for r in db.execute("SELECT * FROM state ORDER BY updated_at")] == rows
         assert db.execute(
             "SELECT 1 FROM sqlite_master WHERE name='state_report_configuration'"

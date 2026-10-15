@@ -12,9 +12,10 @@ from zoneinfo import ZoneInfo
 from pydantic import ValidationError
 
 from revival_radar.analysis.acceleration import fresh_history
+from revival_radar.analysis.call_policy import new_evidence_block
 from revival_radar.analysis.filters import first_pass
 from revival_radar.analysis.market_cap_basis import SAMPLE_KEY, append_pair, build_pair
-from revival_radar.analysis.scoring import STAGE_ORDER, below_min_stage, stage_rank
+from revival_radar.analysis.scoring import below_min_stage
 from revival_radar.config import Settings
 from revival_radar.metrics import sqlite_timed
 from revival_radar.models.brief import build_brief
@@ -22,6 +23,7 @@ from revival_radar.models.research_identity import research_context, research_di
 from revival_radar.models.signal import RevivalResult, has_returning_activity
 from revival_radar.models.token import TokenSnapshot
 from revival_radar.storage.database import SNAPSHOT_FIELDS
+from revival_radar.storage.replay_archive import archive_candles, archive_expiring
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +35,7 @@ class Repository:
         self.last_block_reason: str | None = None
         self.research_briefs_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 6
         self.research_outcomes_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 7
+        self.replay_archive_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 8
         # Connection-local and read-only: a report never trusts unvalidated JSON
         # sub-scores for ranking. Re-registering on a reused connection is safe.
         db.create_function(
@@ -225,33 +228,14 @@ class Repository:
         ).fetchone()
         if previous is None:
             return None
-        old_price, new_price = previous["price"], token.price
-        if (
-            old_price is None
-            or new_price is None
-            or not isfinite(old_price)
-            or not isfinite(new_price)
-        ):
-            return "price_unknown"
-        if new_price <= old_price:
-            return "price_not_higher"
-        old_rank = stage_rank(previous["stage"]) if previous["stage"] in STAGE_ORDER else None
-        if old_rank is not None and stage_rank(result.status) > old_rank:
-            return None
         saved = self.get_state(f"telegram:alert:{previous['id']}")
         try:
             structure = json.loads(saved)["signal"]["structure"] if saved else None
         except (ValueError, TypeError, KeyError):
             structure = None
-        if isinstance(structure, dict):
-            for event, now in (
-                ("higher_high_detected", result.structure.higher_high_detected),
-                ("breakout_detected", result.structure.breakout_detected),
-                ("retest_detected", result.structure.retest_detected),
-            ):
-                if now and structure.get(event) is False:
-                    return None
-        return "no_new_evidence"
+        return new_evidence_block(
+            previous["price"], previous["stage"], structure, token.price, result
+        )
 
     @staticmethod
     def _presentation(
@@ -429,6 +413,23 @@ class Repository:
             self._save_research_brief(
                 identity, scan_id, token, result, blockers, missing, configuration, origin
             )
+            if config.replay_retention_enabled and self.replay_archive_enabled:
+                self._archive_candles_used(token, result, config)
+
+    def _archive_candles_used(self, token, result, config) -> None:
+        """Copy the current-hour candle series this evaluation used into the archive."""
+        if not result.structure.available:
+            return
+        kind = f"kline:1h:{config.kline_lookback_hours}"
+        entry = self.cache_entry(kind, token)
+        if entry is None or entry["fetched_at"] > token.timestamp:
+            return
+        try:
+            if json.loads(entry["payload"]).get("hour") != int(token.timestamp // 3600):
+                return
+        except (ValueError, TypeError, AttributeError):
+            return
+        archive_candles(self.db, *token.key, kind, entry["fetched_at"], entry["payload"])
 
     def _save_research_brief(
         self, identity, scan_id, token, result, blockers, missing, configuration, origin
@@ -862,8 +863,25 @@ class Repository:
             "entries": entries,
         }
 
-    def prune_diagnostics(self, before: float) -> None:
+    def prune_diagnostics(self, before: float, retention: Settings | None = None) -> None:
+        """Delete diagnostics older than ``before``; replay evidence is archived first.
+
+        ``retention`` (scanner settings) switches on the append-only replay archive in the
+        same transaction. Pruning semantics are otherwise unchanged.
+        """
         with self.db:
+            if (
+                retention is not None
+                and retention.replay_retention_enabled
+                and self.replay_archive_enabled
+            ):
+                archive_expiring(
+                    self.db,
+                    before,
+                    window_days=retention.replay_called_window_days,
+                    sample_fraction=retention.replay_sample_fraction,
+                    sample_max_bytes=retention.replay_sample_max_megabytes * 1_000_000,
+                )
             for table, kind in (("evaluations", "evaluation"), ("scan_runs", "scan")):
                 # SQLite may reuse IDs after retention removes all diagnostics.
                 # Drop attached origin markers too; operator audits remain intact.

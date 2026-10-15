@@ -88,6 +88,11 @@ class Settings(BaseSettings):
         "WATCH", "EARLY_REVIVAL", "REVIVING", "STRONG_REVIVAL", "CONFIRMED_REVIVAL"
     ] = "WATCH"
     realert_requires_new_evidence: bool = False
+    # Replay-grade evidence retention (issue #74). Scanner-owned: not runtime-editable.
+    replay_retention_enabled: bool = True
+    replay_called_window_days: int = Field(default=3, ge=0, le=6)
+    replay_sample_fraction: float = Field(default=0.05, ge=0, le=1)
+    replay_sample_max_megabytes: int = Field(default=1024, ge=0)
     dry_run: bool = True
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     trending_discovery_enabled: bool = False

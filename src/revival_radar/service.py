@@ -232,7 +232,7 @@ async def run_service(runtime: RuntimeSettings, repo: Repository, http: httpx.As
             finally:
                 schedule["running"] = False
                 schedule["last_finished"] = time.time()
-            repo.prune_diagnostics(time.time() - 7 * 86400)
+            repo.prune_diagnostics(time.time() - 7 * 86400, config)
             delay = max(0, config.scan_interval_seconds - (time.monotonic() - started))
             schedule["next_due"] = time.time() + delay
             with suppress(TimeoutError):

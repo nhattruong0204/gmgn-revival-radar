@@ -9,7 +9,7 @@ import pytest
 
 from revival_radar.analysis.track_record import accounting, checkpoint_rows
 from revival_radar.models.signal import RevivalResult, Structure
-from revival_radar.storage.database import connect
+from revival_radar.storage.database import SCHEMA_VERSION, connect
 from revival_radar.storage.provenance import classify
 from revival_radar.web.app import create_app
 from revival_radar.web.config import WebConfig
@@ -233,7 +233,7 @@ def test_six_to_seven_migration_preserves_legacy_without_backfill(repo, token, c
     saved = [tuple(r) for r in repo.db.execute("SELECT * FROM alerts")]
     path = repo.db.execute("PRAGMA database_list").fetchone()[2]
     upgraded = connect(__import__("pathlib").Path(path))
-    assert upgraded.execute("PRAGMA user_version").fetchone()[0] == 7
+    assert upgraded.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
     assert [tuple(r) for r in upgraded.execute("SELECT * FROM alerts")] == saved
     assert upgraded.execute("SELECT COUNT(*) FROM research_alert_facts").fetchone()[0] == 0
     assert upgraded.execute("SELECT COUNT(*) FROM research_briefs").fetchone()[0] == 1
