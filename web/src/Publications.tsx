@@ -1,4 +1,3 @@
-import { labels } from "./labels";
 import { navigate, useData, useLocation } from "./api";
 import {
   Avatar,
@@ -151,45 +150,6 @@ export function Alerts({ id }: { id?: string }) {
               been replaced with current evidence.
             </Notice>
           )}
-          <section className="panel">
-            <h2>Observed after the alert</h2>
-            <p className="muted">
-              {labels.checkpointNote} Recorded at supported horizons from saved
-              observations; not executed-trade P&amp;L.
-            </p>
-            {detail.data.outcomes?.length ? (
-              <div className="structure-grid">
-                {detail.data.outcomes.map((v, i) => (
-                  <div key={i}>
-                    <span>
-                      {labels.checkpointPriceChange(
-                        v.horizon_hours ?? v.hours ?? "?",
-                      )}
-                    </span>
-                    <strong
-                      className={
-                        v.return_pct != null && v.return_pct >= 0
-                          ? "positive"
-                          : "muted"
-                      }
-                    >
-                      {percent(v.return_pct, false, true)}
-                    </strong>
-                    <small>
-                      {v.observed_at
-                        ? dateTime(v.observed_at)
-                        : "Observation unavailable"}
-                    </small>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <Empty title="No outcome observations yet">
-                A future stored market observation may complete the supported
-                horizons.
-              </Empty>
-            )}
-          </section>
         </>
       ) : id ? (
         <Empty title="Alert evidence unavailable">
