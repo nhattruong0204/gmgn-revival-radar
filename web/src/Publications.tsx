@@ -27,6 +27,7 @@ import type {
   Alert,
   AlertDetail,
   ListResponse,
+  Meta,
   RegimeContext,
   Report,
 } from "./types";
@@ -542,7 +543,8 @@ export function Reports() {
   );
 }
 export { TrackRecordPage as OutcomePage } from "./TrackRecord";
-export function Methodology() {
+export function Methodology({ meta }: { meta?: Meta | null }) {
+  const policy = meta?.publishing_policy ?? null;
   return (
     <>
       <PageHeading
@@ -634,6 +636,47 @@ export function Methodology() {
           Stage thresholds depend on the saved strategy and revision. Historical
           observations keep the configuration that produced them.
         </p>
+      </section>
+      <section className="panel" aria-labelledby="publishing-rule">
+        <h2 id="publishing-rule">Live publishing rule</h2>
+        {policy ? (
+          <>
+            <p>
+              A call is published only when an observation is eligible, scores
+              at least <strong>{policy.score_threshold}</strong>
+              {policy.min_stage === "WATCH" ? (
+                <>
+                  {" "}
+                  and has any stage that meets the score threshold (no extra
+                  stage gate).
+                </>
+              ) : (
+                <>
+                  {" "}
+                  and has reached <Stage stage={policy.min_stage} /> or a higher
+                  stage. Lower-stage observations stay on the Radar and are not
+                  published.
+                </>
+              )}
+            </p>
+            <p>
+              {policy.realert_requires_new_evidence
+                ? "A repeat call for the same token also needs new evidence: a higher stage or a newly detected higher high, breakout or retest, and a price above the previous call. If either price is unknown, the repeat call is not published."
+                : "A repeat call for the same token follows the alert cooldown and requires a higher score than the previous call. It does not need new chart evidence."}
+            </p>
+            <p className="small muted">
+              From the configuration saved with the latest completed scan
+              {policy.revision != null ? ` (revision ${policy.revision})` : ""}.
+              Earlier calls keep the rule that applied when they were published.
+            </p>
+          </>
+        ) : (
+          <p>
+            The publishing rule saved with the latest completed scan is not
+            available. Each call record shows the configuration it was published
+            under.
+          </p>
+        )}
       </section>
       <section className="panel">
         <h2>Know the coverage</h2>

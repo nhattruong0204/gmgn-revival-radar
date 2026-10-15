@@ -674,6 +674,12 @@ function readyRequest(path: string): unknown {
       telegram_url: null,
       as_of: now,
       last_scan_at: now - 140,
+      publishing_policy: {
+        min_stage: "WATCH",
+        score_threshold: 75,
+        realert_requires_new_evidence: false,
+        revision: 0,
+      },
     } satisfies Meta;
   if (url.pathname.endsWith("/radar")) {
     let items = demoObservations.filter(

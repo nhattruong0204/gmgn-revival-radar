@@ -1,0 +1,10 @@
+{
+  "390": {
+    "overflow": 0,
+    "text": "Live publishing rule\n\nA call is published only when an observation is eligible, scores at least 75 and has any stage that meets the score threshold (no extra stage gate).\n\nA repeat call for the same token follows the alert cooldown and requires a higher score than the previous call. It does not need new chart evidence.\n\nFrom the configuration saved with the latest completed scan (revision 0). Earlier calls keep the rule that applied when they were published."
+  },
+  "1366": {
+    "overflow": 0,
+    "text": "Live publishing rule\n\nA call is published only when an observation is eligible, scores at least 75 and has any stage that meets the score threshold (no extra stage gate).\n\nA repeat call for the same token follows the alert cooldown and requires a higher score than the previous call. It does not need new chart evidence.\n\nFrom the configuration saved with the latest completed scan (revision 0). Earlier calls keep the rule that applied when they were published."
+  }
+}
