@@ -208,10 +208,10 @@ def test_as_of_before_coverage_falls_back_without_future_data(db):
     queries = PublicQueries(db)
     row = calls_of(db)[0]
     early = NOW - 3 * DAY
-    assert queries._projected(row, early, 1e6) is None
+    assert queries._projected(row, early) is None
     result = queries._performance(row, early)
     assert result.latest_market_cap == 2e6 and result.mfe_pct == pytest.approx(100.0)
-    assert queries._projected(row, NOW, 1e6) is not None
+    assert queries._projected(row, NOW) is not None
 
 
 def test_changed_call_context_never_served(db):

@@ -8,32 +8,18 @@ identical to the on-read computation. The same ``fold`` arithmetic serves both
 sides. Nothing here calls a provider or modifies a historical row.
 """
 
-import math
 import sqlite3
 import time
 from dataclasses import dataclass, replace
+
+from revival_radar.analysis import call_metrics
+from revival_radar.analysis.call_metrics import MarketPerformance, positive
 
 # Snapshot origins hidden from public reads (mirrors ``web.queries.public_reader``).
 EXCLUDED_ORIGINS = "'synthetic','test'"
 SOURCE_BASES = ("rank", "circulating_enriched")
 DEFAULT_ACTIVE_DAYS = 30
 BACKFILL_PER_RUN = 500
-
-
-def usable(value: object) -> float | None:
-    """Finite number or None; bool and non-numbers are unknown."""
-    if type(value) not in (int, float):
-        return None
-    try:
-        number = float(value)
-    except OverflowError:
-        return None
-    return number if math.isfinite(number) else None
-
-
-def positive(value: object) -> float | None:
-    number = usable(value)
-    return number if number is not None and number > 0 else None
 
 
 @dataclass(frozen=True)
@@ -126,12 +112,7 @@ def fold_all(state: State, rows) -> State:
 
 def snapshot_rows(db, chain, address, after, upto, *, hide_origins: bool):
     """Indexed range read; ``hide_origins`` applies the public view's provenance rule."""
-    guard = (
-        f""" AND NOT EXISTS(SELECT 1 FROM main.state p WHERE p.key='origin:snapshot:' || s.id
-            AND p.value IN ({EXCLUDED_ORIGINS}))"""
-        if hide_origins
-        else ""
-    )
+    guard = ORIGIN_GUARD if hide_origins else ""
     return db.execute(
         f"""SELECT s.timestamp,s.market_cap,s.price,json_extract(s.payload,'$.market_cap_source')
         FROM token_snapshots s WHERE s.chain=? AND s.contract_address=?
@@ -141,34 +122,31 @@ def snapshot_rows(db, chain, address, after, upto, *, hide_origins: bool):
     ).fetchall()
 
 
-def call_source_at(db, chain, address, called, call_mc, *, hide_origins: bool):
-    """Market-cap basis frozen with the alert: latest snapshot at/before the call, if it matches."""
-    if call_mc is None:
-        return None
-    guard = (
-        f""" AND NOT EXISTS(SELECT 1 FROM main.state p WHERE p.key='origin:snapshot:' || s.id
-            AND p.value IN ({EXCLUDED_ORIGINS}))"""
-        if hide_origins
-        else ""
+ORIGIN_GUARD = f""" AND NOT EXISTS(SELECT 1 FROM main.state p
+    WHERE p.key='origin:snapshot:' || s.id AND p.value IN ({EXCLUDED_ORIGINS}))"""
+
+
+def performance(state: State) -> MarketPerformance:
+    """Projection aggregates through the one shared final arithmetic (call_metrics)."""
+    return call_metrics.assemble(
+        state.call_market_cap,
+        state.call_source,
+        state.basis,
+        state.other_basis,
+        state.count,
+        state.high,
+        state.low,
+        state.latest_at,
+        state.latest_market_cap,
+        state.latest_price,
+        state.max_gap,
     )
-    at_call = db.execute(
-        f"""SELECT s.market_cap,json_extract(s.payload,'$.market_cap_source')
-        FROM token_snapshots s WHERE s.chain=? AND s.contract_address=? AND s.timestamp<=?{guard}
-        ORDER BY s.timestamp DESC LIMIT 1""",
-        (chain, address, called),
-    ).fetchone()
-    if (
-        at_call
-        and at_call[1] in SOURCE_BASES
-        and usable(at_call[0]) is not None
-        and abs(at_call[0] - call_mc) <= 1e-9 * call_mc
-    ):
-        return at_call[1]
-    return None
 
 
 def build(db, chain, address, called, call_mc, upto, *, hide_origins: bool) -> State:
-    source = call_source_at(db, chain, address, called, call_mc, hide_origins=hide_origins)
+    source = call_metrics.call_source_at(
+        db, chain, address, called, call_mc, ORIGIN_GUARD if hide_origins else ""
+    )
     rows = snapshot_rows(db, chain, address, called, upto, hide_origins=hide_origins)
     return fold_all(State(called, call_mc, source), rows)
 
