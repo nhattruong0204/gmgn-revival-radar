@@ -65,6 +65,12 @@ class Repository:
             return {}
         return refresh(self.db, now, active_days)
 
+    def refresh_radar_projection(self, budget_seconds: float = 15.0) -> dict:
+        """Maintain the derived evaluation_radar projection; no-op where it does not exist."""
+        from revival_radar.analysis.radar_projection import refresh
+
+        return refresh(self.db, budget_seconds)
+
     def _record_basis_sample(self, token: TokenSnapshot) -> None:
         """Keep the newest raw rank/token-info pairs (capped) in state; no provider calls."""
         pair = build_pair(token.chain, token.contract_address, token._basis_sample)
@@ -904,6 +910,16 @@ class Repository:
                         ),
                         (before,),
                     )
+            if self.db.execute(
+                "SELECT 1 FROM main.sqlite_master WHERE name='evaluation_radar'"
+            ).fetchone():
+                # Evaluation ids can be reused after retention; drop their projected fields too.
+                self.db.execute(
+                    "DELETE FROM evaluation_radar WHERE evaluation_id IN "
+                    "(SELECT id FROM evaluations WHERE scan_id IN "
+                    "(SELECT id FROM scan_runs WHERE started<?))",
+                    (before,),
+                )
             self.db.execute(
                 "DELETE FROM evaluations WHERE scan_id IN "
                 "(SELECT id FROM scan_runs WHERE started<?)",

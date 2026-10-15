@@ -303,6 +303,15 @@ class PublicQueries:
             self.repo.observation_origin("evaluation", row["id"]),
         )
 
+    @property
+    def has_radar_projection(self) -> bool:
+        """Scanner-maintained evaluation_radar present; older databases compute on read."""
+        if not hasattr(self, "_has_radar_projection"):
+            from revival_radar.analysis.radar_projection import available
+
+            self._has_radar_projection = available(self.db)
+        return self._has_radar_projection
+
     def _latest_row(self, chain: str, address: str, until: float) -> sqlite3.Row | None:
         return self.db.execute(
             """SELECT e.* FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id
@@ -327,6 +336,28 @@ class PublicQueries:
         page_size: int,
         age_hours: int = 24,
     ) -> RadarPage:
+        # sort is an enum at the HTTP boundary and additionally checked here.
+        if sort not in ("score", "timestamp", "market_cap", "liquidity", "volume_5m"):
+            raise ValueError("Unsupported sort")
+        if order not in ("asc", "desc"):
+            raise ValueError("Unsupported order")
+        projected = self.has_radar_projection
+        # Presentation fields (name, market cap, ...) are needed only to search or sort.
+        needs_fields = bool(search) or sort not in ("score", "timestamp")
+        # Without the projection every candidate payload is joined and validated on read.
+        # With it, a current projected row answers directly and the payload is looked up
+        # (and validated by the original function) only for rows it does not cover.
+        payload = "(SELECT st.value FROM state st WHERE st.key='telegram:evaluation:' || e.id)"
+
+        def field(name: str) -> str:
+            computed = (
+                f"public_field({payload if projected else 'st.value'},e.chain,"
+                f"e.contract_address,e.timestamp,e.score,e.status,e.eligible,'{name}')"
+            )
+            if not projected:
+                return computed
+            return f"CASE WHEN p.evaluation_id IS NOT NULL THEN p.{name} ELSE {computed} END"
+
         filters, arguments = ["e.score>=?"], [min_score]
         if status:
             filters.append("e.status=?")
@@ -341,16 +372,21 @@ class PublicQueries:
             escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
             # OR short-circuits left to right: cheap column tests first, so the
             # payload-validating name lookup only runs for rows still undecided.
+            symbol = "(SELECT x.symbol FROM evaluations x WHERE x.id=e.id)"
+            if projected:
+                symbol = f"CASE WHEN p.evaluation_id IS NOT NULL THEN p.symbol ELSE {symbol} END"
             filters.append(
-                "(instr(e.contract_address,?)>0 OR e.symbol LIKE ? ESCAPE '\\' OR "
-                "public_field(st.value,e.chain,e.contract_address,e.timestamp,e.score,"
-                "e.status,e.eligible,'name') LIKE ? ESCAPE '\\')"
+                f"(instr(e.contract_address,?)>0 OR {symbol} LIKE ? ESCAPE '\\' OR "
+                f"{field('name')} LIKE ? ESCAPE '\\')"
             )
             arguments.extend((search, f"%{escaped}%", f"%{escaped}%"))
         # Latest completed evaluation per token in one ranked pass. Walking chains
         # with a loose index scan keeps the window range-bound on the covering
         # (chain,timestamp) index instead of probing every identity separately.
         # A chain filter replaces the walk: ranking is partitioned by chain anyway.
+        # The ranked rows carry every column filtering and ordering need from that
+        # covering index, so full evaluation rows are fetched for the returned page only.
+        # Completed scans are resolved once from the covering finished index.
         walk = (
             "SELECT ?"
             if chain
@@ -358,43 +394,42 @@ class PublicQueries:
             "FROM evaluations WHERE chain>c) FROM chains WHERE c IS NOT NULL"
         )
         cte = f"""WITH RECURSIVE chains(c) AS ({walk}
+        ), valid_scans AS MATERIALIZED (
+            SELECT id FROM scan_runs WHERE finished IS NOT NULL AND finished<=?
         ), ranked AS (
-            SELECT w.id,ROW_NUMBER() OVER (PARTITION BY w.chain,w.contract_address
+            SELECT w.id,w.chain,w.contract_address,w.timestamp,w.score,w.status,w.eligible,
+                ROW_NUMBER() OVER (PARTITION BY w.chain,w.contract_address
                 ORDER BY w.timestamp DESC,w.id DESC) AS rn
-            FROM chains c CROSS JOIN evaluations w JOIN scan_runs s ON s.id=w.scan_id
+            FROM chains c CROSS JOIN evaluations w
             WHERE w.chain=c.c AND w.timestamp>? AND w.timestamp<=?
-            AND s.finished IS NOT NULL AND s.finished<=?
+            AND w.scan_id IN (SELECT id FROM valid_scans)
         ), latest AS (
-            SELECT e.* FROM ranked r JOIN evaluations e ON e.id=r.id WHERE r.rn=1
+            SELECT * FROM ranked WHERE rn=1
         ) """
-        selection = (
-            "FROM latest e LEFT JOIN state st ON st.key='telegram:evaluation:' || e.id WHERE "
-            + " AND ".join(filters)
-        )
+        joins = ""
+        if needs_fields and projected:
+            # A projected row is trusted only while the evaluation still matches it exactly.
+            joins = (
+                " LEFT JOIN evaluation_radar p ON p.evaluation_id=e.id"
+                " AND p.timestamp=e.timestamp AND p.score IS e.score AND p.status IS e.status"
+                " AND p.eligible IS e.eligible"
+            )
+        elif needs_fields:
+            joins = " LEFT JOIN state st ON st.key='telegram:evaluation:' || e.id"
+        selection = "FROM latest e" + joins + " WHERE " + " AND ".join(filters)
         parameters = (
             *((chain,) if chain else ()),
-            until - age_hours * 3600,
             until,
+            until - age_hours * 3600,
             until,
             *arguments,
         )
-        if sort in ("score", "timestamp"):
-            sorting = f"e.{sort}"
-        else:
-            # sort is an enum at the HTTP boundary and additionally checked here.
-            if sort not in ("market_cap", "liquidity", "volume_5m"):
-                raise ValueError("Unsupported sort")
-            sorting = (
-                "public_field(st.value,e.chain,e.contract_address,e.timestamp,e.score,"
-                f"e.status,e.eligible,'{sort}')"
-            )
-        if order not in ("asc", "desc"):
-            raise ValueError("Unsupported order")
+        sorting = f"e.{sort}" if sort in ("score", "timestamp") else field(sort)
         # The total comes from the same ranked pass as the page; only a page past
         # the end (no rows to carry it) needs a separate count.
         found = self.db.execute(
             cte
-            + "SELECT e.*,COUNT(*) OVER () AS total_matches "
+            + "SELECT e.id,COUNT(*) OVER () AS total_matches "
             + selection
             + f" ORDER BY ({sorting}) IS NULL ASC,({sorting}) {order.upper()},"
             "e.timestamp DESC,e.chain,e.contract_address LIMIT ? OFFSET ?",
@@ -402,11 +437,20 @@ class PublicQueries:
         ).fetchall()
         if found:
             total = found[0]["total_matches"]
+            identities = [row["id"] for row in found]
+            fetched = {
+                row["id"]: row
+                for row in self.db.execute(
+                    f"SELECT * FROM evaluations WHERE id IN ({','.join('?' * len(identities))})",
+                    identities,
+                )
+            }
+            rows = [fetched[identity] for identity in identities]
         elif page == 1:
-            total = 0
+            total, rows = 0, []
         else:
             total = self.db.execute(cte + "SELECT COUNT(*) " + selection, parameters).fetchone()[0]
-        rows = found
+            rows = []
         return RadarPage(
             items=[self._evaluation(row) for row in rows],
             total=total,

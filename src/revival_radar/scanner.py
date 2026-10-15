@@ -489,6 +489,7 @@ class Scanner:
             report.finished_at = time.time()
             self.repository.finish_scan(report.scan_id, report, report.finished_at)
             self.maintain_call_performance()
+            self.maintain_radar_projection()
             report.finished_at = time.time()
             report.duration_seconds = time.monotonic() - started
             report.performance = self.metrics.snapshot(report.duration_seconds)
@@ -529,6 +530,16 @@ class Scanner:
             log.debug("call performance projection %s", stats)
         except Exception as exc:
             log.warning("call performance projection failed error=%s", type(exc).__name__)
+
+    def maintain_radar_projection(self) -> None:
+        """Post-scan derived radar-field projection (#100); bounded, resumable, never fatal."""
+        try:
+            stats = self.repository.refresh_radar_projection(
+                self.config.radar_projection_budget_seconds
+            )
+            log.debug("radar projection %s", stats)
+        except Exception as exc:
+            log.warning("radar projection failed error=%s", type(exc).__name__)
 
     async def track_outcomes(self, report: ScanReport) -> None:
         remaining = self.config.max_market_enrich_per_scan - self.enrichment.used["market"]

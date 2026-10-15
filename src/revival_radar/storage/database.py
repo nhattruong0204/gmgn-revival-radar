@@ -90,6 +90,7 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             CAST(json_extract(CASE WHEN json_valid(value) THEN value ELSE '{}' END,
                 '$.signal.score_version') AS TEXT)
         )""")
+        _ensure_radar_projection(db)
         db.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
         db.commit()
     except Exception:
@@ -97,6 +98,17 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
         db.close()
         raise
     return db
+
+
+def _ensure_radar_projection(db: sqlite3.Connection) -> None:
+    # Additive, derived and fully rebuildable from the saved presentations (see
+    # analysis/radar_projection.py). Created like the additive indexes above, without a
+    # schema-version bump: readers detect it by name and fall back to computing on read.
+    # Columns are untyped (no affinity) so values are stored exactly as computed.
+    db.execute("""CREATE TABLE IF NOT EXISTS evaluation_radar (
+        evaluation_id INTEGER PRIMARY KEY, timestamp REAL NOT NULL, score, status, eligible,
+        symbol, name, market_cap, liquidity, volume_5m
+    )""")
 
 
 def _migrate_call_performance(db: sqlite3.Connection) -> None:
