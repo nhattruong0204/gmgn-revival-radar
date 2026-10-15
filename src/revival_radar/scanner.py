@@ -467,6 +467,7 @@ class Scanner:
                 context["eligible_count"] = report.funnel.get(chain, {}).get("eligible", 0)
             report.finished_at = time.time()
             self.repository.finish_scan(report.scan_id, report, report.finished_at)
+            self.maintain_call_performance()
             report.finished_at = time.time()
             report.duration_seconds = time.monotonic() - started
             report.performance = self.metrics.snapshot(report.duration_seconds)
@@ -497,6 +498,16 @@ class Scanner:
                 self.config.scan_interval_seconds,
             )
         return report
+
+    def maintain_call_performance(self) -> None:
+        """Post-scan derived projection (#90); indexed incremental reads, never fatal."""
+        try:
+            stats = self.repository.refresh_call_performance(
+                time.time(), self.config.call_performance_active_days
+            )
+            log.debug("call performance projection %s", stats)
+        except Exception as exc:
+            log.warning("call performance projection failed error=%s", type(exc).__name__)
 
     async def track_outcomes(self, report: ScanReport) -> None:
         remaining = self.config.max_market_enrich_per_scan - self.enrichment.used["market"]

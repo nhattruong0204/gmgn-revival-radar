@@ -10,9 +10,10 @@ from threading import Timer
 
 from pydantic import ValidationError
 
+from revival_radar.analysis import call_projection as projection
 from revival_radar.chains import CHAINS
 from revival_radar.models.token import Candle, TokenSnapshot
-from revival_radar.storage.database import SCHEMA_VERSION
+from revival_radar.storage.database import PUBLIC_SCHEMA_VERSIONS
 from revival_radar.storage.repository import Repository
 from revival_radar.web.config import WebConfig
 from revival_radar.web.models import (
@@ -88,7 +89,7 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
         interruption.daemon = True
         interruption.start()
         db.execute("BEGIN")
-        if db.execute("PRAGMA user_version").fetchone()[0] != SCHEMA_VERSION:
+        if db.execute("PRAGMA user_version").fetchone()[0] not in PUBLIC_SCHEMA_VERSIONS:
             raise sqlite3.DatabaseError("Unsupported public storage schema")
         yield PublicQueries(db, allow_synthetic=config.web_allow_synthetic_data, deadline=deadline)
         if time.monotonic() > deadline:
@@ -552,12 +553,7 @@ class PublicQueries:
             ),
         )
 
-    def _performance(self, row: sqlite3.Row, until: float) -> CallPerformance:
-        """Compare the immutable call with saved snapshots in (call, until]; read-only."""
-        called = row["timestamp"]
-        call_mc, call_price = finite(row["market_cap"]), finite(row["price"])
-        call_mc = call_mc if call_mc is not None and call_mc > 0 else None
-        chain, address = row["chain"], row["contract_address"]
+    def _performance_on_read(self, chain, address, called, call_mc, until):
         # Alert-time market-cap source: the latest snapshot at or before the call (indexed
         # LIMIT 1), accepted only if its market cap is the one the alert froze. Legacy
         # payloads carry no source and stay unknown; nothing is inferred or rewritten.
@@ -604,17 +600,83 @@ class PublicQueries:
                 (SELECT MAX(g) FROM (SELECT t-LAG(t,1,?) OVER (ORDER BY t) g FROM r)) FROM r""",
             (chain, address, called, until, *source_args, called),
         ).fetchone()
-        count, high, low, latest_at, gap = agg
-        latest_mc = latest_price = None
-        if count:
-            latest = self.db.execute(
-                """SELECT market_cap,price FROM token_snapshots
-                WHERE chain=? AND contract_address=? AND timestamp=?""",
-                (row["chain"], row["contract_address"], latest_at),
-            ).fetchone()
-            latest_mc = finite(latest[0])
-            price = finite(latest[1])
-            latest_price = price if price is not None and price > 0 else None
+        return call_source, basis, other_basis, agg
+
+    @property
+    def has_projection(self) -> bool:
+        """Schema-8 projection present and applicable; schema-7 databases compute on read."""
+        if not hasattr(self, "_has_projection"):
+            self._has_projection = not self.allow_synthetic and (
+                self.db.execute(
+                    "SELECT 1 FROM main.sqlite_master "
+                    "WHERE type='table' AND name='call_performance'"
+                ).fetchone()
+                is not None
+            )
+        return self._has_projection
+
+    def _projected(self, row: sqlite3.Row, until: float, call_mc: float | None):
+        """Projection folded up to `until`, or None to compute on read.
+
+        Never serves aggregates that include data after the cutoff (updated_at > until),
+        and folds in snapshots newer than updated_at itself, so the result is identical to
+        the on-read computation. A changed call market cap or basis transition falls back.
+        """
+        if not self.has_projection:
+            return None
+        stored = self.db.execute(
+            "SELECT * FROM call_performance WHERE alert_id=?", (row["id"],)
+        ).fetchone()
+        if stored is None or stored["updated_at"] > until:
+            return None
+        if stored["call_market_cap"] != call_mc:
+            return None
+        state = projection.row_to_state(stored, row["timestamp"])
+        newer = projection.snapshot_rows(
+            self.db,
+            row["chain"],
+            row["contract_address"],
+            max(stored["updated_at"], row["timestamp"]),
+            until,
+            hide_origins=False,
+        )
+        return projection.fold(state, newer) if newer else state
+
+    def _performance(self, row: sqlite3.Row, until: float) -> CallPerformance:
+        """Compare the immutable call with saved snapshots in (call, until]; read-only."""
+        called = row["timestamp"]
+        call_mc, call_price = finite(row["market_cap"]), finite(row["price"])
+        call_mc = call_mc if call_mc is not None and call_mc > 0 else None
+        chain, address = row["chain"], row["contract_address"]
+        state = self._projected(row, until, call_mc)
+        if state is not None:
+            # Scanner-maintained aggregates (same arithmetic as below; see call_projection).
+            call_source, basis = state.call_source, state.basis
+            other_basis = state.other_basis
+            count, high, low, latest_at, gap = (
+                state.count,
+                state.high,
+                state.low,
+                state.latest_at,
+                state.max_gap,
+            )
+            latest_mc = finite(state.latest_market_cap)
+            latest_price = state.latest_price
+        else:
+            call_source, basis, other_basis, agg = self._performance_on_read(
+                chain, address, called, call_mc, until
+            )
+            count, high, low, latest_at, gap = agg
+            latest_mc = latest_price = None
+            if count:
+                latest = self.db.execute(
+                    """SELECT market_cap,price FROM token_snapshots
+                    WHERE chain=? AND contract_address=? AND timestamp=?""",
+                    (chain, address, latest_at),
+                ).fetchone()
+                latest_mc = finite(latest[0])
+                price = finite(latest[1])
+                latest_price = price if price is not None and price > 0 else None
         position = self.db.execute(
             "SELECT COUNT(*),COALESCE(SUM(a.timestamp<? OR (a.timestamp=? AND a.id<=?)),0) "
             "FROM alerts a WHERE a.chain=? AND a.contract_address=? AND " + self.alert_visibility(),

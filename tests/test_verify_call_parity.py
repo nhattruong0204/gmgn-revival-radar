@@ -97,3 +97,30 @@ def test_database_is_opened_read_only(world):  # noqa: F811
         db.execute("DELETE FROM alerts")
     db.close()
     assert world.repo.db.execute("SELECT count(*) FROM alerts").fetchone()[0] == 4
+
+
+def test_projection_mode_matches_and_detects_a_tampered_row(tmp_path, capsys):
+    from revival_radar.analysis import call_projection
+    from revival_radar.storage.database import connect
+
+    from .test_call_projection import NOW as T0
+    from .test_call_projection import add_call, add_snapshot, random_world
+
+    path = tmp_path / "p.db"
+    db = connect(path)
+    random_world(db, 5, calls=10, until=T0)
+    add_call(db, 999, "BASIS", T0 - 86400, 1e6, "rank")
+    for n, source in enumerate(["rank", "circulating_enriched", "rank", None]):
+        add_snapshot(db, "BASIS", T0 - 80000 + n * 600, 1e6 + n * 1e5, source)
+    db.commit()
+    call_projection.refresh(db, T0, 30)
+    db.close()
+    assert parity.run_projection(path, out=lambda *_: None) == []
+    assert parity.main(["--db", str(path), "--projection"]) == 0
+    db = connect(path)
+    db.execute("UPDATE call_performance SET max_market_cap=max_market_cap*2 WHERE alert_id=999")
+    db.commit()
+    db.close()
+    mismatches = parity.run_projection(path, out=lambda *_: None)
+    assert [(m[0], m[1]) for m in mismatches] == [(999, "max_market_cap")]
+    assert parity.main(["--db", str(path), "--projection"]) == 1

@@ -233,7 +233,7 @@ def test_six_to_seven_migration_preserves_legacy_without_backfill(repo, token, c
     saved = [tuple(r) for r in repo.db.execute("SELECT * FROM alerts")]
     path = repo.db.execute("PRAGMA database_list").fetchone()[2]
     upgraded = connect(__import__("pathlib").Path(path))
-    assert upgraded.execute("PRAGMA user_version").fetchone()[0] == 7
+    assert upgraded.execute("PRAGMA user_version").fetchone()[0] == 8
     assert [tuple(r) for r in upgraded.execute("SELECT * FROM alerts")] == saved
     assert upgraded.execute("SELECT COUNT(*) FROM research_alert_facts").fetchone()[0] == 0
     assert upgraded.execute("SELECT COUNT(*) FROM research_briefs").fetchone()[0] == 1
