@@ -1,6 +1,6 @@
 # Signal-quality report
 
-Window: 2027-01-15T00:00:00Z to 2027-01-17T00:00:00Z (UTC). Observations are read up to the end of the window. Cohort and universe sample start: 2027-01-15T00:00:00Z. Schema version 9.
+Window: 2027-01-15T00:00:00Z to 2027-01-17T00:00:00Z (UTC). Observations are read up to the end of the window. Cohort and universe sample start: 2027-01-15T00:00:00Z. Schema version 10.
 
 > **Sample warning.** 4 calls on 3 tokens. Calls overlap on a few tokens, outcome windows differ in length, and the window is one market regime. Treat everything below as descriptive, not statistically established.
 
