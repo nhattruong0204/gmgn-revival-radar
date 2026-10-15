@@ -16,7 +16,9 @@ TEXT_FIELDS = {
 # market_cap_source and circulating_supply live only in the payload JSON (no migration).
 PAYLOAD_ONLY_FIELDS = {"security", "data_warnings", "market_cap_source", "circulating_supply"}
 SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in PAYLOAD_ONLY_FIELDS]
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
+# The read-only website serves schema 7 (projection absent: computed on read), 8 and 9.
+PUBLIC_SCHEMA_VERSIONS = (7, 8, 9)
 
 
 def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
@@ -64,6 +66,8 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
         if version < 7:
             _migrate_research_outcomes(db)
         if version < 8:
+            _migrate_call_performance(db)
+        if version < 9:
             _migrate_replay_archive(db)
         # An additive query index is compatible with existing schema-4/rollback readers.
         db.execute("""CREATE INDEX IF NOT EXISTS evaluations_chain_time
@@ -93,6 +97,22 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
         db.close()
         raise
     return db
+
+
+def _migrate_call_performance(db: sqlite3.Connection) -> None:
+    # Additive, derived and fully rebuildable from token_snapshots (see
+    # analysis/call_projection.py). Existing tables and rows are never touched; the
+    # scanner fills it incrementally after each scan. Idempotent.
+    db.execute("""CREATE TABLE IF NOT EXISTS call_performance (
+        alert_id INTEGER PRIMARY KEY REFERENCES alerts(id),
+        basis TEXT NOT NULL CHECK(basis IN ('same','mixed','unknown')),
+        call_source TEXT, call_market_cap REAL,
+        latest_market_cap REAL, latest_price REAL, latest_observed_at REAL,
+        max_market_cap REAL, min_market_cap REAL,
+        observations INTEGER NOT NULL, max_gap_seconds REAL,
+        valid_observations INTEGER NOT NULL, other_basis_observations INTEGER NOT NULL,
+        updated_at REAL NOT NULL, frozen INTEGER NOT NULL DEFAULT 0 CHECK(frozen IN (0,1))
+    )""")
 
 
 def _migrate_research_outcomes(db: sqlite3.Connection) -> None:

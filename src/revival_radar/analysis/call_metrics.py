@@ -39,6 +39,37 @@ class MarketPerformance:
     mae_pct: float | None
 
 
+def positive(value: object) -> float | None:
+    number = finite(value)
+    return number if number is not None and number > 0 else None
+
+
+def call_source_at(db, chain, address, called, call_mc, origin_guard: str = "") -> str | None:
+    """Alert-time market-cap source: the latest snapshot at or before the call (indexed
+    LIMIT 1), accepted only if its market cap is the one the alert froze. Legacy
+    payloads carry no source and stay unknown; nothing is inferred or rewritten.
+
+    ``origin_guard`` is an extra ``AND ...`` predicate on alias ``s`` (scanner-side
+    provenance filtering); the public reader's views already apply it.
+    """
+    if call_mc is None:
+        return None
+    at_call = db.execute(
+        f"""SELECT s.market_cap,json_extract(s.payload,'$.market_cap_source')
+        FROM token_snapshots s WHERE s.chain=? AND s.contract_address=? AND s.timestamp<=?
+        {origin_guard} ORDER BY s.timestamp DESC LIMIT 1""",
+        (chain, address, called),
+    ).fetchone()
+    if (
+        at_call
+        and at_call[1] in ("rank", "circulating_enriched")
+        and finite(at_call[0]) is not None
+        and abs(at_call[0] - call_mc) <= 1e-9 * call_mc
+    ):
+        return at_call[1]
+    return None
+
+
 def market_performance(
     db: sqlite3.Connection,
     chain: str,
@@ -50,24 +81,7 @@ def market_performance(
     """Compare the frozen call market cap with saved snapshots in (called, until]; read-only."""
     call_mc = finite(call_market_cap)
     call_mc = call_mc if call_mc is not None and call_mc > 0 else None
-    # Alert-time market-cap source: the latest snapshot at or before the call (indexed
-    # LIMIT 1), accepted only if its market cap is the one the alert froze. Legacy
-    # payloads carry no source and stay unknown; nothing is inferred or rewritten.
-    call_source = None
-    if call_mc is not None:
-        at_call = db.execute(
-            """SELECT market_cap,json_extract(payload,'$.market_cap_source')
-            FROM token_snapshots WHERE chain=? AND contract_address=? AND timestamp<=?
-            ORDER BY timestamp DESC LIMIT 1""",
-            (chain, address, called),
-        ).fetchone()
-        if (
-            at_call
-            and at_call[1] in ("rank", "circulating_enriched")
-            and finite(at_call[0]) is not None
-            and abs(at_call[0] - call_mc) <= 1e-9 * call_mc
-        ):
-            call_source = at_call[1]
+    call_source = call_source_at(db, chain, address, called, call_mc)
     # Finite, positive market caps only; 1e300 excludes +inf without Python callbacks.
     # One indexed range read (chain, contract_address, timestamp) bounded by the cutoff.
     source_filter, source_args = "", ()
@@ -104,9 +118,36 @@ def market_performance(
             WHERE chain=? AND contract_address=? AND timestamp=?""",
             (chain, address, latest_at),
         ).fetchone()
-        latest_mc = finite(latest[0])
-        price = finite(latest[1])
-        latest_price = price if price is not None and price > 0 else None
+        latest_mc, latest_price = finite(latest[0]), positive(latest[1])
+    return assemble(
+        call_mc,
+        call_source,
+        basis,
+        other_basis,
+        count,
+        high,
+        low,
+        latest_at,
+        latest_mc,
+        latest_price,
+        gap,
+    )
+
+
+def assemble(
+    call_mc,
+    call_source,
+    basis,
+    other_basis,
+    count,
+    high,
+    low,
+    latest_at,
+    latest_mc,
+    latest_price,
+    gap,
+) -> MarketPerformance:
+    """Shared final arithmetic: change/MFE/MAE and unknown reasons (never 0 for unknown)."""
     change = mfe = mae = None
     reason = None
     if call_mc is None:

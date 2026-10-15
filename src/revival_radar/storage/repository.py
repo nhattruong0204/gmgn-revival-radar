@@ -35,7 +35,7 @@ class Repository:
         self.last_block_reason: str | None = None
         self.research_briefs_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 6
         self.research_outcomes_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 7
-        self.replay_archive_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 8
+        self.replay_archive_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 9
         # Connection-local and read-only: a report never trusts unvalidated JSON
         # sub-scores for ranking. Re-registering on a reused connection is safe.
         db.create_function(
@@ -56,6 +56,14 @@ class Repository:
             if cursor.rowcount:
                 self.record_origin("snapshot", cursor.lastrowid, origin)
                 self._record_basis_sample(token)
+
+    def refresh_call_performance(self, now: float, active_days: float) -> dict:
+        """Maintain the derived call_performance projection (schema 8+); no-op before it."""
+        from revival_radar.analysis.call_projection import refresh
+
+        if self.db.execute("PRAGMA user_version").fetchone()[0] < 8:
+            return {}
+        return refresh(self.db, now, active_days)
 
     def _record_basis_sample(self, token: TokenSnapshot) -> None:
         """Keep the newest raw rank/token-info pairs (capped) in state; no provider calls."""

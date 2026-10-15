@@ -6,6 +6,11 @@ independent check, not the same code compared with itself. The database is opene
 with ``mode=ro`` and the API is only queried with GET.
 
     python scripts/verify_call_parity.py --db copy.db [--api https://host] [--as-of 1.8e9]
+    python scripts/verify_call_parity.py --db copy.db --projection
+
+``--projection`` (schema 8) compares every scanner-maintained ``call_performance`` row with
+an independent recomputation from raw snapshots in (call time, row updated_at], including the
+same/mixed/unknown market-cap basis rule. It does not import the application either.
 
 Exit status 0 means every compared call matched, 1 means at least one mismatch
 (or a call visible on only one side), 2 means the check could not run.
@@ -116,6 +121,110 @@ def expected_calls(db, until):
     return result
 
 
+PROJECTION_FIELDS = (
+    "basis",
+    "call_source",
+    "latest_market_cap",
+    "latest_price",
+    "latest_observed_at",
+    "max_market_cap",
+    "min_market_cap",
+    "observations",
+    "max_gap_seconds",
+    "other_basis_observations",
+)
+
+
+def expected_projection(db, row):
+    """Independent recomputation of one projection row from raw snapshots (plain SQL+Python)."""
+    called, updated = row["timestamp"], row["updated_at"]
+    chain, address = row["chain"], row["contract_address"]
+    call_mc = usable(row["sg_market_cap"])
+    source = None
+    if call_mc is not None:
+        at_call = db.execute(
+            """SELECT market_cap,json_extract(payload,'$.market_cap_source') FROM token_snapshots
+            WHERE chain=? AND contract_address=? AND timestamp<=?
+            ORDER BY timestamp DESC LIMIT 1""",
+            (chain, address, called),
+        ).fetchone()
+        if (
+            at_call
+            and at_call[1] in ("rank", "circulating_enriched")
+            and usable(at_call[0]) is not None
+            and abs(at_call[0] - call_mc) <= 1e-9 * call_mc
+        ):
+            source = at_call[1]
+    later = [
+        (r[0], usable(r[1]), r[2], r[3])
+        for r in db.execute(
+            """SELECT timestamp,market_cap,price,json_extract(payload,'$.market_cap_source')
+            FROM token_snapshots WHERE chain=? AND contract_address=? AND timestamp>?
+            AND timestamp<=? ORDER BY timestamp""",
+            (chain, address, called, updated),
+        )
+    ]
+    later = [r for r in later if r[1] is not None]
+    same = [r for r in later if source and r[3] == source]
+    basis = "unknown"
+    chosen = later
+    if source and same:
+        basis, chosen = "same", same
+    elif source and later:
+        basis = "mixed"
+    times = [called] + [r[0] for r in chosen]
+    price = usable(chosen[-1][2]) if chosen else None
+    return {
+        "basis": basis,
+        "call_source": source,
+        "latest_market_cap": chosen[-1][1] if chosen else None,
+        "latest_price": price if price is not None and price > 0 else None,
+        "latest_observed_at": chosen[-1][0] if chosen else None,
+        "max_market_cap": max((r[1] for r in chosen), default=None),
+        "min_market_cap": min((r[1] for r in chosen), default=None),
+        "observations": len(chosen),
+        "max_gap_seconds": max(
+            (b - a for a, b in zip(times, times[1:], strict=False)), default=None
+        ),
+        "other_basis_observations": len(later) - len(same),
+    }
+
+
+def run_projection(db_path, out=print):
+    """Compare every call_performance row with the recomputation; returns the mismatch list."""
+    db = open_readonly(db_path)
+    try:
+        rows = db.execute(
+            """SELECT cp.*,a.timestamp,a.chain,a.contract_address,s.market_cap AS sg_market_cap
+            FROM call_performance cp JOIN alerts a ON a.id=cp.alert_id
+            LEFT JOIN alert_signals s ON s.alert_id=cp.alert_id ORDER BY cp.alert_id"""
+        ).fetchall()
+        mismatches = []
+        for row in rows:
+            expected = expected_projection(db, row)
+            for field in PROJECTION_FIELDS:
+                if not same(expected[field], row[field]) or (
+                    (expected[field] is None) != (row[field] is None)
+                ):
+                    mismatches.append((row["alert_id"], field, expected[field], row[field]))
+            if row["call_market_cap"] != usable(row["sg_market_cap"]):
+                mismatches.append(
+                    (
+                        row["alert_id"],
+                        "call_market_cap",
+                        usable(row["sg_market_cap"]),
+                        row["call_market_cap"],
+                    )
+                )
+    finally:
+        db.close()
+    out(f"database={db_path} projection_rows={len(rows)}")
+    for identity, field, mine, stored in mismatches:
+        out(f"MISMATCH projection call {identity} {field}: recomputed={mine!r} stored={stored!r}")
+    out(f"projection_rows={len(rows)} mismatches={len(mismatches)}")
+    return mismatches
+
+
 def get_json(url, timeout=20):
     request = urllib.request.Request(url, method="GET", headers={"Accept": "application/json"})
     with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310
@@ -224,8 +333,13 @@ def main(argv=None):
     parser.add_argument("--db", required=True, type=Path, help="SQLite copy, opened read-only")
     parser.add_argument("--api", help="public base URL; compared with GET requests only")
     parser.add_argument("--as-of", type=float, help="cutoff (default: the API's, else now)")
+    parser.add_argument(
+        "--projection", action="store_true", help="verify call_performance rows (schema 8)"
+    )
     args = parser.parse_args(argv)
     try:
+        if args.projection:
+            return 1 if run_projection(args.db) else 0
         mismatches = run(args.db, args.api, args.as_of)
     except (sqlite3.Error, urllib.error.URLError, OSError, KeyError, ValueError) as exc:
         print(f"Cannot verify: {type(exc).__name__}: {exc}", file=sys.stderr)

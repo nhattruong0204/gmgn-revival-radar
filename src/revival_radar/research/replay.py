@@ -106,7 +106,9 @@ class Policy:
         if below_min_stage(result.status, config.alert_min_stage):
             return False, "stage_below_minimum"
         previous = self.calls[key]
-        recent = [c for c in previous if c.timestamp > timestamp - config.alert_cooldown_hours * 3600]
+        recent = [
+            c for c in previous if c.timestamp > timestamp - config.alert_cooldown_hours * 3600
+        ]
         if recent and result.score < max(c.score for c in recent) + config.realert_score_increase:
             return False, "cooldown"
         if config.realert_requires_new_evidence and previous:
@@ -268,8 +270,15 @@ def iter_evaluations(db: sqlite3.Connection, since: float, until: float):
                 (
                     (r["timestamp"], 1, r["id"]),
                     Evaluation(
-                        r["id"], "archive", r["timestamp"], r["chain"], r["contract_address"],
-                        r["symbol"], r["score"], r["status"], bool(r["eligible"]),
+                        r["id"],
+                        "archive",
+                        r["timestamp"],
+                        r["chain"],
+                        r["contract_address"],
+                        r["symbol"],
+                        r["score"],
+                        r["status"],
+                        bool(r["eligible"]),
                         r["presentation"],
                     ),
                 )  # fmt: skip
@@ -357,8 +366,13 @@ def _seed_prior_calls(db, since):
         structure = (_loads(r["saved"]).get("signal") or {}).get("structure")
         price = finite(r["price"])
         seeds[(r["chain"], r["contract_address"])].append(
-            SimCall(r["timestamp"], r["score"], price, r["stage"],
-                    structure if isinstance(structure, dict) else None)  # fmt: skip
+            SimCall(
+                r["timestamp"],
+                r["score"],
+                price,
+                r["stage"],
+                structure if isinstance(structure, dict) else None,
+            )  # fmt: skip
         )
     return seeds
 
@@ -705,15 +719,18 @@ def render(report: dict) -> str:
             lines.append(_summary_row(name, data[key]["summary"]))
         for name, key in (("Baseline", "baseline"), ("Candidate", "candidate")):
             lines += ["", f"### {name} by input fidelity", "", HEADER]
-            lines += [
-                _summary_row(LABEL_TEXT[x], data[key]["by_label"][x]) for x in LABELS
-            ]
+            lines += [_summary_row(LABEL_TEXT[x], data[key]["by_label"][x]) for x in LABELS]
         for title, rows in (
             ("Calls removed by the candidate", data["removed_calls"]),
             ("Calls added by the candidate", data["added_calls"]),
         ):
             if rows:
-                lines += ["", f"### {title}", "", "| Time | Token | Stage | Score | Change | Fidelity |"]
+                lines += [
+                    "",
+                    f"### {title}",
+                    "",
+                    "| Time | Token | Stage | Score | Change | Fidelity |",
+                ]
                 lines.append("|---|---|---|---|---|---|")
                 lines += [
                     f"| {r['called_at']} | {r['symbol'] or r['contract_address'][:8]} | "
