@@ -5,6 +5,7 @@ import sqlite3
 import time
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
+from functools import lru_cache
 from threading import Timer
 
 from pydantic import ValidationError
@@ -162,8 +163,13 @@ def observation(value: Mapping, identity: Mapping, origin: str = "unknown") -> O
     return Observation.model_validate(fields)
 
 
+@lru_cache(maxsize=4)
 def public_field(payload, chain, address, timestamp, score, status, eligible, name):
-    """Search/sort use the same trusted evidence as public serialization."""
+    """Search/sort use the same trusted evidence as public serialization.
+
+    A tiny pure-function memo lets SQLite's two ORDER BY references to one
+    sort expression (NULL placement, then value) validate each payload once.
+    """
     detail = Repository._market_detail(
         {
             "chain": chain,
@@ -333,38 +339,45 @@ class PublicQueries:
         if search:
             # LIKE escapes treat user input literally; mint address case remains significant.
             escaped = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            # OR short-circuits left to right: cheap column tests first, so the
+            # payload-validating name lookup only runs for rows still undecided.
             filters.append(
-                "(e.symbol LIKE ? ESCAPE '\\' OR "
+                "(instr(e.contract_address,?)>0 OR e.symbol LIKE ? ESCAPE '\\' OR "
                 "public_field(st.value,e.chain,e.contract_address,e.timestamp,e.score,"
-                "e.status,e.eligible,'name') LIKE ? ESCAPE '\\' OR instr(e.contract_address,?)>0)"
+                "e.status,e.eligible,'name') LIKE ? ESCAPE '\\')"
             )
-            arguments.extend((f"%{escaped}%", f"%{escaped}%", search))
-        cte = """WITH identities AS (
-            SELECT DISTINCT chain,contract_address FROM evaluations
-            WHERE timestamp>? AND timestamp<=?
+            arguments.extend((search, f"%{escaped}%", f"%{escaped}%"))
+        # Latest completed evaluation per token in one ranked pass. Walking chains
+        # with a loose index scan keeps the window range-bound on the covering
+        # (chain,timestamp) index instead of probing every identity separately.
+        # A chain filter replaces the walk: ranking is partitioned by chain anyway.
+        walk = (
+            "SELECT ?"
+            if chain
+            else "SELECT MIN(chain) FROM evaluations UNION ALL SELECT (SELECT MIN(chain) "
+            "FROM evaluations WHERE chain>c) FROM chains WHERE c IS NOT NULL"
+        )
+        cte = f"""WITH RECURSIVE chains(c) AS ({walk}
+        ), ranked AS (
+            SELECT w.id,ROW_NUMBER() OVER (PARTITION BY w.chain,w.contract_address
+                ORDER BY w.timestamp DESC,w.id DESC) AS rn
+            FROM chains c CROSS JOIN evaluations w JOIN scan_runs s ON s.id=w.scan_id
+            WHERE w.chain=c.c AND w.timestamp>? AND w.timestamp<=?
+            AND s.finished IS NOT NULL AND s.finished<=?
         ), latest AS (
-            SELECT e.* FROM identities i JOIN evaluations e ON e.id=(
-                SELECT candidate.id FROM evaluations candidate
-                JOIN scan_runs s ON s.id=candidate.scan_id
-                WHERE candidate.chain=i.chain AND candidate.contract_address=i.contract_address
-                AND candidate.timestamp>? AND candidate.timestamp<=?
-                AND s.finished IS NOT NULL AND s.finished<=?
-                ORDER BY candidate.timestamp DESC,candidate.id DESC LIMIT 1
-            )
+            SELECT e.* FROM ranked r JOIN evaluations e ON e.id=r.id WHERE r.rn=1
         ) """
         selection = (
             "FROM latest e LEFT JOIN state st ON st.key='telegram:evaluation:' || e.id WHERE "
             + " AND ".join(filters)
         )
         parameters = (
-            until - age_hours * 3600,
-            until,
+            *((chain,) if chain else ()),
             until - age_hours * 3600,
             until,
             until,
             *arguments,
         )
-        total = self.db.execute(cte + "SELECT COUNT(*) " + selection, parameters).fetchone()[0]
         if sort in ("score", "timestamp"):
             sorting = f"e.{sort}"
         else:
@@ -377,14 +390,23 @@ class PublicQueries:
             )
         if order not in ("asc", "desc"):
             raise ValueError("Unsupported order")
-        rows = self.db.execute(
+        # The total comes from the same ranked pass as the page; only a page past
+        # the end (no rows to carry it) needs a separate count.
+        found = self.db.execute(
             cte
-            + "SELECT e.* "
+            + "SELECT e.*,COUNT(*) OVER () AS total_matches "
             + selection
             + f" ORDER BY ({sorting}) IS NULL ASC,({sorting}) {order.upper()},"
             "e.timestamp DESC,e.chain,e.contract_address LIMIT ? OFFSET ?",
             (*parameters, page_size, (page - 1) * page_size),
         ).fetchall()
+        if found:
+            total = found[0]["total_matches"]
+        elif page == 1:
+            total = 0
+        else:
+            total = self.db.execute(cte + "SELECT COUNT(*) " + selection, parameters).fetchone()[0]
+        rows = found
         return RadarPage(
             items=[self._evaluation(row) for row in rows],
             total=total,
