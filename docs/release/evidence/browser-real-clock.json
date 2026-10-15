@@ -1,0 +1,4152 @@
+{
+ "summary": {
+  "pages": 13,
+  "sizes": [
+   "320",
+   "390",
+   "768",
+   "1024",
+   "1366",
+   "1920",
+   "1366-zoom200"
+  ],
+  "combos": 91,
+  "overflowCombos": [],
+  "consoleErrorCombos": [
+   "radar-history-7d@320: console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc",
+   "radar-history-7d@390: console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc",
+   "radar-history-7d@768: console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc",
+   "radar-history-7d@1024: console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc",
+   "radar-history-7d@1366: console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc",
+   "radar-history-7d@1920: console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc",
+   "radar-history-7d@1366-zoom200: console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc"
+  ],
+  "externalRequestCombos": [],
+  "contrastFailCombos": [],
+  "contrastChecked": 47288,
+  "contrastUnknownBg": 597,
+  "keyboardFail": [],
+  "reducedMotionFail": [],
+  "errorStates": [
+   "radar-history-7d@320: Saved observations temporarily unavailable No saved observations are available. ",
+   "radar-history-7d@390: Saved observations temporarily unavailable No saved observations are available. ",
+   "radar-history-7d@768: Saved observations temporarily unavailable No saved observations are available. ",
+   "radar-history-7d@1024: Saved observations temporarily unavailable No saved observations are available. ",
+   "radar-history-7d@1366: Saved observations temporarily unavailable No saved observations are available. ",
+   "radar-history-7d@1920: Saved observations temporarily unavailable No saved observations are available. ",
+   "radar-history-7d@1366-zoom200: Saved observations temporarily unavailable No saved observations are available. "
+  ]
+ },
+ "report": [
+  {
+   "page": "radar-empty-stale",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": -26018,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 752,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 2768,
+   "errors": [
+    "console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc"
+   ],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [
+     "Saved observations temporarily unavailable No saved observations are available. "
+    ],
+    "textLength": 793,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1337,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 921,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6140,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1366,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1610,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11042,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1323,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 313,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4541,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1322,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 307,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4588,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1853,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1551,
+    "unknownBg": 13,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7022,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1308,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 620,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6190,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1312,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 620,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6173,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1315,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 588,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14805,
+    "callCards": 0,
+    "rows": 38
+   }
+  },
+  {
+   "page": "reports",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1330,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 685,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1286,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 43,
+    "unknownBg": 2,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2692,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1281,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 13,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 281,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1334,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 752,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 2802,
+   "errors": [
+    "console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc"
+   ],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [
+     "Saved observations temporarily unavailable No saved observations are available. "
+    ],
+    "textLength": 793,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1452,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 921,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6136,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1544,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1610,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11042,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1391,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 313,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4541,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 28821,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 307,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4588,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": -25692,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1551,
+    "unknownBg": 13,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7022,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1428,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 620,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6190,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1434,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 620,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6173,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1461,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 588,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14805,
+    "callCards": 0,
+    "rows": 38
+   }
+  },
+  {
+   "page": "reports",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1326,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 685,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1358,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 43,
+    "unknownBg": 2,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2692,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1297,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 13,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 281,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1314,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 1306,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 2793,
+   "errors": [
+    "console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc"
+   ],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [
+     "Saved observations temporarily unavailable No saved observations are available. "
+    ],
+    "textLength": 1347,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1340,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 931,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6301,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1375,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1620,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11204,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1354,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 323,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4703,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1336,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 317,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4750,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1545,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1556,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7144,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1318,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 640,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6372,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1318,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 640,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6352,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1343,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 598,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14967,
+    "callCards": 0,
+    "rows": 38
+   }
+  },
+  {
+   "page": "reports",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1295,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 37,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 847,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1298,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 53,
+    "unknownBg": 5,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2854,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1290,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 22,
+    "unknownBg": 4,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 443,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1296,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 1306,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 2774,
+   "errors": [
+    "console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc"
+   ],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [
+     "Saved observations temporarily unavailable No saved observations are available. "
+    ],
+    "textLength": 1347,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1338,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 931,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6301,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1387,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1620,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11204,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1330,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 323,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4703,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1341,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 317,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4750,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1547,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1556,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7144,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1313,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 640,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6372,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1323,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 640,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6352,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1330,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 598,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14967,
+    "callCards": 0,
+    "rows": 38
+   }
+  },
+  {
+   "page": "reports",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1304,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 37,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 847,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1296,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 53,
+    "unknownBg": 5,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2854,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1300,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 22,
+    "unknownBg": 4,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 443,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 28764,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 1306,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 2840,
+   "errors": [
+    "console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc"
+   ],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [
+     "Saved observations temporarily unavailable No saved observations are available. "
+    ],
+    "textLength": 1347,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1528,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 931,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6301,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1701,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1620,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11204,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1461,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 323,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4703,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1450,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 317,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4750,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1897,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1559,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7334,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1462,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 640,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6372,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1464,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 640,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6352,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1614,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 598,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14967,
+    "callCards": 0,
+    "rows": 38
+   }
+  },
+  {
+   "page": "reports",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1344,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 37,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 847,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1393,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 53,
+    "unknownBg": 5,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2854,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1314,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 22,
+    "unknownBg": 4,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 443,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1318,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 1306,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 2784,
+   "errors": [
+    "console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc"
+   ],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [
+     "Saved observations temporarily unavailable No saved observations are available. "
+    ],
+    "textLength": 1347,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 28740,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 931,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6301,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1380,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1620,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11204,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1335,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 323,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4703,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1336,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 317,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4750,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1540,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1559,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7334,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1319,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 640,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6372,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1332,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 640,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6352,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 28732,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 598,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14967,
+    "callCards": 0,
+    "rows": 38
+   }
+  },
+  {
+   "page": "reports",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": -26085,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 37,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 847,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1295,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 53,
+    "unknownBg": 5,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2854,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1288,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 22,
+    "unknownBg": 4,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 443,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1353,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 752,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 2839,
+   "errors": [
+    "console: Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ /api/v1/radar?age_hours=168&min_score=0&include_ignore=true&page=1&page_size=25&sort=score&order=desc"
+   ],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [
+     "Saved observations temporarily unavailable No saved observations are available. "
+    ],
+    "textLength": 793,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 29077,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 921,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6139,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": -25389,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1610,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11045,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1547,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 313,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4541,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1559,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 307,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4588,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1945,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1548,
+    "unknownBg": 13,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 6832,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1688,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 620,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6193,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1682,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 620,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6173,
+    "callCards": 98,
+    "rows": 40
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1913,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 588,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14805,
+    "callCards": 0,
+    "rows": 38
+   }
+  },
+  {
+   "page": "reports",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1384,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 685,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1443,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 43,
+    "unknownBg": 2,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2692,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1338,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 13,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 281,
+    "callCards": 0,
+    "rows": 0
+   }
+  }
+ ],
+ "keyboard": [
+  {
+   "page": "radar-empty-stale",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 8,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:Filters & sort",
+    "a:Explore saved history",
+    "summary:Collection coverage & scan context",
+    "a:methodology",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 0,
+   "mainActions": []
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 9,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:Filters & sort",
+    "button:Try again",
+    "a:Explore saved history",
+    "summary:Collection coverage & scan context",
+    "a:methodology",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 1,
+   "mainActions": [
+    "a:Methodology & coverage"
+   ]
+  },
+  {
+   "page": "signals-flat",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$DARK",
+    "summary:Score 57 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 47 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$Agency",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 63 · reasons, risks & best/worst"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$DARK",
+    "summary:Score 57 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 47 · reasons, risks & best/worst"
+   ]
+  },
+  {
+   "page": "signals-grouped",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 63 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 50 · reasons, risks & best/worst",
+    "a:$?",
+    "summary:Score 80 · reasons, risks & best/worst",
+    "a:$?",
+    "summary:Score 60 · reasons, risks & best/worst"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED"
+   ]
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 21,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 13,
+   "mainActions": [
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive"
+   ]
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 21,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract C1mBfBoDkwWfd6uTFZp62ARHLj",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 13,
+   "mainActions": [
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive"
+   ]
+  },
+  {
+   "page": "token-paid",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:← Back to research",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "a:GMGN",
+    "a:Explorer",
+    "button:Price",
+    "button:Market cap",
+    "button:Score",
+    "button:1h candles",
+    "div:Observed price chart, horizontally scrol",
+    "svg:Observed price. 500 saved points, from O",
+    "g:Call 12 of 12, alert #45, Oct 14, 2026, ",
+    "g:Call 11 of 12, alert #44, Oct 14, 2026, ",
+    "g:Call 10 of 12, alert #34, Oct 13, 2026, ",
+    "g:Call 9 of 12, alert #33, Oct 13, 2026, 0",
+    "g:Call 8 of 12, alert #26, Oct 12, 2026, 1",
+    "g:Call 7 of 12, alert #25, Oct 12, 2026, 0",
+    "g:Call 6 of 12, alert #22, Oct 11, 2026, 1",
+    "g:Call 5 of 12, alert #18, Oct 11, 2026, 0",
+    "g:Call 4 of 12, alert #16, Oct 11, 2026, 0",
+    "summary:Saved chart values",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 56 · reasons, risks & best/worst",
+    "button:Older →",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$PAID"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Score",
+    "button:1h candles",
+    "div:Observed price chart, horizontally scrol",
+    "svg:Observed price. 500 saved points, from O",
+    "g:Call 12 of 12, alert #45, Oct 14, 2026, ",
+    "g:Call 11 of 12, alert #44, Oct 14, 2026, ",
+    "g:Call 10 of 12, alert #34, Oct 13, 2026, ",
+    "g:Call 9 of 12, alert #33, Oct 13, 2026, 0",
+    "g:Call 8 of 12, alert #26, Oct 12, 2026, 1",
+    "g:Call 7 of 12, alert #25, Oct 12, 2026, 0",
+    "g:Call 6 of 12, alert #22, Oct 11, 2026, 1",
+    "g:Call 5 of 12, alert #18, Oct 11, 2026, 0"
+   ]
+  },
+  {
+   "page": "track-journal",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 38,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "button:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "a:$CRAWL",
+    "a:$SI",
+    "a:$HOOKED",
+    "a:$JEANPHIL",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$DARK",
+    "a:$baton",
+    "a:$JEANPHIL",
+    "a:$baton",
+    "a:$baton",
+    "a:$SI",
+    "a:$JEANPHIL",
+    "a:$HOOKED",
+    "a:$Agency",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$JEANPHIL",
+    "a:$JEANPHIL",
+    "a:$Agency",
+    "a:$Agency",
+    "a:$HOTBOT",
+    "a:$HOOKED",
+    "a:$PAID",
+    "a:$PAID",
+    "button:Next page",
+    "summary:Definitions, reconciliation and limitati",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 30,
+   "mainActions": [
+    "select:Sort",
+    "input:",
+    "a:$CRAWL",
+    "a:$SI",
+    "a:$HOOKED",
+    "a:$JEANPHIL",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$DARK",
+    "a:$baton",
+    "a:$JEANPHIL",
+    "a:$baton"
+   ]
+  },
+  {
+   "page": "track-worst-first",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 38,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "button:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "a:$RARI",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "a:$DARK",
+    "a:$SI",
+    "a:$e/acc",
+    "a:$e/acc",
+    "a:$Agency",
+    "a:$Agency",
+    "a:$PAID",
+    "a:$DARK",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$baton",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$JEANPHIL",
+    "a:$baton",
+    "a:$JEANPHIL",
+    "a:$Agency",
+    "a:$baton",
+    "a:$PAID",
+    "button:Next page",
+    "summary:Definitions, reconciliation and limitati",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 30,
+   "mainActions": [
+    "select:Sort",
+    "input:",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "a:$RARI",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "a:$DARK",
+    "a:$SI",
+    "a:$e/acc",
+    "a:$e/acc",
+    "a:$Agency"
+   ]
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Alert window",
+    "select:Checkpoint horizon",
+    "button:Cohort filters",
+    "button:Export complete cohort (UTC CSV)",
+    "button:Below -50%0 / 27",
+    "button:-50% to below 0%18 / 27",
+    "button:Exactly 0%0 / 27",
+    "button:Above 0% through 50%9 / 27",
+    "button:Above 50%0 / 27",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Below -50%0 / 27",
+    "button:-50% to below 0%18 / 27",
+    "button:Exactly 0%0 / 27",
+    "button:Above 0% through 50%9 / 27",
+    "button:Above 50%0 / 27",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence"
+   ]
+  },
+  {
+   "page": "reports",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 11,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:1h",
+    "button:4h",
+    "button:12h",
+    "button:24h",
+    "button:72h",
+    "button:7d",
+    "summary:Report window & collection totals",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 3,
+   "mainActions": [
+    "button:7d",
+    "summary:Report window & collection totals",
+    "a:Methodology & coverage"
+   ]
+  },
+  {
+   "page": "methodology",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 3,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 0,
+   "mainActions": []
+  },
+  {
+   "page": "admin-login",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 6,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "input:",
+    "button:Sign in",
+    "a:← Return to public radar",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 0,
+   "mainActions": []
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 20,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "select:Observation window",
+    "input:Search tokens",
+    "button:Search",
+    "select:Filter chain",
+    "select:Filter stage",
+    "select:Minimum score",
+    "select:Sort candidates",
+    "a:Explore saved history",
+    "summary:Collection coverage & scan context",
+    "a:methodology",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 12,
+   "mainActions": [
+    "button:Refresh",
+    "select:Observation window",
+    "input:Search tokens",
+    "button:Search",
+    "select:Filter chain",
+    "select:Filter stage",
+    "select:Minimum score",
+    "select:Sort candidates",
+    "a:Explore saved history",
+    "summary:Collection coverage & scan context",
+    "a:methodology",
+    "a:Methodology & coverage"
+   ]
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 21,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "select:Observation window",
+    "input:Search tokens",
+    "button:Search",
+    "select:Filter chain",
+    "select:Filter stage",
+    "select:Minimum score",
+    "select:Sort candidates",
+    "button:Try again",
+    "a:Explore saved history",
+    "summary:Collection coverage & scan context",
+    "a:methodology",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 13,
+   "mainActions": [
+    "button:Refresh",
+    "select:Observation window",
+    "input:Search tokens",
+    "button:Search",
+    "select:Filter chain",
+    "select:Filter stage",
+    "select:Minimum score",
+    "select:Sort candidates",
+    "button:Try again",
+    "a:Explore saved history",
+    "summary:Collection coverage & scan context",
+    "a:methodology"
+   ]
+  },
+  {
+   "page": "signals-flat",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$DARK",
+    "summary:Score 57 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 47 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$Agency",
+    "summary:Score 43 · reasons, risks & best/worst"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst"
+   ]
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 63 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "a:$HOOKED"
+   ]
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 27,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 19,
+   "mainActions": [
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence"
+   ]
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 27,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract C1mBfBoDkwWfd6uTFZp62ARHLj",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 19,
+   "mainActions": [
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract C1mBfBoDkwWfd6uTFZp62ARHLj",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence"
+   ]
+  },
+  {
+   "page": "token-paid",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:← Back to research",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "a:GMGN",
+    "a:Explorer",
+    "button:Price",
+    "button:Market cap",
+    "button:Score",
+    "button:1h candles",
+    "div:Observed price chart, horizontally scrol",
+    "svg:Observed price. 500 saved points, from O",
+    "g:Call 12 of 12, alert #45, Oct 14, 2026, ",
+    "g:Call 11 of 12, alert #44, Oct 14, 2026, ",
+    "g:Call 10 of 12, alert #34, Oct 13, 2026, ",
+    "g:Call 9 of 12, alert #33, Oct 13, 2026, 0",
+    "g:Call 8 of 12, alert #26, Oct 12, 2026, 1",
+    "g:Call 7 of 12, alert #25, Oct 12, 2026, 0",
+    "g:Call 6 of 12, alert #22, Oct 11, 2026, 1",
+    "g:Call 5 of 12, alert #18, Oct 11, 2026, 0",
+    "g:Call 4 of 12, alert #16, Oct 11, 2026, 0",
+    "summary:Saved chart values",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 56 · reasons, risks & best/worst",
+    "button:Older →",
+    "a:$PAID"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:← Back to research",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "a:GMGN",
+    "a:Explorer",
+    "button:Price",
+    "button:Market cap",
+    "button:Score",
+    "button:1h candles",
+    "div:Observed price chart, horizontally scrol",
+    "svg:Observed price. 500 saved points, from O",
+    "g:Call 12 of 12, alert #45, Oct 14, 2026, ",
+    "g:Call 11 of 12, alert #44, Oct 14, 2026, "
+   ]
+  },
+  {
+   "page": "track-journal",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "summary:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "button:List",
+    "button:Dense table",
+    "a:$CRAWL",
+    "a:$SI",
+    "a:$HOOKED",
+    "a:$JEANPHIL",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$DARK",
+    "a:$baton",
+    "a:$JEANPHIL",
+    "a:$baton",
+    "a:$baton",
+    "a:$SI",
+    "a:$JEANPHIL",
+    "a:$HOOKED",
+    "a:$Agency",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$JEANPHIL",
+    "a:$JEANPHIL",
+    "a:$Agency",
+    "a:$Agency",
+    "a:$HOTBOT"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "summary:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "button:List",
+    "button:Dense table",
+    "a:$CRAWL",
+    "a:$SI"
+   ]
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "summary:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "button:List",
+    "button:Dense table",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "a:$RARI",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "a:$DARK",
+    "a:$SI",
+    "a:$e/acc",
+    "a:$e/acc",
+    "a:$Agency",
+    "a:$Agency",
+    "a:$PAID",
+    "a:$DARK",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$baton",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$JEANPHIL",
+    "a:$baton",
+    "a:$JEANPHIL"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "summary:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "button:List",
+    "button:Dense table",
+    "a:$HOOKED",
+    "a:$HOOKED"
+   ]
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Alert window",
+    "select:Checkpoint horizon",
+    "button:Cohort filters",
+    "button:Export complete cohort (UTC CSV)",
+    "button:Below -50%0 / 27",
+    "button:-50% to below 0%18 / 27",
+    "button:Exactly 0%0 / 27",
+    "button:Above 0% through 50%9 / 27",
+    "button:Above 50%0 / 27",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Alert window",
+    "select:Checkpoint horizon",
+    "button:Cohort filters",
+    "button:Export complete cohort (UTC CSV)",
+    "button:Below -50%0 / 27",
+    "button:-50% to below 0%18 / 27",
+    "button:Exactly 0%0 / 27",
+    "button:Above 0% through 50%9 / 27",
+    "button:Above 50%0 / 27",
+    "div:Saved checkpoints"
+   ]
+  },
+  {
+   "page": "reports",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 17,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "button:1h",
+    "button:4h",
+    "button:12h",
+    "button:24h",
+    "button:72h",
+    "button:7d",
+    "summary:Report window & collection totals",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 9,
+   "mainActions": [
+    "button:Refresh",
+    "button:1h",
+    "button:4h",
+    "button:12h",
+    "button:24h",
+    "button:72h",
+    "button:7d",
+    "summary:Report window & collection totals",
+    "a:Methodology & coverage"
+   ]
+  },
+  {
+   "page": "methodology",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 9,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 1,
+   "mainActions": [
+    "a:Methodology & coverage"
+   ]
+  },
+  {
+   "page": "admin-login",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 12,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "input:",
+    "button:Sign in",
+    "a:← Return to public radar",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 4,
+   "mainActions": [
+    "input:",
+    "button:Sign in",
+    "a:← Return to public radar",
+    "a:Methodology & coverage"
+   ]
+  }
+ ],
+ "reduced": [
+  {
+   "page": "radar-empty-stale",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signals-flat",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signals-grouped",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "token-paid",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-journal",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-worst-first",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "reports",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "methodology",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "admin-login",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signals-flat",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "token-paid",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-journal",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "reports",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "methodology",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "admin-login",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  }
+ ]
+}

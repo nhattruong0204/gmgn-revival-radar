@@ -1,7 +1,7 @@
 # V2 release gate (issue #75)
 
-Status: **gates declared, nothing measured yet.** This section was committed before any
-measurement. Thresholds below are the existing, unchanged ones (AGENTS.md; #25, #42, #45,
+Status: **measured; 18 of 20 gates pass (G20 is completed by CI), G8 and G16 fail on a pre-existing Radar 7-day
+read defect (see Results).** The thresholds were committed before any measurement. Thresholds below are the existing, unchanged ones (AGENTS.md; #25, #42, #45,
 #49, #64, #66, #90, #74). They must not be relaxed after results are seen. A failed
 gate stays visible with its fix; a gate that fails because of a code defect is reported
 and stopped, not fixed in this branch.
@@ -47,4 +47,68 @@ VPS resources; Chromium only; no real devices or assistive technology.
 
 ## Results
 
-(filled in after measurement)
+Measured 2026-10-15 on a WSL2 host (loopback, Chromium 1248), worktree of `main` 40a62a4
+plus this branch. Thresholds above are unchanged from the first commit of this file.
+Evidence JSON (summary numbers only, no database rows) is in
+[evidence/](evidence/); screenshots are in [v2-gate-screenshots/](v2-gate-screenshots/).
+
+| # | Gate | Measured | Result |
+| --- | --- | --- | --- |
+| G1 | Migration 7 to 9 | `integrity_check` ok; 17 pre-existing tables, row counts and SHA-256 of ordered rows identical; new empty tables `call_performance`, `replay_candles`, `replay_evaluations`; second connect a no-op (0.01 s); migration 2.19 s including integrity check | PASS |
+| G2 | `refresh_call_performance` | first run built 49 rows in 0.050 s, later runs 0.0015 s; pre-existing tables still identical to the schema-7 copy; integrity ok | PASS |
+| G3 | Parity, API (schema 9, default and fixed `as_of`) | 49 calls compared, 0 mismatches, exit 0 | PASS |
+| G4 | Parity, `--projection` | 49 projection rows, 0 mismatches, exit 0 | PASS |
+| G5 | Audit figures at `as_of` = last snapshot + 1 | 49 calls, 43 measurable, 7 positive, 36 negative, 0 flat, 6 unknown (`no_call_mc`), median -11.5229% (-11.52%) | PASS |
+| G6 | CSV/API parity | calls export: 49 rows, ids equal, 0 field mismatches (change, MFE, MAE, market caps, reason) against the API; checkpoint export 44 rows = API total, `return` count equal; journal `performance` equals `/alerts` performance for all 49 | PASS |
+| G7 | Schema-7 copy on the new website | same cohort figures, same items hash as schema 9, parity script 0 mismatches over the API, CSV parity 0 mismatches | PASS |
+| G8 | Endpoint timing, cold and warm | 23 route variants: all HTTP 200, schema 9 cold max 0.337 s (token history), warm uncached max 0.360 s (`/reports?hours=168`), warm cached max 0.014 s; schema 7 cold max 0.640 s (call journal computed on read), warm max 0.347 s. Server start-up (with report warm-up) about 3 s, reported separately. **Not in that list:** `GET /api/v1/radar?age_hours=168` returned 503 at the 1.5 s deadline (1.50 to 1.53 s, repeated, schema 7 and 9, default and fixed `as_of`) | **FAIL** (pre-existing defect, see below) |
+| G9 | Steady replay (production copy, includes calls) | 672/672 HTTP 200; 0 scan errors, 0 external requests, 0 SQLite read errors; median scan 2.0714 s baseline / 2.0745 s loaded, allowance 0.5178 s; 4 scans overlapped the reads | PASS |
+| G10 | Burst replay | 672/672 HTTP 200; 0 / 0 / 0; median scan 0.9153 s / 0.9287 s, allowance 0.2288 s; 8 scans overlapped | PASS |
+| G11 | New endpoints in replay | `scripts/benchmark_website.py --include-calls` (new, minimal) reads `/alerts` (per-call performance), `/alerts?group=token` and `/track-record/calls?days=30&sort=worst` besides the existing routes; slowest read in either profile 0.413 s | PASS |
+| G12 | Post-scan hook overhead (3 runs, 8 scans per arm, 100 tokens) | refresh costs at most 4.2 ms per scan. Medians off/on: steady 2.059/2.467, 2.491/2.560 (swapped order), 2.522/2.078 s; burst 0.892/0.421, 0.893/0.453, 1.002/0.890 s; all within the allowance. Run order and noise dominate: the hooks-off arm was slower in several runs (unexplained, not investigated). **Limit:** the synthetic provider source returns no candles, so `replay_candles` and `replay_evaluations` stayed at 0 rows and the archive write path was not exercised | PASS, with the archive limit |
+| G13 | Overflow | 0 of 98 page/size combinations overflow (14 pages x 320, 390, 768, 1024, 1366, 1920, 1366 at 200%); a second pass with the real clock (13 pages) also 0 | PASS |
+| G14 | Contrast | 0 of 61,903 sampled text elements below 4.5:1 (693 elements with a background image were skipped, not counted as passing) | PASS |
+| G15 | Keyboard and focus | at 1366 and 390: skip link first on every page, up to 40 Tab stops per page, every stop has a visible outline or shadow, main actions reached in DOM order (Refresh, filters, Group by token, call links, Export, tabs, copy contract); no trap | PASS |
+| G16 | Console errors | 0 on 13 of 14 pages at all sizes. `radar-history-7d` logs the browser's "Failed to load resource ... 503" at every size because of the defect behind G8; the page itself renders the generic "temporarily unavailable" state | **FAIL** (same defect) |
+| G17 | External requests | 0 on every page and size | PASS |
+| G18 | Reduced motion | emulated `prefers-reduced-motion: reduce` at 1366 and 390 on every page: 0 running animations longer than 0.01 ms | PASS |
+| G19 | Containers | `docker build -t revival-radar:v2gate .` and `--target website` built; `validate_website_container.py` passed (HTTPS routing, CSP, secure cookies, anonymous denial, CSRF, queued command, stale worker, logout, no scanner in the website image) | PASS |
+| G20 | Process | runbook written and not executed; no VPS or production access; PR uses `Refs #75`; CI result recorded in the PR | see PR |
+
+### Failure kept visible: Radar 7-day window (G8, G16)
+
+`/api/v1/radar?age_hours=168` (reached from the Radar empty state's "Explore saved
+history" link) does not finish inside the 1,500 ms read deadline on the 1.5 GB production
+copy and returns 503. This is **not a V2 regression**: the same request on the production
+code (`a784f67`, extracted with `git archive`, run against the unmigrated schema-7 copy)
+returns 503 at 1.50 to 1.53 s. The 24 h and 72 h windows return in under 0.5 s. Per the
+rules of this gate it is not fixed in this branch and the deadline is not changed; a
+separate issue is needed (an index or narrower query for the 168 h window). Owner decision
+before deployment: ship with it (graceful error state) or hold for the fix. The gate
+result for G8 and G16 stays FAIL until a fix is re-measured with the same thresholds.
+
+### Notes and limits
+
+- The copy is 23 to 24 hours older than the measurement time. With the real clock the
+  24 h Radar and Reports views are legitimately empty; those states are kept as
+  evidence (`browser-real-clock.json`, `radar-empty-stale-*.png`). The populated
+  screenshots use a read clock frozen 5 minutes after the copy's last scan (a launcher
+  outside the repository; only the website's clock changes, never the data). The default
+  Radar filters (score 40 and above, no `ignore`) are also empty at that scan, so
+  `radar-all-24h-*` shows the unfiltered saved evaluations.
+- Contrast is computed from computed styles with alpha compositing, not by a visual tool.
+  Large-text relief was not used. Elements over background images were skipped.
+- Browser: Chromium only; no real devices, assistive technology, Firefox or WebKit.
+  200% zoom is emulated as a 683 px viewport at device scale 2. Admin was only the login
+  screen with a throwaway password hash; no sign-in was attempted.
+- Replay and endpoint timings are loopback on one host with mocked provider waits and an
+  OS page cache that could not be dropped (`posix_fadvise` was used as a best effort for
+  cold starts). They do not measure the VPS, TLS or Internet latency.
+- The schema-7 call journal costs up to 0.64 s cold because it is computed on read
+  (the projection is empty); this is the rollback/compat path, still under the deadline.
+- Screenshots: full-page 1366 and 390 for every page, and the 200% zoom set for Signals
+  (grouped), Signal #45, Token PAID and the Track Record journal. Other sizes are in the
+  JSON (overflow, contrast, console, external requests, keyboard, motion per page/size).
+- Private inputs (the database copy and its derived copies) were never modified or
+  committed; the pristine schema-7 working copy is byte-identical (sha256) to the original after all steps, and every mutating
+  step used a copy outside the repository.

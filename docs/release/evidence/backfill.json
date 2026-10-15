@@ -1,0 +1,39 @@
+{
+ "active_days_default": 30.0,
+ "runs": [
+  {
+   "seconds": 0.0505,
+   "stats": {
+    "updated": 0,
+    "built": 49,
+    "rebuilt": 0,
+    "frozen": 0,
+    "seconds": 0.04767924200041307
+   }
+  },
+  {
+   "seconds": 0.0017,
+   "stats": {
+    "updated": 49,
+    "built": 0,
+    "rebuilt": 0,
+    "frozen": 0,
+    "seconds": 0.001628827000331512
+   }
+  },
+  {
+   "seconds": 0.0015,
+   "stats": {
+    "updated": 49,
+    "built": 0,
+    "rebuilt": 0,
+    "frozen": 0,
+    "seconds": 0.0014453509998020309
+   }
+  }
+ ],
+ "call_performance_rows": 49,
+ "alerts_sent": 49,
+ "max_snapshot_ts": 1791984990.9393573,
+ "integrity": "ok"
+}
