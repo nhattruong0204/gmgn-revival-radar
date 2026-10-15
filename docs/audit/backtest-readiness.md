@@ -1,5 +1,14 @@
 # Backfill and backtest readiness
 
+**Update (issue #74).** A scanner-owned append-only archive (schema 9) now retains the
+full evaluation presentation for tokens that were ever called (within 3 days of a call) and
+for a deterministic 5 percent sample of other tokens, plus the 1h candle series evaluations
+used, and `python -m revival_radar.research replay` re-scores saved inputs causally under a
+candidate configuration with walk-forward splits. See [replay](../replay.md). It is a
+conditional re-score, not a full-universe replay, and only data collected after the archive
+ships can be replayed `faithful`; older evidence is labelled `partial`. The input table
+below describes the state before that change.
+
 **Current assessment: PARTIAL.** The repo has offline fixtures and captured-response
 benchmarks, not an exact historical full-universe trading replay engine. The new
 read-only audit CLI is descriptive research, not a backtest. Production retention and availability were verified against the VPS backups: about

@@ -499,7 +499,16 @@ def run(
                 evaluation.key, evaluation.timestamp, prepared.price, result, config,
                 prepared.structure_flags if prepared.token is not None else None,
             )  # fmt: skip
-            decisions[(evaluation.key, evaluation.timestamp, name)] = (called, reason, label)
+            decisions[(evaluation.key, evaluation.timestamp, name)] = (
+                called,
+                reason,
+                label,
+                (
+                    evaluation.score,
+                    result.score,
+                    prepared.saved.score_version if prepared.saved else None,
+                ),
+            )
             if called:
                 sim_calls[name].append(
                     {
@@ -599,8 +608,15 @@ def actual_comparison(db, since, until, baseline_calls, decisions) -> dict:
         if not evaluated:
             row["reason"] = "no_evaluation_retained"
         else:
-            _, why, label = evaluated[0]
+            _, why, label, (recorded, replayed, version) = evaluated[0]
             row["reason"] = f"{why or 'simulated_call_not_matched'} ({label})"
+            if label == PARTIAL_LEGACY:
+                row["reason"] += "; no recorded configuration, earlier or default settings assumed"
+            if recorded != replayed and label != PARTIAL_LEGACY:
+                row["reason"] += (
+                    f"; recorded score {recorded} (score_version {version}) vs {replayed} "
+                    "re-scored by the current code"
+                )
         missed.append(row)
     other_status = defaultdict(list)
     for a in actual:
