@@ -1,7 +1,6 @@
 """Bounded SQLite reads, each connection owned by the calling request thread."""
 
 import json
-import math
 import sqlite3
 import time
 from collections.abc import Iterator, Mapping
@@ -10,6 +9,7 @@ from threading import Timer
 
 from pydantic import ValidationError
 
+from revival_radar.analysis.call_metrics import finite, market_performance
 from revival_radar.chains import CHAINS
 from revival_radar.models.token import Candle, TokenSnapshot
 from revival_radar.storage.database import SCHEMA_VERSION
@@ -98,16 +98,6 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
             interruption.cancel()
             interruption.join()
         db.close()
-
-
-def finite(value: object) -> float | None:
-    if type(value) not in (int, float):
-        return None
-    try:
-        number = float(value)
-    except OverflowError:
-        return None
-    return number if math.isfinite(number) else None
 
 
 def _label(context: Mapping) -> dict:
@@ -555,104 +545,46 @@ class PublicQueries:
     def _performance(self, row: sqlite3.Row, until: float) -> CallPerformance:
         """Compare the immutable call with saved snapshots in (call, until]; read-only."""
         called = row["timestamp"]
-        call_mc, call_price = finite(row["market_cap"]), finite(row["price"])
-        call_mc = call_mc if call_mc is not None and call_mc > 0 else None
-        chain, address = row["chain"], row["contract_address"]
-        # Alert-time market-cap source: the latest snapshot at or before the call (indexed
-        # LIMIT 1), accepted only if its market cap is the one the alert froze. Legacy
-        # payloads carry no source and stay unknown; nothing is inferred or rewritten.
-        call_source = None
-        if call_mc is not None:
-            at_call = self.db.execute(
-                """SELECT market_cap,json_extract(payload,'$.market_cap_source')
-                FROM token_snapshots WHERE chain=? AND contract_address=? AND timestamp<=?
-                ORDER BY timestamp DESC LIMIT 1""",
-                (chain, address, called),
-            ).fetchone()
-            if (
-                at_call
-                and at_call[1] in ("rank", "circulating_enriched")
-                and finite(at_call[0]) is not None
-                and abs(at_call[0] - call_mc) <= 1e-9 * call_mc
-            ):
-                call_source = at_call[1]
-        # Finite, positive market caps only; 1e300 excludes +inf without Python callbacks.
-        # One indexed range read (chain, contract_address, timestamp) bounded by the cutoff.
-        source_filter, source_args = "", ()
-        basis, other_basis = "unknown", 0
-        if call_source:
-            total, same = self.db.execute(
-                """SELECT COUNT(*),COALESCE(SUM(json_extract(payload,'$.market_cap_source')=?),0)
-                FROM token_snapshots
-                WHERE chain=? AND contract_address=? AND timestamp>? AND timestamp<=?
-                AND market_cap>0 AND market_cap<1e300""",
-                (call_source, chain, address, called, until),
-            ).fetchone()
-            if same:
-                # Prefer like-with-like; the excluded count is reported, never dropped silently.
-                basis, other_basis = "same", total - same
-                if other_basis:
-                    source_filter = " AND json_extract(payload,'$.market_cap_source')=?"
-                    source_args = (call_source,)
-            elif total:
-                basis = "mixed"  # only other-basis or unlabelled snapshots exist to compare
-        agg = self.db.execute(
-            f"""WITH r AS (SELECT timestamp t,market_cap mc FROM token_snapshots
-                WHERE chain=? AND contract_address=? AND timestamp>? AND timestamp<=?
-                AND market_cap>0 AND market_cap<1e300{source_filter})
-            SELECT COUNT(*),MAX(mc),MIN(mc),MAX(t),
-                (SELECT MAX(g) FROM (SELECT t-LAG(t,1,?) OVER (ORDER BY t) g FROM r)) FROM r""",
-            (chain, address, called, until, *source_args, called),
-        ).fetchone()
-        count, high, low, latest_at, gap = agg
-        latest_mc = latest_price = None
-        if count:
-            latest = self.db.execute(
-                """SELECT market_cap,price FROM token_snapshots
-                WHERE chain=? AND contract_address=? AND timestamp=?""",
-                (row["chain"], row["contract_address"], latest_at),
-            ).fetchone()
-            latest_mc = finite(latest[0])
-            price = finite(latest[1])
-            latest_price = price if price is not None and price > 0 else None
+        call_price = finite(row["price"])
+        # Arithmetic lives in the shared pure module (also used by the research export).
+        perf = market_performance(
+            self.db,
+            row["chain"],
+            row["contract_address"],
+            called,
+            row["market_cap"],
+            until,
+        )
+        call_mc, count, latest_at = perf.call_market_cap, perf.count, perf.latest_at
+        basis = perf.basis
         position = self.db.execute(
             "SELECT COUNT(*),COALESCE(SUM(a.timestamp<? OR (a.timestamp=? AND a.id<=?)),0) "
             "FROM alerts a WHERE a.chain=? AND a.contract_address=? AND " + self.alert_visibility(),
             (called, called, row["id"], row["chain"], row["contract_address"], until, until, until),
         ).fetchone()
-        change = mfe = mae = None
-        reason = None
-        if call_mc is None:
-            reason = "no_call_mc"
-        elif not count:
-            reason = "no_later_observation"
-        else:
-            change = (latest_mc / call_mc - 1) * 100
-            mfe = (high / call_mc - 1) * 100
-            mae = (low / call_mc - 1) * 100
         return CallPerformance(
             call_market_cap=call_mc,
             call_price=call_price if call_price is not None and call_price > 0 else None,
-            latest_market_cap=latest_mc,
-            latest_price=latest_price,
+            latest_market_cap=perf.latest_market_cap,
+            latest_price=perf.latest_price,
             latest_observed_at=latest_at if count else None,
             freshness="none"
             if not count
             else "fresh"
             if until - latest_at <= FRESH_SECONDS
             else "stale",
-            change_since_call_pct=change,
-            change_reason=reason,
-            mfe_pct=mfe,
-            mae_pct=mae,
+            change_since_call_pct=perf.change_since_call_pct,
+            change_reason=perf.change_reason,
+            mfe_pct=perf.mfe_pct,
+            mae_pct=perf.mae_pct,
             observations=count,
-            max_gap_seconds=gap if count else None,
+            max_gap_seconds=perf.max_gap_seconds,
             elapsed_seconds=max(0.0, until - called),
             token_call_index=position[1] or None,
             token_call_count=position[0] or None,
             basis=basis,
-            call_market_cap_source=call_source,
-            other_basis_observations=other_basis if basis == "same" else None,
+            call_market_cap_source=perf.call_source,
+            other_basis_observations=perf.other_basis if basis == "same" else None,
         )
 
     def _alert(
