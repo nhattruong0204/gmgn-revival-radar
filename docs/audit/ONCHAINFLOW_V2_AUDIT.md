@@ -60,7 +60,7 @@ calls, unknowns are preserved. The product fails for two separate reasons:
 
 1. Alert threshold 40 publishes WATCH-quality calls; no stage gate in `Scanner.process`.
 2. Re-alerts need only a 6h cooldown, not new evidence: 12 calls on PAID, 5 on falling HOOKED.
-3. Overall score has ~zero rank correlation with outcome (ρ = +0.01, n = 43).
+3. Overall score has no rank correlation with outcome (ρ = −0.05, n = 43; corrected 2026-10-15, see SEVEN_DAY_SIGNAL_REVIEW §4).
 4. Calls ≈ baseline cohorts; no measurable edge this week.
 5. Late calls after the move (HOTBOT +236% while rejected, then called at the top).
 6. Discovery is Hot Search top-20 only, so Trending/both-source components are almost unearnable.
@@ -86,7 +86,7 @@ not enough to tune weights.
 
 ## Scoring components: useful vs unproven
 
-- Weak positive hints (hypotheses): base duration, Setup score, lower bundler share.
+- Weak hints (hypotheses only): lower bundler share (ρ −0.30), longer base duration (ρ +0.19). Setup/Trigger/Confirmation show no relationship (|ρ| ≤ 0.14) after correcting tie ranking.
 - Non-discriminating: drawdown, liquidity, holder retention (almost always earned).
 - Unproven/noisy: 5m volume acceleration, 1h price change at call (negative).
 - Structurally unearnable now: Trending, both-sources bonus.
