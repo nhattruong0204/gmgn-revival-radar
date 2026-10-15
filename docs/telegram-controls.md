@@ -63,7 +63,12 @@ See [market report definitions, timing and API use](market-reports.md).
 - **Token filters:** age, market cap, liquidity, holders, drawdown, volume, price change.
 - **Structure:** base duration/range, holder retention, concentration.
 - **Activity:** volume and transaction acceleration multipliers.
-- **Alerts:** score threshold, cooldown, score increase, dry-run, pause, daily summary.
+- **Alerts:** score threshold, cooldown, score increase, dry-run, pause, daily summary,
+  minimum call stage (`alert_min_stage`, default Watch = no stage gate) and the
+  re-alert evidence switch (`realert_requires_new_evidence`, default Off). With the
+  switch on, a repeat call needs a higher stage or a newly detected higher high,
+  breakout or retest, and a price above the previous call. See
+  [publishing policy](scoring.md#publishing-policy-issue-70).
 - **Discovery:** source limits, watchlist limits/lifetime, API pacing, scan/history intervals.
 - **Chains:** enable or disable individual supported chains, retaining at least one.
 - **Asset exclusions:** stocks, stablecoins, and wrapped assets.

@@ -205,7 +205,14 @@ export interface ListResponse<T> {
   as_of: number;
   last_scan_at: number | null;
 }
+export interface PublishingPolicy {
+  min_stage: string;
+  score_threshold: number;
+  realert_requires_new_evidence: boolean;
+  revision?: number | null;
+}
 export interface Meta {
+  publishing_policy?: PublishingPolicy | null;
   active_chains?: Array<{ id: string; name: string }>;
   collection_status?: "current" | "stale" | "disabled" | "unknown";
   worker_heartbeat_at?: number | null;

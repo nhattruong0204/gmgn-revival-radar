@@ -18,6 +18,7 @@ interface Checkpoint {
   horizon: number;
   state: CheckpointState;
   returnPct: number | null;
+  observedAt?: number | null;
 }
 
 /** Signed percent with a real minus sign; unknown stays "Unknown", never 0%. */
@@ -58,7 +59,12 @@ function checkpoints(
     );
     if (row) {
       if (row.return_pct != null)
-        return { horizon, state: "observed", returnPct: row.return_pct };
+        return {
+          horizon,
+          state: "observed",
+          returnPct: row.return_pct,
+          observedAt: row.observed_at,
+        };
       if (row.state === "pending")
         return { horizon, state: "pending", returnPct: null };
       if (row.state === "missed")
@@ -69,7 +75,12 @@ function checkpoints(
       (o) => (o.horizon_hours ?? o.hours) === horizon,
     );
     if (outcome?.return_pct != null)
-      return { horizon, state: "observed", returnPct: outcome.return_pct };
+      return {
+        horizon,
+        state: "observed",
+        returnPct: outcome.return_pct,
+        observedAt: outcome.observed_at,
+      };
     const early =
       p.elapsed_seconds == null || p.elapsed_seconds < horizon * 3600;
     return {
@@ -376,6 +387,24 @@ export function CallPerformanceCard({
                       </strong>
                     ) : (
                       <em>{stateText[c.state]}</em>
+                    )}
+                    {c.state === "observed" && (
+                      <small className="cp-time">
+                        {c.observedAt != null ? (
+                          <>
+                            Observed{" "}
+                            <time
+                              dateTime={new Date(
+                                c.observedAt * 1000,
+                              ).toISOString()}
+                            >
+                              {exactTime(c.observedAt)}
+                            </time>
+                          </>
+                        ) : (
+                          "Observation time unavailable"
+                        )}
+                      </small>
                     )}
                   </li>
                 ))}

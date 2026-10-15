@@ -83,6 +83,11 @@ class Settings(BaseSettings):
     alert_score_threshold: int = Field(default=75, ge=0, le=100)
     alert_cooldown_hours: Positive = 6
     realert_score_increase: int = Field(default=10, ge=1, le=100)
+    # Publishing policy. Defaults reproduce the pre-policy behaviour exactly.
+    alert_min_stage: Literal[
+        "WATCH", "EARLY_REVIVAL", "REVIVING", "STRONG_REVIVAL", "CONFIRMED_REVIVAL"
+    ] = "WATCH"
+    realert_requires_new_evidence: bool = False
     dry_run: bool = True
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     trending_discovery_enabled: bool = False

@@ -206,6 +206,53 @@ it("explains all stages and the heuristic meaning of scores", () => {
   expect(screen.getByText(/not calibrated probabilities/)).toBeTruthy();
 });
 
+const policyMeta = (policy: unknown) =>
+  ({
+    chains: [],
+    as_of: 1,
+    last_scan_at: 1,
+    publishing_policy: policy,
+  }) as never;
+it("states the live publishing rule from saved public metadata", () => {
+  render(
+    <Methodology
+      meta={policyMeta({
+        min_stage: "EARLY_REVIVAL",
+        score_threshold: 75,
+        realert_requires_new_evidence: true,
+        revision: 9,
+      })}
+    />,
+  );
+  const rule = screen.getByRole("heading", { name: "Live publishing rule" })
+    .parentElement as HTMLElement;
+  expect(rule.textContent).toContain("at least 75");
+  expect(rule.textContent).toContain("Lower-stage observations stay");
+  expect(rule.textContent).toContain("needs new evidence");
+  expect(rule.textContent).toContain("revision 9");
+});
+it("describes the default rule without a stage gate", () => {
+  render(
+    <Methodology
+      meta={policyMeta({
+        min_stage: "WATCH",
+        score_threshold: 40,
+        realert_requires_new_evidence: false,
+      })}
+    />,
+  );
+  const rule = screen.getByRole("heading", { name: "Live publishing rule" })
+    .parentElement as HTMLElement;
+  expect(rule.textContent).toContain("no extra stage gate");
+  expect(rule.textContent).toContain("does not need new chart evidence");
+});
+it("says the rule is unavailable instead of guessing", () => {
+  render(<Methodology meta={policyMeta(null)} />);
+  expect(
+    screen.getByText(/rule saved with the latest completed scan is not/),
+  ).toBeTruthy();
+});
+
 it("keeps legacy alert detail unknown while preserving the original score", async () => {
   respond({
     id: 1,
@@ -268,12 +315,94 @@ it("labels checkpoint values as price change and market cap as market cap", asyn
     },
   });
   render(<Alerts id="1" />);
-  const section = (
-    await screen.findByRole("heading", { name: "Observed after the alert" })
-  ).closest("section");
-  expect(section?.textContent).toContain("+6h price change");
-  expect(section?.textContent).toContain("not market-cap change");
+  const strip = (await screen.findByRole("region", {
+    name: "Price change at checkpoints",
+  })) as HTMLElement;
+  expect(
+    screen.queryByRole("heading", { name: "Observed after the alert" }),
+  ).toBeNull();
+  expect(strip.textContent).toContain("+6h");
+  expect(strip.textContent).toContain("+12.5%");
+  expect(document.body.textContent?.match(/\+12\.5%/g)).toHaveLength(1);
+  expect(
+    document.body.textContent?.match(/not executed-trade P&L/g),
+  ).toHaveLength(1);
+  expect(strip.textContent).toContain("not market-cap change");
+  const time = strip.querySelector("time");
+  expect(time?.textContent).toContain("1970");
+  expect(time?.getAttribute("datetime")).toBe("1970-01-01T00:01:40.000Z");
+  expect(strip.textContent).toContain("Pending");
   expect(screen.getAllByText(labels.marketCap).length).toBeGreaterThan(0);
+});
+it("keeps pending and missed checkpoint states in the card strip without a duplicate panel", async () => {
+  respond({
+    id: 1,
+    symbol: "SAMPLE",
+    score: 58,
+    timestamp: peak.timestamp,
+    chain: "sol",
+    contract_address: peak.contract_address,
+    preset: "Balanced",
+    revision: 4,
+    observation: peak,
+    latest_observation: latest,
+    outcomes: [],
+    checkpoint_research: [
+      {
+        horizon_hours: 1,
+        return_pct: null,
+        state: "missed",
+        reason: "",
+        origin: "x",
+        knowledge: "x",
+        checkpoint_origin: "x",
+        source: "x",
+        stage: "x",
+        observed_at: null,
+        due_at: 1,
+        window_end: 1,
+      },
+      {
+        horizon_hours: 6,
+        return_pct: null,
+        state: "pending",
+        reason: "",
+        origin: "x",
+        knowledge: "x",
+        checkpoint_origin: "x",
+        source: "x",
+        stage: "x",
+        observed_at: null,
+        due_at: 1,
+        window_end: 1,
+      },
+    ],
+    performance: {
+      call_market_cap: 100,
+      call_price: null,
+      latest_market_cap: 110,
+      latest_price: null,
+      latest_observed_at: 100,
+      freshness: "fresh",
+      change_since_call_pct: 10,
+      change_reason: null,
+      mfe_pct: 10,
+      mae_pct: 0,
+      observations: 2,
+      max_gap_seconds: 60,
+      elapsed_seconds: 7200,
+      token_call_index: null,
+      token_call_count: null,
+    },
+  });
+  render(<Alerts id="1" />);
+  const strip = await screen.findByRole("region", {
+    name: "Price change at checkpoints",
+  });
+  expect(strip.textContent).toContain("Missed");
+  expect(strip.textContent).toContain("Pending");
+  expect(strip.querySelector("time")).toBeNull();
+  expect(screen.queryByText("No outcome observations yet")).toBeNull();
 });
 it("lists the risk warnings saved with an alert in the call record", async () => {
   const saved = [
