@@ -11,7 +11,7 @@ import pytest
 
 from revival_radar.research import cli, data, export, report
 from revival_radar.research.stats import ranks, spearman
-from revival_radar.storage.database import connect
+from revival_radar.storage.database import SCHEMA_VERSION, connect
 
 GOLDEN = Path(__file__).parent / "fixtures" / "research"
 B0 = 1_799_971_200  # a 6h bucket boundary: 83332 * 21600
@@ -184,7 +184,7 @@ def test_export_matches_golden_files(copy, tmp_path):
         "cohorts.csv": manifest["row_counts"]["cohorts.csv"],
     }
     saved = json.loads((tmp_path / "out" / "manifest.json").read_text())
-    assert saved["quick_check"] == "ok" and saved["schema_version"] == 8
+    assert saved["quick_check"] == "ok" and saved["schema_version"] == SCHEMA_VERSION
     assert saved["inputs"]["database_sha256"] == file_hash(copy)
     assert saved["cutoffs"]["until"] == UNTIL and saved["cutoffs"]["since"] == B0
     assert set(saved["definitions"]) >= {"unknown", "cohorts", "change_since_call_pct"}

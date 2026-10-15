@@ -16,9 +16,9 @@ TEXT_FIELDS = {
 # market_cap_source and circulating_supply live only in the payload JSON (no migration).
 PAYLOAD_ONLY_FIELDS = {"security", "data_warnings", "market_cap_source", "circulating_supply"}
 SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in PAYLOAD_ONLY_FIELDS]
-SCHEMA_VERSION = 8
-# The read-only website serves schema 7 (projection absent: computed on read) and 8.
-PUBLIC_SCHEMA_VERSIONS = (7, 8)
+SCHEMA_VERSION = 9
+# The read-only website serves schema 7 (projection absent: computed on read), 8 and 9.
+PUBLIC_SCHEMA_VERSIONS = (7, 8, 9)
 
 
 def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
@@ -67,6 +67,8 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             _migrate_research_outcomes(db)
         if version < 8:
             _migrate_call_performance(db)
+        if version < 9:
+            _migrate_replay_archive(db)
         # An additive query index is compatible with existing schema-4/rollback readers.
         db.execute("""CREATE INDEX IF NOT EXISTS evaluations_chain_time
             ON evaluations(chain,timestamp DESC,id DESC)""")
@@ -137,6 +139,34 @@ def _migrate_research_outcomes(db: sqlite3.Connection) -> None:
             db.execute(f"""CREATE TRIGGER IF NOT EXISTS {table}_no_{operation.lower()}
                 BEFORE {operation} ON {table}
                 BEGIN SELECT RAISE(ABORT,'Research evidence is immutable'); END""")
+
+
+def _migrate_replay_archive(db: sqlite3.Connection) -> None:
+    # Additive, append-only replay evidence (issue #74). No backfill: pruned history
+    # cannot be recovered, and existing rows are never rewritten.
+    db.execute("""CREATE TABLE IF NOT EXISTS replay_evaluations (
+        id INTEGER PRIMARY KEY, evaluation_id INTEGER, scan_id INTEGER,
+        timestamp REAL NOT NULL, chain TEXT NOT NULL, contract_address TEXT NOT NULL,
+        symbol TEXT, score INTEGER, status TEXT, eligible INTEGER,
+        rejection_reasons TEXT, missing_fields TEXT, warnings TEXT, asset_type TEXT,
+        discovery_sources TEXT, presentation BLOB NOT NULL, reason TEXT NOT NULL,
+        archived_at REAL NOT NULL, UNIQUE(chain,contract_address,timestamp)
+    )""")
+    db.execute("""CREATE INDEX IF NOT EXISTS replay_evaluations_time
+        ON replay_evaluations(timestamp)""")
+    db.execute("""CREATE TABLE IF NOT EXISTS replay_candles (
+        id INTEGER PRIMARY KEY, chain TEXT NOT NULL, contract_address TEXT NOT NULL,
+        kind TEXT NOT NULL, fetched_at REAL NOT NULL, series_hash TEXT NOT NULL,
+        payload BLOB NOT NULL, archived_at REAL NOT NULL,
+        UNIQUE(chain,contract_address,kind,series_hash)
+    )""")
+    db.execute("""CREATE INDEX IF NOT EXISTS replay_candles_token
+        ON replay_candles(chain,contract_address,fetched_at)""")
+    for table in ("replay_evaluations", "replay_candles"):
+        for operation in ("UPDATE", "DELETE"):
+            db.execute(f"""CREATE TRIGGER IF NOT EXISTS {table}_no_{operation.lower()}
+                BEFORE {operation} ON {table}
+                BEGIN SELECT RAISE(ABORT,'Replay evidence is immutable'); END""")
 
 
 def _migrate_research_briefs(db: sqlite3.Connection) -> None:

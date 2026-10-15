@@ -65,6 +65,14 @@ The async `httpx` adapter calls the official Agent OpenAPI host
 No undocumented browser routes or scraping. See [GMGN research and field mappings](docs/gmgn.md)
 for the official source revision, exact units, observed API differences, and coverage.
 
+## Research replay
+
+`python -m revival_radar.research replay` re-scores saved evaluations under a candidate
+configuration, causally and read-only, on a database copy, and reports the calls it would
+have published beside the baseline (see [replay](docs/replay.md)). Results are labelled
+faithful or partial and support a walk-forward `--split`. **Live settings must not be tuned
+on the holdout period**; the replay is research output, not a recommendation or a forecast.
+
 | Chain setting | Network | Adapter and live discovery checks |
 |---|---|---|
 | `sol` | Solana | Supported |

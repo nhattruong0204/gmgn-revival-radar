@@ -106,7 +106,7 @@ def test_migration_is_additive_idempotent_and_schema_seven_upgrades(tmp_path):
     old.close()
     for _ in range(2):  # a second start is a no-op
         upgraded = connect(path)
-        assert upgraded.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION == 8
+        assert upgraded.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
         assert upgraded.execute("SELECT COUNT(*) FROM call_performance").fetchone()[0] == 0
         assert table_hashes(upgraded) == before
         upgraded.close()

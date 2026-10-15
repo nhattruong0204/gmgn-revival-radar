@@ -104,3 +104,11 @@ Checkpoints reuse `analysis.track_record.checkpoint_rows`.
 - Cohort E (eligible, score >= 60, not called) is kept as in the prototype.
 - Calls are delivered alerts only; call performance uses the same-basis rule of
   `docs/performance-metrics.md`.
+
+## `replay`
+
+`python -m revival_radar.research replay` re-scores saved evaluations under a candidate
+configuration, simulates the publish decision and compares it with the in-force baseline and
+the calls actually published, labelling input fidelity (faithful or partial) and supporting
+a walk-forward `--split`. It shares the `mode=ro` and live-database refusal above. See
+[replay](replay.md) for the retention policy it depends on, measured storage and validation.
