@@ -106,9 +106,12 @@ result for G8 and G16 stays FAIL until a fix is re-measured with the same thresh
   cold starts). They do not measure the VPS, TLS or Internet latency.
 - The schema-7 call journal costs up to 0.64 s cold because it is computed on read
   (the projection is empty); this is the rollback/compat path, still under the deadline.
-- Screenshots: full-page 1366 and 390 for every page, and the 200% zoom set for Signals
-  (grouped), Signal #45, Token PAID and the Track Record journal. Other sizes are in the
-  JSON (overflow, contrast, console, external requests, keyboard, motion per page/size).
+- Screenshots (64-colour palette PNG to keep the repository small, text remains legible):
+  full-page 1366 and 390 for Signals (flat), Signal #45, Token PAID, Track Record journal
+  and worst-first, Radar (stale/empty and unfiltered 24 h) and the Radar 7-day failure.
+  The other pages, the 200% zoom set and all other sizes were captured and checked, but
+  their screenshots are not committed; their per-page/per-size results (overflow, contrast,
+  console, external requests, keyboard, motion) are in the evidence JSON.
 - Private inputs (the database copy and its derived copies) were never modified or
   committed; the pristine schema-7 working copy is byte-identical (sha256) to the original after all steps, and every mutating
   step used a copy outside the repository.
