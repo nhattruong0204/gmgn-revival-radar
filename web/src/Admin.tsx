@@ -171,6 +171,8 @@ function SettingsFields({
       "alert_score_threshold",
       "alert_cooldown_hours",
       "realert_score_increase",
+      "alert_min_stage",
+      "realert_requires_new_evidence",
       "daily_summary_enabled",
       "daily_summary_hour",
       "report_timezone",
@@ -303,6 +305,25 @@ function SettingsFields({
                 >
                   <option value="true">Enabled</option>
                   <option value="false">Disabled</option>
+                </select>
+              ) : key === "alert_min_stage" ? (
+                <select
+                  value={values[key] ?? "WATCH"}
+                  onChange={(e) =>
+                    setValues((v) => ({ ...v, [key]: e.target.value }))
+                  }
+                >
+                  {[
+                    "WATCH",
+                    "EARLY_REVIVAL",
+                    "REVIVING",
+                    "STRONG_REVIVAL",
+                    "CONFIRMED_REVIVAL",
+                  ].map((stage) => (
+                    <option key={stage} value={stage}>
+                      {humanKey(stage)}
+                    </option>
+                  ))}
                 </select>
               ) : typeof original === "object" ? (
                 <textarea

@@ -11,6 +11,7 @@ from threading import Timer
 from pydantic import ValidationError
 
 from revival_radar.analysis import call_projection as projection
+from revival_radar.analysis.scoring import STAGE_ORDER
 from revival_radar.chains import CHAINS
 from revival_radar.models.token import Candle, TokenSnapshot
 from revival_radar.storage.database import PUBLIC_SCHEMA_VERSIONS
@@ -204,6 +205,33 @@ class PublicQueries:
     def check_deadline(self):
         if self.deadline is not None and time.monotonic() > self.deadline:
             raise sqlite3.OperationalError("Saved read deadline exceeded")
+
+    def publishing_policy(self, until: float) -> dict | None:
+        """Policy from the latest completed scan's saved configuration, or None if unknown."""
+        run = self.db.execute(
+            "SELECT id FROM scan_runs WHERE finished IS NOT NULL AND finished<=? "
+            "ORDER BY finished DESC, id DESC LIMIT 1",
+            (until,),
+        ).fetchone()
+        saved = self.repo.get_state(f"telegram:scan:{run['id']}") if run else None
+        try:
+            context = json.loads(saved) if saved else None
+            settings = context["settings"]
+            threshold = settings["alert_score_threshold"]
+        except (ValueError, TypeError, KeyError):
+            return None
+        # Scans saved before the policy existed had no stage gate or re-alert rule.
+        stage = settings.get("alert_min_stage", "WATCH")
+        flag = settings.get("realert_requires_new_evidence", False)
+        revision = context.get("revision")
+        if type(threshold) is not int or stage not in STAGE_ORDER[1:] or type(flag) is not bool:
+            return None
+        return {
+            "min_stage": stage,
+            "score_threshold": threshold,
+            "realert_requires_new_evidence": flag,
+            "revision": revision if type(revision) is int and revision >= 0 else None,
+        }
 
     def last_scan_at(self, until: float) -> float | None:
         row = self.db.execute(

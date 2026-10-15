@@ -127,6 +127,32 @@ Discovery context is saved as `ACTIVE_DISCOVERY`, `WATCHLIST_REVIVAL`, or
 `RANKING_UNAVAILABLE`. Incomplete ranking coverage is not silently called a known
 ranking absence, and still receives conservative off-ranking top-stage guards.
 
+## Publishing policy (issue #70)
+
+A call (a published Telegram alert) requires an eligible observation, a score at or
+above `alert_score_threshold`, and the stage gate below. Observations that fail only
+the stage gate stay on the Radar and are counted as `stage_below_minimum` in the scan
+funnel and candidate traces; they are never published.
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `alert_min_stage` | `WATCH` | Lowest stage that may be published: `WATCH`, `EARLY_REVIVAL`, `REVIVING`, `STRONG_REVIVAL` or `CONFIRMED_REVIVAL`. `WATCH` means no stage gate, which reproduces behaviour before the policy existed. |
+| `realert_requires_new_evidence` | `false` | When `true`, a repeat call for a token needs new evidence (below), in addition to the cooldown and score-increase rules. |
+
+New evidence for a repeat call requires **all** of:
+
+1. A stage ranked higher than the previous call's stage, **or** a higher high,
+   breakout or retest that is newly true compared with the previous call's saved
+   structure. An unknown previous structure or stage never counts as new evidence.
+2. The current price strictly above the previous call's saved price. If either price
+   is unknown the call is blocked, conservatively.
+
+Blocked repeats are logged and counted as `realert_blocked`. Both settings are saved
+in every new call's configuration snapshot, change the runtime revision when edited,
+and are shown (read-only, nonsecret) on the website Methodology page via
+`/api/v1/meta` `publishing_policy`. Defaults preserve current behaviour; changing them
+is an owner decision.
+
 ## Configuration and compatibility
 
 The example `.env` includes all new activity/maturity/stage values. New thresholds

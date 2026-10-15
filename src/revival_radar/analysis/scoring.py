@@ -17,6 +17,31 @@ CONFIRMATION_COMPONENTS = ("higher_low", "higher_high", "breakout", "retest")
 SCORE_VERSION = "setup-trigger-confirmation-v1"
 
 
+STAGE_ORDER = (
+    "IGNORE",
+    "WATCH",
+    "EARLY_REVIVAL",
+    "REVIVING",
+    "STRONG_REVIVAL",
+    "CONFIRMED_REVIVAL",
+)
+
+
+def stage_rank(stage: str | None) -> int:
+    """Rank on the stage ladder; unknown or missing stages rank below IGNORE."""
+    return STAGE_ORDER.index(stage) if stage in STAGE_ORDER else -1
+
+
+def below_min_stage(status: str | None, min_stage: str) -> bool:
+    """True when the publishing stage gate blocks this status.
+
+    WATCH (the default) is "no gate": it never blocks, so existing alert
+    decisions are reproduced exactly even for unusual score thresholds.
+    """
+    floor = stage_rank(min_stage)
+    return floor > stage_rank("WATCH") and stage_rank(status) < floor
+
+
 def status_for(
     score: int,
     *,

@@ -73,12 +73,16 @@ LABELS = dict(item for group in GROUPS.values() for item in group) | {
     "daily_summary_enabled": "Daily summary",
     "enabled_chains": "Chains",
     "discovery_interval": "Discovery interval",
+    "alert_min_stage": "Minimum call stage",
+    "realert_requires_new_evidence": "Re-alerts need new evidence",
     "exclude_tokenized_stocks": "Exclude stocks",
     "exclude_stablecoins": "Exclude stablecoins",
     "exclude_wrapped_assets": "Exclude wrapped assets",
 }
 NUMERIC_FIELDS = {field for group in GROUPS.values() for field, _ in group}
+STAGES = ("WATCH", "EARLY_REVIVAL", "REVIVING", "STRONG_REVIVAL", "CONFIRMED_REVIVAL")
 TOGGLES = {
+    "realert_requires_new_evidence",
     "alerts_paused",
     "dry_run",
     "daily_summary_enabled",
@@ -484,6 +488,8 @@ class TelegramControls:
                 await self._preview({"enabled_chains": ",".join(chains)})
             elif action == "d" and value in {"1m", "5m", "1h", "6h", "24h"}:
                 await self._preview({"discovery_interval": value})
+            elif action == "g" and value in STAGES:
+                await self._preview({"alert_min_stage": value})
             elif action == "n" and value in NUMERIC_FIELDS:
                 self._input = (value, self.runtime.revision, time.monotonic() + 600)
                 current = getattr(self.runtime.effective(), value)
@@ -644,9 +650,30 @@ class TelegramControls:
                 rows.extend(
                     [
                         [self._toggle_button(key)]
-                        for key in ("alerts_paused", "dry_run", "daily_summary_enabled")
+                        for key in (
+                            "alerts_paused",
+                            "dry_run",
+                            "daily_summary_enabled",
+                            "realert_requires_new_evidence",
+                        )
                     ]
                 )
+                stage_text = setting_value("alert_min_stage", config.alert_min_stage)
+                body += (
+                    f"\n\nMinimum call stage  <b>{html.escape(stage_text)}</b>"
+                    "\nWatch keeps today's behaviour: no stage gate."
+                )
+                for group in (STAGES[:3], STAGES[3:]):
+                    rows.append(
+                        [
+                            self._button(
+                                f"{'✓ ' if stage == config.alert_min_stage else ''}"
+                                f"{setting_value('alert_min_stage', stage)}",
+                                f"g:{stage}",
+                            )
+                            for stage in group
+                        ]
+                    )
             if name == "discovery":
                 body = (
                     "Scan interval is a target; a scan can take longer.\n"

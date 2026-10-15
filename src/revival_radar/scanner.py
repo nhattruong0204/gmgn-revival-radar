@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from revival_radar.analysis.acceleration import fresh_history
 from revival_radar.analysis.filters import discovery_prefilter, first_pass
 from revival_radar.analysis.market_structure import analyze_structure
-from revival_radar.analysis.scoring import SCORE_VERSION, score_token
+from revival_radar.analysis.scoring import SCORE_VERSION, below_min_stage, score_token
 from revival_radar.clients.gmgn import DataSourceError, MarketDataSource
 from revival_radar.clients.telegram import TelegramClient, alert_buttons, format_alert
 from revival_radar.config import Settings
@@ -288,6 +288,18 @@ class Scanner:
         )
         if not result.eligible or result.score < self.config.alert_score_threshold:
             return
+        if below_min_stage(result.status, self.config.alert_min_stage):
+            # Observable skip: stays on Radar, never published as a call.
+            self.metrics.candidate(token, stage_below_minimum=True)
+            self._count(report, token.chain, "stage_below_minimum")
+            log.info(
+                "stage below minimum chain=%s symbol=%s stage=%s minimum=%s",
+                token.chain,
+                token.symbol,
+                result.status,
+                self.config.alert_min_stage,
+            )
+            return
         report.potential_alerts += 1
         self.metrics.candidate(token, potential_alert=True)
         self._count(report, token.chain, "potential_alerts")
@@ -311,7 +323,16 @@ class Scanner:
             market_context=self._alert_context(report, token.chain),
         )
         if alert_id is None:
-            log.info("alert cooldown chain=%s symbol=%s", token.chain, token.symbol)
+            blocked = getattr(self.repository, "last_block_reason", None)
+            if blocked is not None:
+                self._count(report, token.chain, blocked)
+                self.metrics.candidate(token, realert_blocked=blocked)
+            log.info(
+                "alert cooldown chain=%s symbol=%s reason=%s",
+                token.chain,
+                token.symbol,
+                blocked or "cooldown",
+            )
             return
         try:
             with self.metrics.measure("telegram"):

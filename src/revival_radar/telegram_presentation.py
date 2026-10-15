@@ -42,6 +42,8 @@ SHORT_LABELS = {
     "daily_summary_enabled": "Daily summary",
     "enabled_chains": "Chains",
     "discovery_interval": "Ranking period",
+    "alert_min_stage": "Min. call stage",
+    "realert_requires_new_evidence": "Re-alert needs proof",
     "exclude_tokenized_stocks": "Exclude stocks",
     "exclude_stablecoins": "Exclude stablecoins",
     "exclude_wrapped_assets": "Exclude wrapped assets",
@@ -110,6 +112,8 @@ def setting_value(key: str, value: Any) -> str:
         return {"1m": "1 min", "5m": "5 min", "1h": "1 h", "6h": "6 h", "24h": "24 h"}.get(
             str(value), str(value)
         )
+    if key == "alert_min_stage":
+        return str(value).replace("_", " ").capitalize()
     if isinstance(value, (int, float, Decimal)):
         text = _number(value)
         if key in MONEY_FIELDS:

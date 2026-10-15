@@ -1,4 +1,5 @@
 import json
+import logging
 import sqlite3
 import time
 from collections import Counter
@@ -13,6 +14,7 @@ from pydantic import ValidationError
 from revival_radar.analysis.acceleration import fresh_history
 from revival_radar.analysis.filters import first_pass
 from revival_radar.analysis.market_cap_basis import SAMPLE_KEY, append_pair, build_pair
+from revival_radar.analysis.scoring import STAGE_ORDER, below_min_stage, stage_rank
 from revival_radar.config import Settings
 from revival_radar.metrics import sqlite_timed
 from revival_radar.models.brief import build_brief
@@ -21,10 +23,14 @@ from revival_radar.models.signal import RevivalResult, has_returning_activity
 from revival_radar.models.token import TokenSnapshot
 from revival_radar.storage.database import SNAPSHOT_FIELDS
 
+log = logging.getLogger(__name__)
+
 
 class Repository:
     def __init__(self, db: sqlite3.Connection):
         self.db = db
+        # Why the last reserve_alert declined for the new-evidence policy, if it did.
+        self.last_block_reason: str | None = None
         self.research_briefs_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 6
         self.research_outcomes_enabled = db.execute("PRAGMA user_version").fetchone()[0] >= 7
         # Connection-local and read-only: a report never trusts unvalidated JSON
@@ -118,7 +124,11 @@ class Repository:
         origin: str = "unknown",
         market_context: dict | None = None,
     ) -> int | None:
+        self.last_block_reason = None
         if config.dry_run or not result.eligible or result.score < config.alert_score_threshold:
+            return None
+        if below_min_stage(result.status, config.alert_min_stage):
+            self.last_block_reason = "stage_below_minimum"
             return None
         # Serialize cooldown check + reservation across scanner processes.
         self.db.execute("BEGIN IMMEDIATE")
@@ -138,6 +148,18 @@ class Repository:
             ):
                 self.db.commit()
                 return None
+            if config.realert_requires_new_evidence:
+                reason = self._new_evidence_block(token, result)
+                if reason is not None:
+                    self.last_block_reason = "realert_blocked"
+                    log.info(
+                        "re-alert blocked chain=%s symbol=%s reason=%s",
+                        token.chain,
+                        token.symbol,
+                        reason,
+                    )
+                    self.db.commit()
+                    return None
             cursor = self.db.execute(
                 """INSERT INTO alerts
                 (timestamp,chain,contract_address,score,reason) VALUES (?,?,?,?,?)""",
@@ -194,6 +216,50 @@ class Repository:
         except (sqlite3.Error, ValueError):
             self.db.rollback()
             raise
+
+    def _new_evidence_block(self, token: TokenSnapshot, result: RevivalResult) -> str | None:
+        """Return why a repeat call lacks new evidence, or None when it may publish.
+
+        Requires a higher stage or a newly true higher-high/breakout/retest AND a
+        strictly higher price than the previous call. Unknown values block.
+        """
+        previous = self.db.execute(
+            """SELECT a.id, s.price, s.stage FROM alerts a
+            LEFT JOIN alert_signals s ON s.alert_id=a.id
+            WHERE a.chain=? AND a.contract_address=?
+            AND a.delivery_status IN ('sent','pending','unknown')
+            ORDER BY a.timestamp DESC, a.id DESC LIMIT 1""",
+            token.key,
+        ).fetchone()
+        if previous is None:
+            return None
+        old_price, new_price = previous["price"], token.price
+        if (
+            old_price is None
+            or new_price is None
+            or not isfinite(old_price)
+            or not isfinite(new_price)
+        ):
+            return "price_unknown"
+        if new_price <= old_price:
+            return "price_not_higher"
+        old_rank = stage_rank(previous["stage"]) if previous["stage"] in STAGE_ORDER else None
+        if old_rank is not None and stage_rank(result.status) > old_rank:
+            return None
+        saved = self.get_state(f"telegram:alert:{previous['id']}")
+        try:
+            structure = json.loads(saved)["signal"]["structure"] if saved else None
+        except (ValueError, TypeError, KeyError):
+            structure = None
+        if isinstance(structure, dict):
+            for event, now in (
+                ("higher_high_detected", result.structure.higher_high_detected),
+                ("breakout_detected", result.structure.breakout_detected),
+                ("retest_detected", result.structure.retest_detected),
+            ):
+                if now and structure.get(event) is False:
+                    return None
+        return "no_new_evidence"
 
     @staticmethod
     def _presentation(

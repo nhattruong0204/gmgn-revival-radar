@@ -61,7 +61,7 @@ export function App() {
     page = <Alerts id={parts[2]} />;
   else if (path === "/reports") page = <Reports />;
   else if (path === "/outcomes") page = <OutcomePage />;
-  else if (path === "/how-it-works") page = <Methodology />;
+  else if (path === "/how-it-works") page = <Methodology meta={meta.data} />;
   else if (path === "/admin" || path.startsWith("/admin/"))
     page = <Admin section={parts[2] ?? "overview"} />;
   else

@@ -206,6 +206,53 @@ it("explains all stages and the heuristic meaning of scores", () => {
   expect(screen.getByText(/not calibrated probabilities/)).toBeTruthy();
 });
 
+const policyMeta = (policy: unknown) =>
+  ({
+    chains: [],
+    as_of: 1,
+    last_scan_at: 1,
+    publishing_policy: policy,
+  }) as never;
+it("states the live publishing rule from saved public metadata", () => {
+  render(
+    <Methodology
+      meta={policyMeta({
+        min_stage: "EARLY_REVIVAL",
+        score_threshold: 75,
+        realert_requires_new_evidence: true,
+        revision: 9,
+      })}
+    />,
+  );
+  const rule = screen.getByRole("heading", { name: "Live publishing rule" })
+    .parentElement as HTMLElement;
+  expect(rule.textContent).toContain("at least 75");
+  expect(rule.textContent).toContain("Lower-stage observations stay");
+  expect(rule.textContent).toContain("needs new evidence");
+  expect(rule.textContent).toContain("revision 9");
+});
+it("describes the default rule without a stage gate", () => {
+  render(
+    <Methodology
+      meta={policyMeta({
+        min_stage: "WATCH",
+        score_threshold: 40,
+        realert_requires_new_evidence: false,
+      })}
+    />,
+  );
+  const rule = screen.getByRole("heading", { name: "Live publishing rule" })
+    .parentElement as HTMLElement;
+  expect(rule.textContent).toContain("no extra stage gate");
+  expect(rule.textContent).toContain("does not need new chart evidence");
+});
+it("says the rule is unavailable instead of guessing", () => {
+  render(<Methodology meta={policyMeta(null)} />);
+  expect(
+    screen.getByText(/rule saved with the latest completed scan is not/),
+  ).toBeTruthy();
+});
+
 it("keeps legacy alert detail unknown while preserving the original score", async () => {
   respond({
     id: 1,

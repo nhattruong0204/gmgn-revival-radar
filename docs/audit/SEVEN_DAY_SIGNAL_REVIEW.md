@@ -76,13 +76,22 @@ forward market-cap change from saved snapshots:
 this window. Cohort D has severe survivorship bias (most rejected tokens stop
 being tracked: 3,212 missing at +24h), which inflates its tails.
 
-**Rank correlation with change since call (Spearman, n≈43):** overall score
-**+0.01**; Setup +0.27; Trigger +0.26; Confirmation +0.21; base duration +0.24;
-bundler ratio −0.30; 1h price change at call −0.20; 5m volume acceleration −0.15.
-Overall score shows no relationship with outcome. Hypotheses worth testing on a
-larger sample: (a) longer bases and lower bundler share help; (b) calling into a
-1h price spike hurts (chasing); (c) 5m volume acceleration is noise at this
-threshold.
+**Rank correlation with change since call (Spearman with average ranks for ties,
+n≈43):** overall score **−0.05**; Setup +0.14; Trigger −0.01; Confirmation +0.02;
+base duration +0.19; bundler ratio −0.30; 1h price change at call −0.20; 5m volume
+acceleration −0.15. None of the score dimensions shows a relationship with outcome.
+Hypotheses worth testing on a larger sample: (a) a lower bundler share and, weakly,
+longer bases help; (b) calling into a 1h price spike hurts (chasing); (c) 5m volume
+acceleration is noise at this threshold.
+
+> **Correction (2026-10-15).** The first version of this audit reported overall
+> +0.01, Setup +0.27, Trigger +0.26, Confirmation +0.21 and base duration +0.24. The
+> prototype script ranked tied integer scores in row order instead of using average
+> ranks, which manufactured weak positive correlations for the tie-heavy score
+> dimensions. Found by the #71 research CLI and independently re-verified. Features
+> without ties were unaffected. The conclusion is strengthened: the score dimensions
+> show no measurable edge in this sample. Reproduce with
+> `python -m revival_radar.research report` (see `docs/research-export.md`).
 
 ## 5. Missed and late signals
 
@@ -105,7 +114,7 @@ scoring failure and they should not drive optimisation.
 |---|---|
 | Drawdown (Setup 10) | Earned by almost every called token (all are 50–95% below ATH). Non-discriminating. ATH comes from GMGN `ath_market_cap`; provenance not independently verified. |
 | Liquidity survival (10), holder retention (5) | Almost always earned; non-discriminating at current floors. |
-| Progressive base (≤15) + maturity (5) | `BASE_MIN_HOURS=8` under Custom lets 8–12h ranges count as a "base". Most calls had 8–20h bases. Positive-but-weak correlation suggests requiring longer bases. |
+| Progressive base (≤15) + maturity (5) | `BASE_MIN_HOURS=8` under Custom lets 8–12h ranges count as a "base". Most calls had 8–20h bases. A weak positive rank correlation (+0.19) is a hypothesis for requiring longer bases, not evidence. |
 | Compression (5) | Rarely earned; fine. |
 | 5m volume vs baseline (15) | Largest single Trigger weight. Absolute floors exist ($2K and 1% of liquidity), so tiny-baseline spikes are already guarded. Weak/negative relation here. |
 | 1h volume (10), TX (10) | Hourly ratio vs previous observation, not a matched-time baseline: sensitive to noise. |
