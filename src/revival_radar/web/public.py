@@ -350,6 +350,7 @@ def metadata(request: Request, as_of: Cutoff = None) -> Metadata:
             telegram_url=telegram if telegram.startswith("https://t.me/") else None,
             as_of=until,
             last_scan_at=queries.last_scan_at(until),
+            publishing_policy=queries.publishing_policy(until),
         )
 
     return read(request, as_of, ("meta",), result)

@@ -427,11 +427,21 @@ class ChainInfo(PublicModel):
     name: str
 
 
+class PublishingPolicy(PublicModel):
+    """Nonsecret summary of the call-publishing rule saved with the latest completed scan."""
+
+    min_stage: Literal["WATCH", "EARLY_REVIVAL", "REVIVING", "STRONG_REVIVAL", "CONFIRMED_REVIVAL"]
+    score_threshold: int
+    realert_requires_new_evidence: bool
+    revision: int | None = None
+
+
 class Metadata(PublicModel):
     active_chains: list[ChainInfo] = Field(default_factory=list)
     collection_status: Literal["current", "stale", "disabled", "unknown"] = "unknown"
     worker_heartbeat_at: Finite | None = None
     data_mode: Literal["saved", "synthetic"] = "saved"
+    publishing_policy: PublishingPolicy | None = None
     chains: list[ChainInfo]
     telegram_url: str | None
     as_of: Finite

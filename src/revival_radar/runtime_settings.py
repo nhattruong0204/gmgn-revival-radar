@@ -31,6 +31,8 @@ ALLOWED_SETTINGS = frozenset(
         "alert_score_threshold",
         "alert_cooldown_hours",
         "realert_score_increase",
+        "alert_min_stage",
+        "realert_requires_new_evidence",
         "dry_run",
         "discovery_interval",
         "discovery_limit",
