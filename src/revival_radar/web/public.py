@@ -15,6 +15,7 @@ from revival_radar.web.models import (
     AlertDetail,
     AlertsPage,
     BriefPage,
+    CallJournal,
     MarketReport,
     Metadata,
     Outcomes,
@@ -421,4 +422,64 @@ def track_record(
         raise HTTPException(
             status_code=503,
             detail="Saved cohort temporarily unavailable; retry or narrow the alert window",
+        ) from None
+
+
+@router.get("/track-record/calls", response_model=CallJournal)
+@router.get("/track-record/calls/export", response_model=None)
+def track_record_calls(
+    request: Request,
+    days: Annotated[int, Query(ge=1, le=365)] = 7,
+    chain: Chain | None = None,
+    stage: Stage | None = None,
+    min_score: Annotated[int | None, Query(ge=0, le=100)] = None,
+    max_score: Annotated[int | None, Query(ge=0, le=100)] = None,
+    outcome: Literal["positive", "negative", "flat", "unknown"] | None = None,
+    revision: Annotated[str | None, Query(pattern=r"^(unknown|[0-9]{1,9})$")] = None,
+    min_age_hours: Annotated[float | None, Query(ge=0, le=8760, allow_inf_nan=False)] = None,
+    max_age_hours: Annotated[float | None, Query(ge=0, le=8760, allow_inf_nan=False)] = None,
+    sort: Literal["newest", "age", "best", "worst", "mfe", "mae", "score"] = "newest",
+    page: Page = 1,
+    page_size: PageSize = 25,
+    as_of: Cutoff = None,
+) -> CallJournal | Response:
+    from revival_radar.web.research_export import export_call_journal
+
+    until = cutoff(request, as_of)
+    if min_score is not None and max_score is not None and min_score > max_score:
+        raise HTTPException(status_code=422, detail="min_score cannot exceed max_score")
+    if min_age_hours is not None and max_age_hours is not None and min_age_hours > max_age_hours:
+        raise HTTPException(status_code=422, detail="min_age_hours cannot exceed max_age_hours")
+    filters = dict(
+        chain=chain,
+        stage=stage,
+        min_score=min_score,
+        max_score=max_score,
+        outcome=outcome,
+        revision=revision,
+        min_age_hours=min_age_hours,
+        max_age_hours=max_age_hours,
+    )
+    if not request.url.path.endswith("/export"):
+        return read(
+            request,
+            as_of,
+            ("track-record", "calls", days, *filters.values(), sort, page, page_size),
+            lambda queries, at: queries.call_journal(at, days, filters, sort, page, page_size),
+        )
+    try:
+        with public_reader(request.app.state.config) as queries:
+            data = queries.call_journal(until, days, filters, sort, 1, page_size, everything=True)
+        return Response(
+            export_call_journal(data),
+            media_type="text/csv; charset=utf-8",
+            headers={
+                "Content-Disposition": 'attachment; filename="saved-calls.csv"',
+                "Cache-Control": "no-store",
+            },
+        )
+    except sqlite3.Error:
+        raise HTTPException(
+            status_code=503,
+            detail="Saved calls temporarily unavailable; retry or narrow the window",
         ) from None

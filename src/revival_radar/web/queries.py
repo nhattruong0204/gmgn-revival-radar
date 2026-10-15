@@ -655,7 +655,9 @@ class PublicQueries:
             other_basis_observations=other_basis if basis == "same" else None,
         )
 
-    def _alert(self, row: sqlite3.Row, until: float) -> Alert:
+    def _alert(
+        self, row: sqlite3.Row, until: float, performance: CallPerformance | None = None
+    ) -> Alert:
         base = dict(row)
         # Validate saved alert-time payload against the immutable alert identity/score.
         frozen = self.db.execute(
@@ -715,7 +717,7 @@ class PublicQueries:
             preset=public.preset,
             revision=public.revision,
             observation=public,
-            performance=self._performance(row, until),
+            performance=performance or self._performance(row, until),
         )
 
     @staticmethod
@@ -1062,6 +1064,161 @@ class PublicQueries:
             cohorts=cohorts,
             items=rows[offset : offset + page_size],
             total=len(rows),
+            page=page,
+            page_size=page_size,
+        )
+
+    JOURNAL_MAX_CALLS = 2000
+    JOURNAL_SORTS = ("newest", "age", "best", "worst", "mfe", "mae", "score")
+
+    def journal_cohort(self, until, days, filters):
+        """Filtered call cohort with performance for every call; saved data only.
+
+        Window, chain, stage, score, revision and age narrow in SQL (indexed alert
+        visibility rules shared with /alerts); outcome sign is applied after the one
+        `_performance` evaluation per call, never a duplicate of its arithmetic.
+        """
+        since = until - days * 86400
+        base = ["a.timestamp BETWEEN ? AND ?"]
+        params = [since, until]
+        visibility = self.alert_visibility()
+        visible = self.db.execute(
+            "SELECT COUNT(*) FROM alerts a WHERE a.timestamp BETWEEN ? AND ? AND " + visibility,
+            (since, until, until, until, until),
+        ).fetchone()[0]
+        stage_sql = (
+            "COALESCE(CASE WHEN json_valid(f.payload) THEN "
+            "json_extract(f.payload,'$.signal.status') END, sg.stage, 'UNKNOWN')"
+        )
+        if filters.get("chain"):
+            base.append("a.chain=?")
+            params.append(filters["chain"])
+        if filters.get("stage"):
+            base.append(stage_sql + "=?")
+            params.append(filters["stage"])
+        if filters.get("min_score") is not None:
+            base.append("a.score>=?")
+            params.append(filters["min_score"])
+        if filters.get("max_score") is not None:
+            base.append("a.score<=?")
+            params.append(filters["max_score"])
+        revision = filters.get("revision")
+        if revision == "unknown":
+            base.append("sg.revision IS NULL")
+        elif revision is not None:
+            base.append("sg.revision=?")
+            params.append(int(revision))
+        if filters.get("min_age_hours") is not None:
+            base.append("a.timestamp<=?")
+            params.append(until - filters["min_age_hours"] * 3600)
+        if filters.get("max_age_hours") is not None:
+            base.append("a.timestamp>=?")
+            params.append(until - filters["max_age_hours"] * 3600)
+        rows = self.db.execute(
+            f"""SELECT a.*,sg.price,sg.market_cap,sg.setup_score,sg.trigger_score,
+            sg.confirmation_score,sg.stage,sg.preset,sg.revision,{stage_sql} AS stage_effective
+            FROM alerts a LEFT JOIN alert_signals sg ON sg.alert_id=a.id
+            LEFT JOIN research_alert_facts f ON f.alert_id=a.id
+            WHERE {" AND ".join(base)} AND {visibility}
+            ORDER BY a.timestamp DESC,a.id DESC LIMIT ?""",
+            (*params, until, until, until, self.JOURNAL_MAX_CALLS + 1),
+        ).fetchall()
+        if len(rows) > self.JOURNAL_MAX_CALLS:
+            raise sqlite3.DataError("Call cohort exceeds the exact accounting limit; narrow it")
+        from revival_radar.analysis.call_journal import sign
+
+        entries = []
+        for row in rows:
+            self.check_deadline()
+            entries.append(
+                {
+                    "row": row,
+                    "perf": self._performance(row, until),
+                    "stage": row["stage_effective"],
+                    "revision": _label(dict(row))["revision"],
+                }
+            )
+        outcome = filters.get("outcome")
+        if outcome:
+            entries = [e for e in entries if sign(e["perf"].change_since_call_pct) == outcome]
+        return since, visible, entries
+
+    @staticmethod
+    def journal_order(entries, sort):
+        """Unknown values always sort last; ties fall back to newest."""
+        newest = sorted(entries, key=lambda e: (-e["row"]["timestamp"], -e["row"]["id"]))
+        metric = {
+            "best": lambda e: (
+                -e["perf"].change_since_call_pct
+                if e["perf"].change_since_call_pct is not None
+                else None
+            ),
+            "worst": lambda e: e["perf"].change_since_call_pct,
+            "mfe": lambda e: -e["perf"].mfe_pct if e["perf"].mfe_pct is not None else None,
+            "mae": lambda e: e["perf"].mae_pct,
+            "score": lambda e: -e["row"]["score"],
+        }
+        if sort == "newest":
+            return newest
+        if sort == "age":
+            return list(reversed(newest))
+        known = [e for e in newest if metric[sort](e) is not None]
+        unknown = [e for e in newest if metric[sort](e) is None]
+        return sorted(known, key=metric[sort]) + unknown
+
+    def call_journal(self, until, days, filters, sort, page, page_size, *, everything=False):
+        from revival_radar.analysis.call_journal import summarize
+        from revival_radar.analysis.track_record import accounting, checkpoint_rows
+        from revival_radar.web.models import CallJournal
+
+        since, visible, entries = self.journal_cohort(until, days, filters)
+        ids = {e["row"]["id"] for e in entries}
+        checkpoints = (
+            [
+                row
+                for row in checkpoint_rows(
+                    self.repo, since, until, 24, synthetic=self.allow_synthetic
+                )
+                if row["alert_id"] in ids
+            ]
+            if ids
+            else []
+        )
+        self.check_deadline()
+        ordered = self.journal_order(entries, sort)
+        offset = 0 if everything else (page - 1) * page_size
+        chosen = ordered if everything else ordered[offset : offset + page_size]
+        items = [self._alert(e["row"], until, e["perf"]) for e in chosen]
+        return CallJournal(
+            since=since,
+            as_of=until,
+            last_scan_at=self.last_scan_at(until),
+            filters={"days": days, **filters},
+            sort=sort,
+            definition=(
+                "One confirmed delivered alert per row, alert timestamps in inclusive "
+                "[since, as_of]. Change since call compares the market cap frozen with "
+                "the alert with the latest saved snapshot at or before the cutoff; "
+                "MFE/MAE are the highest/lowest saved market caps in between. "
+                "The 24h price change comes from the first saved checkpoint in its window."
+            ),
+            limitations=[
+                "Saved snapshot observations, not executed trades or realized P&L.",
+                "Fees, slippage, liquidity depth and latency are ignored.",
+                "Snapshots arrive about every five minutes; MFE/MAE can miss intra-scan moves.",
+                "Repeated alerts on one token are separate calls, not independent trades.",
+                "Calls from different strategy revisions are described together when mixed; "
+                "this is not a comparison or a confidence interval.",
+                "Market-cap change and price change are different metrics; see the glossary.",
+            ],
+            reconciliation={
+                "visible_alerts_in_window": visible,
+                "excluded_by_filters": visible - len(entries),
+                "after_filters": len(entries),
+            },
+            summary=summarize(entries, accounting(checkpoints)),
+            items=items,
+            total=len(entries),
             page=page,
             page_size=page_size,
         )

@@ -2,7 +2,11 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { CheckpointTable, TrackRecordPage, trackQuery } from "./TrackRecord";
+import {
+  CheckpointTable,
+  CheckpointRecordPage,
+  trackQuery,
+} from "./TrackRecord";
 import type { CheckpointResearch, TrackRecordData } from "./types";
 
 const row: CheckpointResearch = {
@@ -99,7 +103,7 @@ it("normalizes malformed URL filters without inventing an as-of time", () => {
 it("opens filters with focus isolation, resets pagination, preserves context and returns focus", async () => {
   window.history.replaceState(null, "", "/outcomes?days=7&horizon=1&page=3");
   const user = userEvent.setup();
-  render(<TrackRecordPage />);
+  render(<CheckpointRecordPage />);
   await screen.findByText("Computable price changes");
   const trigger = screen.getByRole("button", { name: "Cohort filters" });
   await user.click(trigger);
@@ -118,7 +122,7 @@ it("opens filters with focus isolation, resets pagination, preserves context and
   expect(document.activeElement).toBe(trigger);
 });
 it("shows negatives and uncertainty, preserves original drill-down context and escapes hostile text", async () => {
-  const { container } = render(<TrackRecordPage />);
+  const { container } = render(<CheckpointRecordPage />);
   await screen.findByText(row.symbol);
   expect(container.querySelector("img")).toBeNull();
   expect(container.textContent).toContain("Pending: 1 · Missed: 1");
@@ -150,7 +154,7 @@ it("withholds mixed-cohort rates and applies a visible retrospective distributio
     ),
   );
   const user = userEvent.setup();
-  render(<TrackRecordPage />);
+  render(<CheckpointRecordPage />);
   await screen.findByText(/Rates and medians are withheld/);
   await user.click(screen.getByRole("button", { name: /-50% to below 0%/ }));
   expect(window.location.search).toContain("bucket=0");
@@ -166,7 +170,7 @@ it("announces export failure and leaves the saved cohort visible", async () => {
     ),
   );
   const user = userEvent.setup();
-  render(<TrackRecordPage />);
+  render(<CheckpointRecordPage />);
   await screen.findByText(row.symbol);
   await user.click(
     screen.getByRole("button", { name: "Export complete cohort (UTC CSV)" }),

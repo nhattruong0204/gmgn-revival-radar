@@ -92,7 +92,7 @@ export function CallPerformanceCard({
   hideTokenLink = false,
 }: {
   alert: Alert | AlertDetail;
-  variant?: "full" | "compact";
+  variant?: "full" | "compact" | "row";
   headingLevel?: 2 | 3;
   /** Hide 'View token' when the card is already shown on that token's page. */
   hideTokenLink?: boolean;
@@ -111,6 +111,16 @@ export function CallPerformanceCard({
   const reasons = o ? explainReasons(o, 2) : [];
   const risks = o ? explainRisks(o).slice(0, 2) : [];
   const title = `$${alert.symbol}`;
+  if (variant === "row")
+    return (
+      <CallRow
+        alert={alert}
+        title={title}
+        chain={chain}
+        callPage={callPage}
+        dir={dir}
+      />
+    );
   const bestWorst = p ? (
     <>
       <div>
@@ -393,6 +403,122 @@ export function CallPerformanceCard({
           {actions}
         </>
       )}
+    </article>
+  );
+}
+
+function unknownReason(p: CallPerformance) {
+  return p.change_reason === "no_call_mc"
+    ? "Market cap at call not saved"
+    : "No later observation saved";
+}
+function shortReason(p: CallPerformance) {
+  return p.change_reason === "no_call_mc"
+    ? "no market cap at call"
+    : "no later data";
+}
+
+/** Dense one-call row for journals: change, best/worst, age and stage in ~2 lines. */
+function CallRow({
+  alert,
+  title,
+  chain,
+  callPage,
+  dir,
+}: {
+  alert: Alert | AlertDetail;
+  title: string;
+  chain: string;
+  callPage: string;
+  dir: ReturnType<typeof direction> | null;
+}) {
+  const p = alert.performance;
+  const change = p?.change_since_call_pct;
+  return (
+    <article
+      className="call-row"
+      aria-label={`Call performance for ${title}, call ${alert.id}`}
+    >
+      <div className="call-row-id">
+        <Link href={callPage} className="call-card-title-link">
+          {title}
+        </Link>
+        <span className="call-card-ident">
+          {chain} · #{alert.id}
+        </span>
+        {p?.token_call_count != null &&
+          p.token_call_count > 1 &&
+          p.token_call_index != null && (
+            <span className="call-card-badge">
+              Call {p.token_call_index} of {p.token_call_count}
+            </span>
+          )}
+      </div>
+      {!p ? (
+        <div className="call-row-change unknown">
+          <strong>Performance unavailable</strong>
+        </div>
+      ) : dir && typeof change === "number" ? (
+        <div className={`call-row-change ${dir.sign}`}>
+          <span aria-hidden="true">{dir.mark}</span>
+          <strong>{signed(change)}</strong>
+          <span>{dir.word} since call</span>
+        </div>
+      ) : (
+        <div className="call-row-change unknown">
+          <strong>Change unknown</strong>
+          <span title={unknownReason(p)}>{shortReason(p)}</span>
+        </div>
+      )}
+      {p && (
+        <dl className="call-row-meta">
+          <div className="call-row-caps">
+            <dt>Market cap</dt>
+            <dd>
+              {p.call_market_cap == null
+                ? "unknown"
+                : compact(p.call_market_cap, true)}
+              <span aria-hidden="true"> → </span>
+              <span className="sr-only"> latest </span>
+              {p.latest_market_cap == null
+                ? "—"
+                : compact(p.latest_market_cap, true)}
+            </dd>
+          </div>
+          <div>
+            <dt>Best</dt>
+            <dd
+              className={p.mfe_pct != null && p.mfe_pct > 0 ? "positive" : ""}
+            >
+              {signed(p.mfe_pct)}
+            </dd>
+          </div>
+          <div>
+            <dt>Worst</dt>
+            <dd className={p.mae_pct != null && p.mae_pct < 0 ? "danger" : ""}>
+              {signed(p.mae_pct)}
+            </dd>
+          </div>
+          <div className={`call-card-fresh fresh-${p.freshness}`}>
+            <dt>Age</dt>
+            <dd>
+              {duration(p.elapsed_seconds)}
+              {p.freshness === "stale" && " · stale"}
+              {p.freshness === "none" && " · no later data"}
+            </dd>
+          </div>
+        </dl>
+      )}
+      <div className="call-row-config">
+        <Stage stage={alert.observation?.status ?? "UNKNOWN"} />
+        <span>
+          Score <strong>{alert.score}</strong>/100 · rev{" "}
+          {alert.revision ?? "unknown"}
+          <span className="sr-only">
+            , {alert.preset ?? "unlabeled"} strategy
+          </span>
+        </span>
+      </div>
     </article>
   );
 }

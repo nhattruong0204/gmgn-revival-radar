@@ -122,3 +122,29 @@ startup time separately from request latency; do not label pre-startup diagnosti
 as serving readiness. Failed or over-budget models are never response-cached.
 Measure archive/database/backup growth and sustained production capacity before
 rollout; local fixture capacity is not VPS or Internet capacity certification.
+
+## Call journal (#66)
+
+The default Track Record view is one row per **call** (delivered alert), not per
+checkpoint. `GET /api/v1/track-record/calls` (and `/calls/export`, CSV) reuses
+`PublicQueries._performance`, so each item carries the same `performance` object as
+`/api/v1/alerts`; no arithmetic is duplicated. The checkpoint endpoint, its
+immutability, causal cutoffs and CSV escaping are unchanged and remain available
+behind the "Checkpoint detail" tab (`/outcomes?view=checkpoints`).
+
+- Filters: `days` (1/7/30/365), `chain`, `stage`, `min_score`/`max_score`, `outcome`
+  (positive/negative/flat/unknown), `revision` (number or `unknown`),
+  `min_age_hours`/`max_age_hours`. Sorts: `newest`, `age` (oldest first), `best`,
+  `worst`, `mfe`, `mae`, `score`; unknown values always sort last.
+- Summary over the whole filtered cohort (not the page): calls, measurable,
+  positive/negative/flat, unknown with reason counts (`no_call_mc`,
+  `no_later_observation`), median and mean change since call, five-bin distribution,
+  MFE/MAE medians with their own counts, by-stage and by-revision groups, the +24h
+  price-change accounting from checkpoints for the same calls, and a small-sample flag
+  below 20 measurable calls.
+- Pooled revisions are described, not withheld: `mixed_configurations: true` with the
+  `revisions` list. Filtering to one revision gives the exact cohort.
+- Bounds: at most 2,000 calls per cohort (503 "narrow it" beyond), the existing read
+  deadline and response cache. Market-cap change and price change are different
+  metrics; the journal uses market-cap change since the call, checkpoints use price.
+- Change since call is a saved-snapshot observation, not executed or realized P&L.

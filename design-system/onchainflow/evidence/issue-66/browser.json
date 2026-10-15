@@ -1,0 +1,1656 @@
+{
+ "journal-390": {
+  "docHeight": 4808,
+  "mainHeight": 4756,
+  "overflowX": false,
+  "scrollWidth": 390,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 27,
+  "smallTargets": [
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MEW",
+    "w": 49,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 14,
+  "errors": []
+ },
+ "journal-worst-390": {
+  "docHeight": 4808,
+  "mainHeight": 4756,
+  "overflowX": false,
+  "scrollWidth": 390,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 27,
+  "smallTargets": [
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MEW",
+    "w": 49,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MYRO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 14,
+  "errors": []
+ },
+ "journal-grouped-390": {
+  "docHeight": 5153,
+  "mainHeight": 5101,
+  "overflowX": false,
+  "scrollWidth": 390,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 25,
+  "smallTargets": [
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MEW",
+    "w": 49,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 14,
+  "errors": []
+ },
+ "journal-30d-unknown-390": {
+  "docHeight": 2336,
+  "mainHeight": 2284,
+  "overflowX": false,
+  "scrollWidth": 390,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 17,
+  "smallTargets": [
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 4,
+  "errors": []
+ },
+ "journal-empty-390": {
+  "docHeight": 2138,
+  "mainHeight": 2086,
+  "overflowX": false,
+  "scrollWidth": 390,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 15,
+  "smallTargets": [
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 2,
+  "errors": []
+ },
+ "checkpoint-detail-390": {
+  "docHeight": 2306,
+  "mainHeight": 2254,
+  "overflowX": false,
+  "scrollWidth": 390,
+  "minContrast": 5.13,
+  "minContrastText": "Widen the alert window or reset the filt",
+  "minContrastClass": "",
+  "targetCount": 13,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 1,
+  "errors": []
+ },
+ "dialog-targets-390": [
+  [
+   316,
+   44
+  ],
+  [
+   316,
+   44
+  ],
+  [
+   316,
+   44
+  ],
+  [
+   316,
+   44
+  ],
+  [
+   316,
+   44
+  ],
+  [
+   316,
+   44
+  ],
+  [
+   316,
+   44
+  ],
+  [
+   340,
+   44
+  ],
+  [
+   340,
+   44
+  ]
+ ],
+ "journal-filters-390": {
+  "docHeight": 4808,
+  "mainHeight": 4756,
+  "overflowX": false,
+  "scrollWidth": 390,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 9,
+  "smallTargets": [],
+  "smallTargetCount": 0,
+  "errors": []
+ },
+ "keyboard-390": [
+  "a:Skip to research content|outline=solid 2px",
+  "button:Open navigation|outline=solid 2px",
+  "select:Synthetic preview state|outline=solid 2px",
+  "a:Call journal|outline=solid 2px",
+  "a:Checkpoint detail|outline=solid 2px",
+  "select:Window|outline=solid 2px",
+  "button:Filters|outline=solid 3px",
+  "button:Export calls (UTC CSV)|outline=solid 3px",
+  "summary:Breakdown by stage and by re|outline=solid 2px",
+  "select:Sort|outline=solid 2px",
+  "input:|outline=solid 2px",
+  "a:$BOME|outline=solid 2px",
+  "a:$BONK|outline=solid 2px",
+  "a:$SLERF|outline=solid 2px",
+  "a:$WIF|outline=solid 2px",
+  "a:$POPCAT|outline=solid 2px",
+  "a:$PONKE|outline=solid 2px",
+  "a:$SAMO|outline=solid 2px",
+  "a:$WIF|outline=solid 2px",
+  "a:$WIF|outline=solid 2px",
+  "a:$MUMU|outline=solid 2px",
+  "a:$MEW|outline=solid 2px",
+  "a:$MYRO|outline=solid 2px",
+  "summary:Definitions, reconciliation |outline=solid 2px",
+  "a:Methodology & coverage|outline=solid 2px",
+  "body:Skip to research content\nTra|outline=none 3px"
+ ],
+ "journal-768": {
+  "docHeight": 3412,
+  "mainHeight": 3360,
+  "overflowX": false,
+  "scrollWidth": 768,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 43,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 15,
+  "errors": []
+ },
+ "journal-worst-768": {
+  "docHeight": 3412,
+  "mainHeight": 3360,
+  "overflowX": false,
+  "scrollWidth": 768,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 43,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MEW",
+    "w": 49,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MYRO",
+    "w": 57,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 15,
+  "errors": []
+ },
+ "journal-grouped-768": {
+  "docHeight": 3757,
+  "mainHeight": 3705,
+  "overflowX": false,
+  "scrollWidth": 768,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 41,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 15,
+  "errors": []
+ },
+ "journal-30d-unknown-768": {
+  "docHeight": 1953,
+  "mainHeight": 1901,
+  "overflowX": false,
+  "scrollWidth": 768,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 33,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 5,
+  "errors": []
+ },
+ "journal-empty-768": {
+  "docHeight": 1924,
+  "mainHeight": 1872,
+  "overflowX": false,
+  "scrollWidth": 768,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 31,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 3,
+  "errors": []
+ },
+ "checkpoint-detail-768": {
+  "docHeight": 2069,
+  "mainHeight": 2017,
+  "overflowX": false,
+  "scrollWidth": 768,
+  "minContrast": 5.13,
+  "minContrastText": "Widen the alert window or reset the filt",
+  "minContrastClass": "",
+  "targetCount": 19,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 2,
+  "errors": []
+ },
+ "keyboard-768": [
+  "a:Skip to research content|outline=solid 2px",
+  "a:OnchainFlow\nSaved market res|outline=solid 2px",
+  "a:Radar|outline=solid 3px",
+  "a:Signals|outline=solid 3px",
+  "a:Reports|outline=solid 3px",
+  "a:Track record|outline=solid 3px",
+  "a:Methodology|outline=solid 3px",
+  "a:Owner area\nPRIVATE|outline=solid 3px",
+  "select:Synthetic preview state|outline=solid 2px",
+  "a:Call journal|outline=solid 2px",
+  "a:Checkpoint detail|outline=solid 2px",
+  "select:Window|outline=solid 2px",
+  "summary:Filters|outline=solid 2px",
+  "button:Export calls (UTC CSV)|outline=solid 3px",
+  "summary:Breakdown by stage and by re|outline=solid 2px",
+  "select:Sort|outline=solid 2px",
+  "input:|outline=solid 2px",
+  "button:List|outline=solid 2px",
+  "button:Dense table|outline=solid 2px",
+  "a:$BOME|outline=solid 2px",
+  "a:$BONK|outline=solid 2px",
+  "a:$SLERF|outline=solid 2px",
+  "a:$WIF|outline=solid 2px",
+  "a:$POPCAT|outline=solid 2px",
+  "a:$PONKE|outline=solid 2px",
+  "a:$SAMO|outline=solid 2px"
+ ],
+ "journal-1366": {
+  "docHeight": 1835,
+  "mainHeight": 1783,
+  "overflowX": false,
+  "scrollWidth": 1366,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 43,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 15,
+  "errors": []
+ },
+ "journal-worst-1366": {
+  "docHeight": 1835,
+  "mainHeight": 1783,
+  "overflowX": false,
+  "scrollWidth": 1366,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 43,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MEW",
+    "w": 49,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MYRO",
+    "w": 57,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 15,
+  "errors": []
+ },
+ "journal-grouped-1366": {
+  "docHeight": 2180,
+  "mainHeight": 2128,
+  "overflowX": false,
+  "scrollWidth": 1366,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 41,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 15,
+  "errors": []
+ },
+ "journal-table-1366": {
+  "docHeight": 1924,
+  "mainHeight": 1872,
+  "overflowX": false,
+  "scrollWidth": 1366,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 43,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 45,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 44,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 45,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 31,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 59,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 51,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 46,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 31,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 31,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 48,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 15,
+  "errors": []
+ },
+ "journal-30d-unknown-1366": {
+  "docHeight": 1322,
+  "mainHeight": 1270,
+  "overflowX": false,
+  "scrollWidth": 1366,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 33,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 5,
+  "errors": []
+ },
+ "journal-empty-1366": {
+  "docHeight": 1464,
+  "mainHeight": 1412,
+  "overflowX": false,
+  "scrollWidth": 1366,
+  "minContrast": 5.2,
+  "minContrastText": "PRIVATE",
+  "minContrastClass": "",
+  "targetCount": 31,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 3,
+  "errors": []
+ },
+ "checkpoint-detail-1366": {
+  "docHeight": 1569,
+  "mainHeight": 1517,
+  "overflowX": false,
+  "scrollWidth": 1366,
+  "minContrast": 5.13,
+  "minContrastText": "Widen the alert window or reset the filt",
+  "minContrastClass": "",
+  "targetCount": 19,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "OnchainFlow\nSaved market resea",
+    "w": 203,
+    "h": 43
+   },
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 2,
+  "errors": []
+ },
+ "keyboard-1366": [
+  "a:Skip to research content|outline=solid 2px",
+  "a:OnchainFlow\nSaved market res|outline=solid 2px",
+  "a:Radar|outline=solid 3px",
+  "a:Signals|outline=solid 3px",
+  "a:Reports|outline=solid 3px",
+  "a:Track record|outline=solid 3px",
+  "a:Methodology|outline=solid 3px",
+  "a:Owner area\nPRIVATE|outline=solid 3px",
+  "select:Synthetic preview state|outline=solid 2px",
+  "a:Call journal|outline=solid 2px",
+  "a:Checkpoint detail|outline=solid 2px",
+  "select:Window|outline=solid 2px",
+  "summary:Filters|outline=solid 2px",
+  "button:Export calls (UTC CSV)|outline=solid 3px",
+  "summary:Breakdown by stage and by re|outline=solid 2px",
+  "select:Sort|outline=solid 2px",
+  "input:|outline=solid 2px",
+  "button:List|outline=solid 2px",
+  "button:Dense table|outline=solid 2px",
+  "a:$BOME|outline=solid 2px",
+  "a:$BONK|outline=solid 2px",
+  "a:$SLERF|outline=solid 2px",
+  "a:$WIF|outline=solid 2px",
+  "a:$POPCAT|outline=solid 2px",
+  "a:$PONKE|outline=solid 2px",
+  "a:$SAMO|outline=solid 2px"
+ ],
+ "journal-1366-zoom200": {
+  "docHeight": 4450,
+  "mainHeight": 4398,
+  "overflowX": false,
+  "scrollWidth": 683,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 27,
+  "smallTargets": [
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MEW",
+    "w": 49,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 14,
+  "errors": []
+ },
+ "journal-worst-1366-zoom200": {
+  "docHeight": 4450,
+  "mainHeight": 4398,
+  "overflowX": false,
+  "scrollWidth": 683,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 27,
+  "smallTargets": [
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MEW",
+    "w": 49,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MYRO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 14,
+  "errors": []
+ },
+ "journal-grouped-1366-zoom200": {
+  "docHeight": 4795,
+  "mainHeight": 4743,
+  "overflowX": false,
+  "scrollWidth": 683,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 25,
+  "smallTargets": [
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SLERF",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$WIF",
+    "w": 39,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$POPCAT",
+    "w": 73,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$PONKE",
+    "w": 63,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$SAMO",
+    "w": 57,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MUMU",
+    "w": 60,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$MEW",
+    "w": 49,
+    "h": 24
+   }
+  ],
+  "smallTargetCount": 14,
+  "errors": []
+ },
+ "journal-30d-unknown-1366-zoom200": {
+  "docHeight": 2049,
+  "mainHeight": 1997,
+  "overflowX": false,
+  "scrollWidth": 683,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 17,
+  "smallTargets": [
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "$BOME",
+    "w": 56,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "$BONK",
+    "w": 55,
+    "h": 24
+   },
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 4,
+  "errors": []
+ },
+ "journal-empty-1366-zoom200": {
+  "docHeight": 1833,
+  "mainHeight": 1781,
+  "overflowX": false,
+  "scrollWidth": 683,
+  "minContrast": 5.26,
+  "minContrastText": "Methodology & coverage",
+  "minContrastClass": "",
+  "targetCount": 15,
+  "smallTargets": [
+   {
+    "tag": "INPUT",
+    "text": "",
+    "w": 22,
+    "h": 22
+   },
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 2,
+  "errors": []
+ },
+ "checkpoint-detail-1366-zoom200": {
+  "docHeight": 1884,
+  "mainHeight": 1832,
+  "overflowX": false,
+  "scrollWidth": 683,
+  "minContrast": 5.13,
+  "minContrastText": "Widen the alert window or reset the filt",
+  "minContrastClass": "",
+  "targetCount": 13,
+  "smallTargets": [
+   {
+    "tag": "A",
+    "text": "Methodology & coverage",
+    "w": 139,
+    "h": 16
+   }
+  ],
+  "smallTargetCount": 1,
+  "errors": []
+ },
+ "keyboard-1366-zoom200": [
+  "a:Skip to research content|outline=solid 2px",
+  "button:Open navigation|outline=solid 2px",
+  "select:Synthetic preview state|outline=solid 2px",
+  "a:Call journal|outline=solid 2px",
+  "a:Checkpoint detail|outline=solid 2px",
+  "select:Window|outline=solid 2px",
+  "button:Filters|outline=solid 3px",
+  "button:Export calls (UTC CSV)|outline=solid 3px",
+  "summary:Breakdown by stage and by re|outline=solid 2px",
+  "select:Sort|outline=solid 2px",
+  "input:|outline=solid 2px",
+  "a:$BOME|outline=solid 2px",
+  "a:$BONK|outline=solid 2px",
+  "a:$SLERF|outline=solid 2px",
+  "a:$WIF|outline=solid 2px",
+  "a:$POPCAT|outline=solid 2px",
+  "a:$PONKE|outline=solid 2px",
+  "a:$SAMO|outline=solid 2px",
+  "a:$WIF|outline=solid 2px",
+  "a:$WIF|outline=solid 2px",
+  "a:$MUMU|outline=solid 2px",
+  "a:$MEW|outline=solid 2px",
+  "a:$MYRO|outline=solid 2px",
+  "summary:Definitions, reconciliation |outline=solid 2px",
+  "a:Methodology & coverage|outline=solid 2px",
+  "body:Skip to research content\nTra|outline=none 3px"
+ ],
+ "externalRequests": []
+}

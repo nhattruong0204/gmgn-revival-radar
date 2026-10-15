@@ -436,3 +436,59 @@ class Metadata(PublicModel):
     telegram_url: str | None
     as_of: Finite
     last_scan_at: Finite | None
+
+
+class JournalGroup(PublicModel):
+    """Descriptive counts for one stage or revision; every count has its own denominator."""
+
+    key: str
+    calls: int
+    measurable: int
+    positive: int
+    negative: int
+    flat: int
+    unknown: int
+    median_change_pct: Finite | None = None
+
+
+class JournalSummary(PublicModel):
+    calls: int
+    measurable: int
+    positive: int
+    negative: int
+    flat: int
+    unknown: int
+    unknown_reasons: dict[str, int]
+    positive_rate_pct: Finite | None
+    median_change_pct: Finite | None
+    mean_change_pct: Finite | None
+    distribution: list[ReturnBin]
+    mfe_known: int
+    mfe_median_pct: Finite | None
+    mae_known: int
+    mae_median_pct: Finite | None
+    by_stage: list[JournalGroup]
+    by_revision: list[JournalGroup]
+    revisions: list[str]
+    mixed_configurations: bool
+    small_sample: bool
+    small_sample_threshold: int
+    stale_latest: int
+    checkpoint_24h: ResearchAccounting
+
+
+class CallJournal(PublicModel):
+    methodology_version: Literal["call-journal-v1"] = "call-journal-v1"
+    since: Finite
+    as_of: Finite
+    last_scan_at: Finite | None
+    filters: dict[str, str | int | float | None]
+    sort: str
+    definition: str
+    limitations: list[str]
+    reconciliation: dict[str, int]
+    summary: JournalSummary
+    items: list[Alert]
+    total: int
+    page: int
+    page_size: int
