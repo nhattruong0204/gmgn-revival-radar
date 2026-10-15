@@ -1,0 +1,4566 @@
+{
+ "summary": {
+  "pages": 14,
+  "sizes": [
+   "320",
+   "390",
+   "768",
+   "1024",
+   "1366",
+   "1920",
+   "1366-zoom200"
+  ],
+  "combos": 98,
+  "overflowCombos": [],
+  "consoleErrorCombos": [],
+  "externalRequestCombos": [],
+  "contrastFailCombos": [],
+  "contrastChecked": 65531,
+  "contrastUnknownBg": 693,
+  "keyboardFail": [],
+  "reducedMotionFail": [],
+  "errorStates": []
+ },
+ "report": [
+  {
+   "page": "radar-empty-stale",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1341,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 752,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1347,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 475,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 6385,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1513,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 475,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 6386,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1366,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 921,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6150,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 28646,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1610,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11056,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1345,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 313,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4521,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1342,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 307,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4588,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1655,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1729,
+    "unknownBg": 13,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 8199,
+    "callCards": 333,
+    "rows": 593
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1367,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 660,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 5995,
+    "callCards": 98,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1359,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 659,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 5970,
+    "callCards": 97,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1331,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 591,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14585,
+    "callCards": 0,
+    "rows": 41
+   }
+  },
+  {
+   "page": "reports",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1497,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1518,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 2743,
+    "callCards": 0,
+    "rows": 183
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1305,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 43,
+    "unknownBg": 2,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2692,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "320",
+   "viewport": "320x640@1",
+   "ms": 1293,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 320,
+    "innerWidth": 320,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 13,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 281,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1365,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 752,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1467,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 475,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 6385,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1652,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 475,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 6386,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1477,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 921,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6150,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1620,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1610,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11056,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1432,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 313,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4521,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1417,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 307,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4588,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1798,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1729,
+    "unknownBg": 13,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 8199,
+    "callCards": 333,
+    "rows": 593
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1482,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 660,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 5995,
+    "callCards": 98,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1461,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 659,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 5970,
+    "callCards": 97,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1492,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 591,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14585,
+    "callCards": 0,
+    "rows": 41
+   }
+  },
+  {
+   "page": "reports",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1543,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1518,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 2743,
+    "callCards": 0,
+    "rows": 183
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 1383,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 43,
+    "unknownBg": 2,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2692,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "390",
+   "viewport": "390x844@1",
+   "ms": 28545,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 13,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 281,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1333,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 1306,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1354,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 524,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 7276,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1512,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 524,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 7270,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1360,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 931,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6312,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1432,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1620,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11215,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 28586,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 323,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4683,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": -25863,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 317,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4750,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1605,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1559,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7340,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1368,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 680,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6174,
+    "callCards": 98,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1358,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 679,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6149,
+    "callCards": 97,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1347,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 601,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14747,
+    "callCards": 0,
+    "rows": 41
+   }
+  },
+  {
+   "page": "reports",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1511,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1548,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 3146,
+    "callCards": 0,
+    "rows": 183
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1312,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 53,
+    "unknownBg": 5,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2854,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "768",
+   "viewport": "768x1024@1",
+   "ms": 1299,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 768,
+    "innerWidth": 768,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 22,
+    "unknownBg": 4,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 443,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1333,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 1306,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1349,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 524,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 7276,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1540,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 524,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 7270,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1358,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 931,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6312,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1432,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1620,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11215,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1348,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 323,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4683,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1360,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 317,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4750,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1625,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1559,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7340,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1356,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 680,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6174,
+    "callCards": 98,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1365,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 679,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6149,
+    "callCards": 97,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1345,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 601,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14747,
+    "callCards": 0,
+    "rows": 41
+   }
+  },
+  {
+   "page": "reports",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1510,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1548,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 3146,
+    "callCards": 0,
+    "rows": 183
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1318,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 53,
+    "unknownBg": 5,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2854,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "1024",
+   "viewport": "1024x768@1",
+   "ms": 1299,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1024,
+    "innerWidth": 1024,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 22,
+    "unknownBg": 4,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 443,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1386,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 1306,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 28753,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 524,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 7276,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": -25531,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 524,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 7270,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1571,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 931,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6312,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1790,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1620,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11215,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1484,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 323,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4683,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1504,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 317,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4750,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1983,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1559,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7340,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1547,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 680,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6174,
+    "callCards": 98,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1522,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 679,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6149,
+    "callCards": 97,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1664,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 601,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14747,
+    "callCards": 0,
+    "rows": 41
+   }
+  },
+  {
+   "page": "reports",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1623,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1548,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 3146,
+    "callCards": 0,
+    "rows": 183
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1414,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 53,
+    "unknownBg": 5,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2854,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "1366",
+   "viewport": "1366x768@1",
+   "ms": 1344,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1366,
+    "innerWidth": 1366,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 22,
+    "unknownBg": 4,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 443,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1328,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 42,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 1306,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1347,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 524,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 7276,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1534,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 524,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 7270,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1363,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 931,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6312,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1442,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1620,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11215,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 28582,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 323,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4683,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": -25847,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 317,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4750,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1626,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1559,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7340,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1368,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 680,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6174,
+    "callCards": 98,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1370,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 679,
+    "unknownBg": 3,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 6149,
+    "callCards": 97,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1347,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 601,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14747,
+    "callCards": 0,
+    "rows": 41
+   }
+  },
+  {
+   "page": "reports",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1502,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1548,
+    "unknownBg": 15,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 3146,
+    "callCards": 0,
+    "rows": 183
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1319,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 53,
+    "unknownBg": 5,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2854,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "1920",
+   "viewport": "1920x1080@1",
+   "ms": 1311,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 1920,
+    "innerWidth": 1920,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 22,
+    "unknownBg": 4,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 443,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1416,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 27,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 752,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 28999,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 475,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 6385,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": -25280,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 475,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Revival radar",
+    "alerts": [],
+    "textLength": 6386,
+    "callCards": 0,
+    "rows": 25
+   }
+  },
+  {
+   "page": "signals-flat",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1709,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 921,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 6150,
+    "callCards": 549,
+    "rows": 104
+   }
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 2127,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1610,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Confirmed alerts",
+    "alerts": [],
+    "textLength": 11056,
+    "callCards": 957,
+    "rows": 167
+   }
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1600,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 313,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "PAID alert",
+    "alerts": [],
+    "textLength": 4521,
+    "callCards": 25,
+    "rows": 40
+   }
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1586,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 307,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "HOOKED alert",
+    "alerts": [],
+    "textLength": 4588,
+    "callCards": 25,
+    "rows": 36
+   }
+  },
+  {
+   "page": "token-paid",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 2111,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1551,
+    "unknownBg": 13,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Paid",
+    "alerts": [],
+    "textLength": 7028,
+    "callCards": 222,
+    "rows": 573
+   }
+  },
+  {
+   "page": "track-journal",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1766,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 660,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 5995,
+    "callCards": 98,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 29015,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 659,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 5970,
+    "callCards": 97,
+    "rows": 45
+   }
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": -25251,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 591,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Track record",
+    "alerts": [],
+    "textLength": 14585,
+    "callCards": 0,
+    "rows": 41
+   }
+  },
+  {
+   "page": "reports",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1665,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 1512,
+    "unknownBg": 12,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Market reports",
+    "alerts": [],
+    "textLength": 2743,
+    "callCards": 0,
+    "rows": 183
+   }
+  },
+  {
+   "page": "methodology",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1467,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 43,
+    "unknownBg": 2,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "How the radar works",
+    "alerts": [],
+    "textLength": 2692,
+    "callCards": 0,
+    "rows": 0
+   }
+  },
+  {
+   "page": "admin-login",
+   "size": "1366-zoom200",
+   "viewport": "683x384@2",
+   "ms": 1354,
+   "errors": [],
+   "external": [],
+   "overflow": {
+    "pageOverflow": false,
+    "scrollWidth": 683,
+    "innerWidth": 683,
+    "offenders": [],
+    "offenderCount": 0
+   },
+   "contrast": {
+    "checked": 13,
+    "unknownBg": 0,
+    "failing": 0,
+    "minFailing": null,
+    "failures": []
+   },
+   "state": {
+    "h1": "Welcome back.",
+    "alerts": [],
+    "textLength": 281,
+    "callCards": 0,
+    "rows": 0
+   }
+  }
+ ],
+ "keyboard": [
+  {
+   "page": "radar-empty-stale",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 8,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:Filters & sort",
+    "a:Explore saved history",
+    "summary:Collection coverage & scan context",
+    "a:methodology",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 0,
+   "mainActions": []
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 33,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:Filters & sort",
+    "a:AAttention+Attention Agents75gGu…spump35",
+    "a:DDARKDarkSwap7KEPA…66kH335/100Historical",
+    "a:bbatonbatonHg5Ja…gpump30/100Historical e",
+    "a:HHIREHire Agents98AG3…1pump27/100Histori",
+    "a:CCLAUDIAClaudia2j5Sa…nW2ZM15/100Historic",
+    "a:SSAINDRASaindraA2yA6…mkA9T15/100Historic",
+    "a:CCRAWLCRAWLNETBXoHJ…kpump15/100Historica",
+    "a:JJEANPHILJean PhilGTBxU…Dpump15/100Histo",
+    "a:VVEILVeilHgTGd…vpump15/100Historical eva",
+    "a:AAPIAPIapiAN…X1api15/100Historical evalu",
+    "a:LLOADLoadout8sWe4…ePtPo15/100Historical ",
+    "a:YYILONGMAYiLong MaGU5Nk…Qpump15/100Histo",
+    "a:MMusclecat머슬캣89SbH…spump12/100Historical",
+    "a:HHOTBOTHot Bot8nnae…hXrGF12/100Historica",
+    "a:ZZCATAnonymous CatHcRLc…iDeJR12/100Histo",
+    "a:KKimbaJustice for KimbaF7V6L…Epump12/100",
+    "a:KKINETICKineticZbF6P…fpump12/100Historic",
+    "a:SSHHShhFdZLT…PJhbA12/100Historical evalu",
+    "a:NNormieThe NormieDzMwA…Jpump12/100Histor",
+    "a:AATTENTIONAttentionBECHK…5pump12/100Hist",
+    "a:RRARINo Risk No RariEFn88…igYwR12/100His",
+    "a:SSPOOKYSpooky Action at a DistanceCZ3X9…",
+    "a:AALLINUALLINU4MMQY…AXKY812/100Historical",
+    "a:SSISpace InuEMUZC…Tpump12/100Historical ",
+    "a:AARCADESArcadesjq4yK…Hpump12/100Historic",
+    "button:Next page",
+    "summary:Collection coverage & scan context",
+    "a:methodology",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 25,
+   "mainActions": [
+    "a:CCLAUDIAClaudia2j5Sa…nW2ZM15/100Historic",
+    "a:SSAINDRASaindraA2yA6…mkA9T15/100Historic",
+    "a:CCRAWLCRAWLNETBXoHJ…kpump15/100Historica",
+    "a:JJEANPHILJean PhilGTBxU…Dpump15/100Histo",
+    "a:VVEILVeilHgTGd…vpump15/100Historical eva",
+    "a:AAPIAPIapiAN…X1api15/100Historical evalu",
+    "a:LLOADLoadout8sWe4…ePtPo15/100Historical ",
+    "a:YYILONGMAYiLong MaGU5Nk…Qpump15/100Histo",
+    "a:MMusclecat머슬캣89SbH…spump12/100Historical",
+    "a:HHOTBOTHot Bot8nnae…hXrGF12/100Historica",
+    "a:ZZCATAnonymous CatHcRLc…iDeJR12/100Histo",
+    "a:KKimbaJustice for KimbaF7V6L…Epump12/100"
+   ]
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 33,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:Filters & sort",
+    "a:AAttention+Attention Agents75gGu…spump35",
+    "a:DDARKDarkSwap7KEPA…66kH335/100Historical",
+    "a:bbatonbatonHg5Ja…gpump30/100Historical e",
+    "a:HHIREHire Agents98AG3…1pump27/100Histori",
+    "a:SSentientsSentientsFtHBu…cpump20/100Hist",
+    "a:CCLAUDIAClaudia2j5Sa…nW2ZM15/100Historic",
+    "a:SSAINDRASaindraA2yA6…mkA9T15/100Historic",
+    "a:CCRAWLCRAWLNETBXoHJ…kpump15/100Historica",
+    "a:JJEANPHILJean PhilGTBxU…Dpump15/100Histo",
+    "a:VVEILVeilHgTGd…vpump15/100Historical eva",
+    "a:AAPIAPIapiAN…X1api15/100Historical evalu",
+    "a:LLOADLoadout8sWe4…ePtPo15/100Historical ",
+    "a:YYILONGMAYiLong MaGU5Nk…Qpump15/100Histo",
+    "a:MMusclecat머슬캣89SbH…spump12/100Historical",
+    "a:HHOTBOTHot Bot8nnae…hXrGF12/100Historica",
+    "a:ZZCATAnonymous CatHcRLc…iDeJR12/100Histo",
+    "a:KKimbaJustice for KimbaF7V6L…Epump12/100",
+    "a:KKINETICKineticZbF6P…fpump12/100Historic",
+    "a:SSHHShhFdZLT…PJhbA12/100Historical evalu",
+    "a:NNormieThe NormieDzMwA…Jpump12/100Histor",
+    "a:AATTENTIONAttentionBECHK…5pump12/100Hist",
+    "a:RRARINo Risk No RariEFn88…igYwR12/100His",
+    "a:SSPOOKYSpooky Action at a DistanceCZ3X9…",
+    "a:AALLINUALLINU4MMQY…AXKY812/100Historical",
+    "a:SSISpace InuEMUZC…Tpump12/100Historical ",
+    "button:Next page",
+    "summary:Collection coverage & scan context",
+    "a:methodology",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 25,
+   "mainActions": [
+    "a:SSentientsSentientsFtHBu…cpump20/100Hist",
+    "a:CCLAUDIAClaudia2j5Sa…nW2ZM15/100Historic",
+    "a:SSAINDRASaindraA2yA6…mkA9T15/100Historic",
+    "a:CCRAWLCRAWLNETBXoHJ…kpump15/100Historica",
+    "a:JJEANPHILJean PhilGTBxU…Dpump15/100Histo",
+    "a:VVEILVeilHgTGd…vpump15/100Historical eva",
+    "a:AAPIAPIapiAN…X1api15/100Historical evalu",
+    "a:LLOADLoadout8sWe4…ePtPo15/100Historical ",
+    "a:YYILONGMAYiLong MaGU5Nk…Qpump15/100Histo",
+    "a:MMusclecat머슬캣89SbH…spump12/100Historical",
+    "a:HHOTBOTHot Bot8nnae…hXrGF12/100Historica",
+    "a:ZZCATAnonymous CatHcRLc…iDeJR12/100Histo"
+   ]
+  },
+  {
+   "page": "signals-flat",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$DARK",
+    "summary:Score 57 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 47 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$Agency",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 63 · reasons, risks & best/worst"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$DARK",
+    "summary:Score 57 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 47 · reasons, risks & best/worst"
+   ]
+  },
+  {
+   "page": "signals-grouped",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 63 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 50 · reasons, risks & best/worst",
+    "a:$?",
+    "summary:Score 80 · reasons, risks & best/worst",
+    "a:$?",
+    "summary:Score 60 · reasons, risks & best/worst"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED"
+   ]
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 21,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 13,
+   "mainActions": [
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive"
+   ]
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 21,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract C1mBfBoDkwWfd6uTFZp62ARHLj",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 13,
+   "mainActions": [
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive"
+   ]
+  },
+  {
+   "page": "token-paid",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:← Back to research",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "a:GMGN",
+    "a:Explorer",
+    "button:Price",
+    "button:Market cap",
+    "button:Score",
+    "button:1h candles",
+    "div:Observed price chart, horizontally scrol",
+    "svg:Observed price. 500 saved points, from O",
+    "g:Call 12 of 12, alert #45, Oct 14, 2026, ",
+    "g:Call 11 of 12, alert #44, Oct 14, 2026, ",
+    "g:Call 10 of 12, alert #34, Oct 13, 2026, ",
+    "g:Call 9 of 12, alert #33, Oct 13, 2026, 0",
+    "g:Call 8 of 12, alert #26, Oct 12, 2026, 1",
+    "g:Call 7 of 12, alert #25, Oct 12, 2026, 0",
+    "g:Call 6 of 12, alert #22, Oct 11, 2026, 1",
+    "g:Call 5 of 12, alert #18, Oct 11, 2026, 0",
+    "g:Call 4 of 12, alert #16, Oct 11, 2026, 0",
+    "summary:Saved chart values",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 56 · reasons, risks & best/worst",
+    "button:Older →",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$PAID"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Score",
+    "button:1h candles",
+    "div:Observed price chart, horizontally scrol",
+    "svg:Observed price. 500 saved points, from O",
+    "g:Call 12 of 12, alert #45, Oct 14, 2026, ",
+    "g:Call 11 of 12, alert #44, Oct 14, 2026, ",
+    "g:Call 10 of 12, alert #34, Oct 13, 2026, ",
+    "g:Call 9 of 12, alert #33, Oct 13, 2026, 0",
+    "g:Call 8 of 12, alert #26, Oct 12, 2026, 1",
+    "g:Call 7 of 12, alert #25, Oct 12, 2026, 0",
+    "g:Call 6 of 12, alert #22, Oct 11, 2026, 1",
+    "g:Call 5 of 12, alert #18, Oct 11, 2026, 0"
+   ]
+  },
+  {
+   "page": "track-journal",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 38,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "button:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "a:$CRAWL",
+    "a:$SI",
+    "a:$HOOKED",
+    "a:$JEANPHIL",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$DARK",
+    "a:$baton",
+    "a:$JEANPHIL",
+    "a:$baton",
+    "a:$baton",
+    "a:$SI",
+    "a:$JEANPHIL",
+    "a:$HOOKED",
+    "a:$Agency",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$JEANPHIL",
+    "a:$JEANPHIL",
+    "a:$Agency",
+    "a:$Agency",
+    "a:$HOTBOT",
+    "a:$HOOKED",
+    "a:$PAID",
+    "a:$PAID",
+    "button:Next page",
+    "summary:Definitions, reconciliation and limitati",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 30,
+   "mainActions": [
+    "select:Sort",
+    "input:",
+    "a:$CRAWL",
+    "a:$SI",
+    "a:$HOOKED",
+    "a:$JEANPHIL",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$DARK",
+    "a:$baton",
+    "a:$JEANPHIL",
+    "a:$baton"
+   ]
+  },
+  {
+   "page": "track-worst-first",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 38,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "button:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "a:$e/acc",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "a:$RARI",
+    "a:$HOOKED",
+    "a:$EMBER",
+    "a:$HOOKED",
+    "a:$DARK",
+    "a:$SI",
+    "a:$e/acc",
+    "a:$e/acc",
+    "a:$Agency",
+    "a:$Agency",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$DARK",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$baton",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$JEANPHIL",
+    "a:$baton",
+    "a:$JEANPHIL",
+    "button:Next page",
+    "summary:Definitions, reconciliation and limitati",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 30,
+   "mainActions": [
+    "select:Sort",
+    "input:",
+    "a:$e/acc",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "a:$RARI",
+    "a:$HOOKED",
+    "a:$EMBER",
+    "a:$HOOKED",
+    "a:$DARK",
+    "a:$SI",
+    "a:$e/acc"
+   ]
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Alert window",
+    "select:Checkpoint horizon",
+    "button:Cohort filters",
+    "button:Export complete cohort (UTC CSV)",
+    "button:Below -50%1 / 30",
+    "button:-50% to below 0%20 / 30",
+    "button:Exactly 0%0 / 30",
+    "button:Above 0% through 50%9 / 30",
+    "button:Above 50%0 / 30",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Below -50%1 / 30",
+    "button:-50% to below 0%20 / 30",
+    "button:Exactly 0%0 / 30",
+    "button:Above 0% through 50%9 / 30",
+    "button:Above 50%0 / 30",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence"
+   ]
+  },
+  {
+   "page": "reports",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "button:Refresh",
+    "button:1h",
+    "button:4h",
+    "button:12h",
+    "button:24h",
+    "button:72h",
+    "button:7d",
+    "a:PPAIDPaid",
+    "a:View PAID",
+    "summary:Peak and latest evidence · 79 saved obse",
+    "a:DDARKDarkSwap",
+    "a:View DARK",
+    "summary:Peak and latest evidence · 133 saved obs",
+    "a:bbatonbaton",
+    "a:View baton",
+    "summary:Peak and latest evidence · 250 saved obs",
+    "a:SSISuper Inu",
+    "a:View SI",
+    "summary:Peak and latest evidence · 243 saved obs",
+    "a:JJEANPHILJean Phil",
+    "a:View JEANPHIL",
+    "summary:Peak and latest evidence · 132 saved obs",
+    "a:HHOOKEDHooked",
+    "a:View HOOKED",
+    "summary:Peak and latest evidence · 207 saved obs",
+    "a:CCLAUDIAClaudia",
+    "a:View CLAUDIA",
+    "summary:Peak and latest evidence · 267 saved obs",
+    "a:HHIREHire Agents",
+    "a:View HIRE",
+    "summary:Peak and latest evidence · 128 saved obs",
+    "a:CCRAWLCRAWLNET",
+    "a:View CRAWL",
+    "summary:Peak and latest evidence · 71 saved obse",
+    "a:UUNICORNThe Embryo Corporation",
+    "a:View UNICORN",
+    "summary:Peak and latest evidence · 92 saved obse",
+    "summary:Report window & collection totals"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:7d",
+    "a:PPAIDPaid",
+    "a:View PAID",
+    "summary:Peak and latest evidence · 79 saved obse",
+    "a:DDARKDarkSwap",
+    "a:View DARK",
+    "summary:Peak and latest evidence · 133 saved obs",
+    "a:bbatonbaton",
+    "a:View baton",
+    "summary:Peak and latest evidence · 250 saved obs",
+    "a:SSISuper Inu",
+    "a:View SI"
+   ]
+  },
+  {
+   "page": "methodology",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 3,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 0,
+   "mainActions": []
+  },
+  {
+   "page": "admin-login",
+   "size": "390",
+   "firstIsSkipLink": true,
+   "stops": 6,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "button:Open navigation",
+    "input:",
+    "button:Sign in",
+    "a:← Return to public radar",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 0,
+   "mainActions": []
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 20,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "select:Observation window",
+    "input:Search tokens",
+    "button:Search",
+    "select:Filter chain",
+    "select:Filter stage",
+    "select:Minimum score",
+    "select:Sort candidates",
+    "a:Explore saved history",
+    "summary:Collection coverage & scan context",
+    "a:methodology",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 12,
+   "mainActions": [
+    "button:Refresh",
+    "select:Observation window",
+    "input:Search tokens",
+    "button:Search",
+    "select:Filter chain",
+    "select:Filter stage",
+    "select:Minimum score",
+    "select:Sort candidates",
+    "a:Explore saved history",
+    "summary:Collection coverage & scan context",
+    "a:methodology",
+    "a:Methodology & coverage"
+   ]
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "select:Observation window",
+    "input:Search tokens",
+    "button:Search",
+    "select:Filter chain",
+    "select:Filter stage",
+    "select:Minimum score",
+    "select:Sort candidates",
+    "div:Saved candidates table",
+    "button:Score ↓",
+    "button:Market cap",
+    "button:Liquidity",
+    "button:5m volume",
+    "button:Observed",
+    "a:AAttention+SolanaAttention Agents75gGu…s",
+    "a:View Attention+",
+    "a:DDARKSolanaDarkSwap7KEPA…66kH3",
+    "a:View DARK",
+    "a:bbatonSolanabatonHg5Ja…gpump",
+    "a:View baton",
+    "a:HHIRESolanaHire Agents98AG3…1pump",
+    "a:View HIRE",
+    "a:CCLAUDIASolanaClaudia2j5Sa…nW2ZM",
+    "a:View CLAUDIA",
+    "a:SSAINDRASolanaSaindraA2yA6…mkA9T",
+    "a:View SAINDRA",
+    "a:CCRAWLSolanaCRAWLNETBXoHJ…kpump",
+    "a:View CRAWL",
+    "a:JJEANPHILSolanaJean PhilGTBxU…Dpump",
+    "a:View JEANPHIL",
+    "a:VVEILSolanaVeilHgTGd…vpump",
+    "a:View VEIL"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Refresh",
+    "select:Observation window",
+    "input:Search tokens",
+    "button:Search",
+    "select:Filter chain",
+    "select:Filter stage",
+    "select:Minimum score",
+    "select:Sort candidates",
+    "div:Saved candidates table",
+    "button:Score ↓",
+    "button:Market cap",
+    "button:Liquidity"
+   ]
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "select:Observation window",
+    "input:Search tokens",
+    "button:Search",
+    "select:Filter chain",
+    "select:Filter stage",
+    "select:Minimum score",
+    "select:Sort candidates",
+    "div:Saved candidates table",
+    "button:Score ↓",
+    "button:Market cap",
+    "button:Liquidity",
+    "button:5m volume",
+    "button:Observed",
+    "a:AAttention+SolanaAttention Agents75gGu…s",
+    "a:View Attention+",
+    "a:DDARKSolanaDarkSwap7KEPA…66kH3",
+    "a:View DARK",
+    "a:bbatonSolanabatonHg5Ja…gpump",
+    "a:View baton",
+    "a:HHIRESolanaHire Agents98AG3…1pump",
+    "a:View HIRE",
+    "a:SSentientsSolanaSentientsFtHBu…cpump",
+    "a:View Sentients",
+    "a:CCLAUDIASolanaClaudia2j5Sa…nW2ZM",
+    "a:View CLAUDIA",
+    "a:SSAINDRASolanaSaindraA2yA6…mkA9T",
+    "a:View SAINDRA",
+    "a:CCRAWLSolanaCRAWLNETBXoHJ…kpump",
+    "a:View CRAWL",
+    "a:JJEANPHILSolanaJean PhilGTBxU…Dpump",
+    "a:View JEANPHIL"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Refresh",
+    "select:Observation window",
+    "input:Search tokens",
+    "button:Search",
+    "select:Filter chain",
+    "select:Filter stage",
+    "select:Minimum score",
+    "select:Sort candidates",
+    "div:Saved candidates table",
+    "button:Score ↓",
+    "button:Market cap",
+    "button:Liquidity"
+   ]
+  },
+  {
+   "page": "signals-flat",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$DARK",
+    "summary:Score 57 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 47 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$baton",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$Agency",
+    "summary:Score 43 · reasons, risks & best/worst"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst"
+   ]
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 49 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 43 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 63 · reasons, risks & best/worst",
+    "a:$JEANPHIL",
+    "summary:Score 46 · reasons, risks & best/worst"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Refresh",
+    "button:Group by token",
+    "a:$CRAWL",
+    "a:$CRAWL",
+    "summary:Score 40 · reasons, risks & best/worst",
+    "a:$SI",
+    "a:$SI",
+    "summary:Score 45 · reasons, risks & best/worst",
+    "a:$SI",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$HOOKED",
+    "a:$HOOKED"
+   ]
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 27,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 19,
+   "mainActions": [
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence"
+   ]
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 27,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract C1mBfBoDkwWfd6uTFZp62ARHLj",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Score breakdown and components",
+    "summary:Separate research brief archive",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 19,
+   "mainActions": [
+    "a:← All alerts",
+    "a:← Back to research",
+    "a:View token",
+    "a:Open GMGN",
+    "summary:Call record: contract, times, security a",
+    "button:Copy contract C1mBfBoDkwWfd6uTFZp62ARHLj",
+    "summary:Every saved reason and risk (the card sh",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence"
+   ]
+  },
+  {
+   "page": "token-paid",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:← Back to research",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "a:GMGN",
+    "a:Explorer",
+    "button:Price",
+    "button:Market cap",
+    "button:Score",
+    "button:1h candles",
+    "div:Observed price chart, horizontally scrol",
+    "svg:Observed price. 500 saved points, from O",
+    "g:Call 12 of 12, alert #45, Oct 14, 2026, ",
+    "g:Call 11 of 12, alert #44, Oct 14, 2026, ",
+    "g:Call 10 of 12, alert #34, Oct 13, 2026, ",
+    "g:Call 9 of 12, alert #33, Oct 13, 2026, 0",
+    "g:Call 8 of 12, alert #26, Oct 12, 2026, 1",
+    "g:Call 7 of 12, alert #25, Oct 12, 2026, 0",
+    "g:Call 6 of 12, alert #22, Oct 11, 2026, 1",
+    "g:Call 5 of 12, alert #18, Oct 11, 2026, 0",
+    "g:Call 4 of 12, alert #16, Oct 11, 2026, 0",
+    "summary:Saved chart values",
+    "a:$PAID",
+    "summary:Score 58 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 42 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 53 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 41 · reasons, risks & best/worst",
+    "a:$PAID",
+    "summary:Score 56 · reasons, risks & best/worst",
+    "button:Older →",
+    "a:$PAID"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:← Back to research",
+    "button:Copy contract 98kfF7rmsg1QDUEoCqNE7g7M1F",
+    "a:GMGN",
+    "a:Explorer",
+    "button:Price",
+    "button:Market cap",
+    "button:Score",
+    "button:1h candles",
+    "div:Observed price chart, horizontally scrol",
+    "svg:Observed price. 500 saved points, from O",
+    "g:Call 12 of 12, alert #45, Oct 14, 2026, ",
+    "g:Call 11 of 12, alert #44, Oct 14, 2026, "
+   ]
+  },
+  {
+   "page": "track-journal",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "summary:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "button:List",
+    "button:Dense table",
+    "a:$CRAWL",
+    "a:$SI",
+    "a:$HOOKED",
+    "a:$JEANPHIL",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$DARK",
+    "a:$baton",
+    "a:$JEANPHIL",
+    "a:$baton",
+    "a:$baton",
+    "a:$SI",
+    "a:$JEANPHIL",
+    "a:$HOOKED",
+    "a:$Agency",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$JEANPHIL",
+    "a:$JEANPHIL",
+    "a:$Agency",
+    "a:$Agency",
+    "a:$HOTBOT"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "summary:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "button:List",
+    "button:Dense table",
+    "a:$CRAWL",
+    "a:$SI"
+   ]
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "summary:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "button:List",
+    "button:Dense table",
+    "a:$e/acc",
+    "a:$HOOKED",
+    "a:$HOOKED",
+    "a:$RARI",
+    "a:$HOOKED",
+    "a:$EMBER",
+    "a:$HOOKED",
+    "a:$DARK",
+    "a:$SI",
+    "a:$e/acc",
+    "a:$e/acc",
+    "a:$Agency",
+    "a:$Agency",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$DARK",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$PAID",
+    "a:$baton",
+    "a:$PAID",
+    "a:$PAID"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Window",
+    "summary:Filters",
+    "button:Export calls (UTC CSV)",
+    "summary:Breakdown by stage and by revision",
+    "select:Sort",
+    "input:",
+    "button:List",
+    "button:Dense table",
+    "a:$e/acc",
+    "a:$HOOKED"
+   ]
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Alert window",
+    "select:Checkpoint horizon",
+    "button:Cohort filters",
+    "button:Export complete cohort (UTC CSV)",
+    "button:Below -50%1 / 30",
+    "button:-50% to below 0%20 / 30",
+    "button:Exactly 0%0 / 30",
+    "button:Above 0% through 50%9 / 30",
+    "button:Above 50%0 / 30",
+    "div:Saved checkpoints",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence",
+    "summary:Exact saved values",
+    "a:Alert evidence"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "a:Call journal",
+    "a:Checkpoint detail",
+    "select:Alert window",
+    "select:Checkpoint horizon",
+    "button:Cohort filters",
+    "button:Export complete cohort (UTC CSV)",
+    "button:Below -50%1 / 30",
+    "button:-50% to below 0%20 / 30",
+    "button:Exactly 0%0 / 30",
+    "button:Above 0% through 50%9 / 30",
+    "button:Above 50%0 / 30",
+    "div:Saved checkpoints"
+   ]
+  },
+  {
+   "page": "reports",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 40,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "button:Refresh",
+    "button:1h",
+    "button:4h",
+    "button:12h",
+    "button:24h",
+    "button:72h",
+    "button:7d",
+    "a:PPAIDPaid",
+    "a:View PAID",
+    "summary:Peak and latest evidence · 79 saved obse",
+    "a:DDARKDarkSwap",
+    "a:View DARK",
+    "summary:Peak and latest evidence · 133 saved obs",
+    "a:bbatonbaton",
+    "a:View baton",
+    "summary:Peak and latest evidence · 250 saved obs",
+    "a:SSISuper Inu",
+    "a:View SI",
+    "summary:Peak and latest evidence · 243 saved obs",
+    "a:JJEANPHILJean Phil",
+    "a:View JEANPHIL",
+    "summary:Peak and latest evidence · 132 saved obs",
+    "a:HHOOKEDHooked",
+    "a:View HOOKED",
+    "summary:Peak and latest evidence · 207 saved obs",
+    "a:CCLAUDIAClaudia",
+    "a:View CLAUDIA",
+    "summary:Peak and latest evidence · 267 saved obs",
+    "a:HHIREHire Agents",
+    "a:View HIRE",
+    "summary:Peak and latest evidence · 128 saved obs",
+    "a:CCRAWLCRAWLNET"
+   ],
+   "mainActionStops": 32,
+   "mainActions": [
+    "button:Refresh",
+    "button:1h",
+    "button:4h",
+    "button:12h",
+    "button:24h",
+    "button:72h",
+    "button:7d",
+    "a:PPAIDPaid",
+    "a:View PAID",
+    "summary:Peak and latest evidence · 79 saved obse",
+    "a:DDARKDarkSwap",
+    "a:View DARK"
+   ]
+  },
+  {
+   "page": "methodology",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 9,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 1,
+   "mainActions": [
+    "a:Methodology & coverage"
+   ]
+  },
+  {
+   "page": "admin-login",
+   "size": "1366",
+   "firstIsSkipLink": true,
+   "stops": 12,
+   "allFocusVisible": true,
+   "order": [
+    "a:Skip to research content",
+    "a:OnchainFlowSaved market research",
+    "a:Radar",
+    "a:Signals",
+    "a:Reports",
+    "a:Track record",
+    "a:Methodology",
+    "a:Owner areaPRIVATE",
+    "input:",
+    "button:Sign in",
+    "a:← Return to public radar",
+    "a:Methodology & coverage"
+   ],
+   "mainActionStops": 4,
+   "mainActions": [
+    "input:",
+    "button:Sign in",
+    "a:← Return to public radar",
+    "a:Methodology & coverage"
+   ]
+  }
+ ],
+ "reduced": [
+  {
+   "page": "radar-empty-stale",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signals-flat",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signals-grouped",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "token-paid",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-journal",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-worst-first",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "reports",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "methodology",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "admin-login",
+   "size": "390",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "radar-empty-stale",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "radar-all-24h",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "radar-history-7d",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signals-flat",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signals-grouped",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signal-45-paid",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "signal-14-hooked",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "token-paid",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-journal",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-worst-first",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "track-checkpoints",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "reports",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "methodology",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  },
+  {
+   "page": "admin-login",
+   "size": "1366",
+   "mediaMatches": true,
+   "running": 0,
+   "longerThan0_01ms": 0,
+   "sample": []
+  }
+ ]
+}

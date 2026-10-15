@@ -1,7 +1,8 @@
 # V2 release gate (issue #75)
 
-Status: **measured; 18 of 20 gates pass (G20 is completed by CI), G8 and G16 fail on a pre-existing Radar 7-day
-read defect (see Results).** The thresholds were committed before any measurement. Thresholds below are the existing, unchanged ones (AGENTS.md; #25, #42, #45,
+Status: **after the #98 fix (re-measured 2026-10-15, see "Re-measurement after #98") all
+20 gates pass (G20 is completed by CI).** The first measurement had G8 and G16 failing on
+a pre-existing Radar 7-day read defect; those rows are kept below as history. The thresholds were committed before any measurement. Thresholds below are the existing, unchanged ones (AGENTS.md; #25, #42, #45,
 #49, #64, #66, #90, #74). They must not be relaxed after results are seen. A failed
 gate stays visible with its fix; a gate that fails because of a code defect is reported
 and stopped, not fixed in this branch.
@@ -115,3 +116,30 @@ result for G8 and G16 stays FAIL until a fix is re-measured with the same thresh
 - Private inputs (the database copy and its derived copies) were never modified or
   committed; the pristine schema-7 working copy is byte-identical (sha256) to the original after all steps, and every mutating
   step used a copy outside the repository.
+
+## Re-measurement after #98 (2026-10-15)
+
+Merged `origin/main` `fd1ee2c` (#98/#99: Radar ranks the latest evaluation per token in
+one windowed pass) into this branch and re-ran only G8 and G16 with the thresholds
+above and the same methods (fresh server per route with `posix_fadvise` on the database
+file for cold; same-process repeats for warm; same 1366x768 frozen-clock browser pass).
+The first G8 and G16 rows above are kept unchanged as the original result. One
+mistake worth recording: my first browser re-run still hit a server process started
+before the merge and reproduced the 503; it was killed and the pass repeated on a
+fresh process running the merged code.
+
+| # | Gate | Re-measured | Result |
+| --- | --- | --- | --- |
+| G8 | Endpoint timing, 26 route variants (the 23 original plus three Radar 168 h combinations), cold and warm, schema 9 and schema 7 copies | All HTTP 200. Schema 9: cold max 1.014 s, warm uncached max 0.415 s, warm cached max 0.018 s. Schema 7: cold max 1.153 s, warm uncached max 0.403 s, warm cached max 0.049 s. `/radar?age_hours=168` cold 0.300 s (schema 9) / 0.353 s (schema 7), warm uncached median 0.149 / 0.133 s. Radar 168 h with min score 0 and include ignored: cold 0.281 / 0.349 s | PASS |
+| G8 (#100 edge) | Radar 168 h, min score 0, include ignored, sorted by market cap | Cold **1.014 s** (schema 9) and **1.153 s** (schema 7), warm uncached median 0.361 / 0.340 s, warm cached 0.004 s. Under the 1.5 s deadline, but with only 32% (schema 9) and 23% (schema 7) headroom; this is a single cold sample per copy, not a distribution, and tracked in #100 | PASS as measured (thin margin) |
+| G16 | Console errors, 14 pages x 7 sizes (98 combinations) | 0 console or page errors on every page and size, including Radar 7-day (now renders data instead of the 503 state); overflow 0, external requests 0, contrast 0 failures in 65,531 elements, keyboard and reduced-motion clean (re-run as part of the same browser pass) | PASS |
+
+Final per-gate status: G1 to G7 and G9 to G15 and G17 to G19 PASS (unchanged from the
+first measurement; not re-run, the merge touched only the Radar query and its tests);
+G8 PASS and G16 PASS after #98; G20 depends on CI. The Radar 7-day screenshots after the
+fix are `radar-history-7d-after98-*.png`; the originals showing the failure stay.
+
+Limits of this re-measurement: the other gates were not re-run after the merge, so
+their results stand for `40a62a4` plus the earlier branch, not for `fd1ee2c`; the
+cold method is a best-effort page-cache hint on a WSL2 host, so a truly cold VPS disk
+may be slower, which matters most for the market-cap-sort combination in #100.

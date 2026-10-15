@@ -1,0 +1,246 @@
+{
+ "read_deadline_s": 1.5,
+ "routes": {
+  "/meta": {
+   "status": 200,
+   "bytes": 345,
+   "cold_s": 0.005,
+   "warm_cached_median_s": 0.0046,
+   "warm_uncached_median_s": 0.0043,
+   "warm_uncached_max_s": 0.0044
+  },
+  "/radar": {
+   "status": 200,
+   "bytes": 107,
+   "cold_s": 0.0057,
+   "warm_cached_median_s": 0.0042,
+   "warm_uncached_median_s": 0.0044,
+   "warm_uncached_max_s": 0.0047
+  },
+  "/radar?sort=market_cap": {
+   "status": 200,
+   "bytes": 105,
+   "cold_s": 0.0057,
+   "warm_cached_median_s": 0.0046,
+   "warm_uncached_median_s": 0.0045,
+   "warm_uncached_max_s": 0.0051
+  },
+  "/radar?age_hours=168": {
+   "status": 200,
+   "bytes": 107,
+   "cold_s": 0.3533,
+   "warm_cached_median_s": 0.004,
+   "warm_uncached_median_s": 0.1326,
+   "warm_uncached_max_s": 0.1389
+  },
+  "/radar?age_hours=168&min_score=0&include_ignore=true": {
+   "status": 200,
+   "bytes": 90408,
+   "cold_s": 0.3491,
+   "warm_cached_median_s": 0.0048,
+   "warm_uncached_median_s": 0.1391,
+   "warm_uncached_max_s": 0.1393
+  },
+  "/radar?age_hours=168&min_score=0&include_ignore=true&sort=market_cap": {
+   "status": 200,
+   "bytes": 89993,
+   "cold_s": 1.1527,
+   "warm_cached_median_s": 0.0042,
+   "warm_uncached_median_s": 0.3398,
+   "warm_uncached_max_s": 0.3419
+  },
+  "/tokens/sol/98kfF7rmsg1QDUEoCqNE7g7M1FdrTt92TEp2CLzypump": {
+   "status": 200,
+   "bytes": 5206,
+   "cold_s": 0.0065,
+   "warm_cached_median_s": 0.0043,
+   "warm_uncached_median_s": 0.0062,
+   "warm_uncached_max_s": 0.0066
+  },
+  "/tokens/sol/98kfF7rmsg1QDUEoCqNE7g7M1FdrTt92TEp2CLzypump/history": {
+   "status": 200,
+   "bytes": 126466,
+   "cold_s": 0.4593,
+   "warm_cached_median_s": 0.0045,
+   "warm_uncached_median_s": 0.0863,
+   "warm_uncached_max_s": 0.1056
+  },
+  "/tokens/sol/98kfF7rmsg1QDUEoCqNE7g7M1FdrTt92TEp2CLzypump/briefs": {
+   "status": 200,
+   "bytes": 18027,
+   "cold_s": 0.0052,
+   "warm_cached_median_s": 0.0026,
+   "warm_uncached_median_s": 0.003,
+   "warm_uncached_max_s": 0.0033
+  },
+  "/alerts": {
+   "status": 200,
+   "bytes": 101866,
+   "cold_s": 0.266,
+   "warm_cached_median_s": 0.0044,
+   "warm_uncached_median_s": 0.0214,
+   "warm_uncached_max_s": 0.0228
+  },
+  "/alerts?group=token": {
+   "status": 200,
+   "bytes": 167146,
+   "cold_s": 0.69,
+   "warm_cached_median_s": 0.0046,
+   "warm_uncached_median_s": 0.0491,
+   "warm_uncached_max_s": 0.0516
+  },
+  "/alerts?chain=sol&address=98kfF7rmsg1QDUEoCqNE7g7M1FdrTt92TEp2CLzypump": {
+   "status": 200,
+   "bytes": 48855,
+   "cold_s": 0.1716,
+   "warm_cached_median_s": 0.0043,
+   "warm_uncached_median_s": 0.0158,
+   "warm_uncached_max_s": 0.0209
+  },
+  "/alerts/45": {
+   "status": 200,
+   "bytes": 11571,
+   "cold_s": 0.0154,
+   "warm_cached_median_s": 0.0047,
+   "warm_uncached_median_s": 0.0072,
+   "warm_uncached_max_s": 0.0076
+  },
+  "/alerts/14": {
+   "status": 200,
+   "bytes": 11221,
+   "cold_s": 0.1324,
+   "warm_cached_median_s": 0.0041,
+   "warm_uncached_median_s": 0.0091,
+   "warm_uncached_max_s": 0.011
+  },
+  "/reports?hours=24": {
+   "status": 200,
+   "bytes": 298,
+   "cold_s": 0.0043,
+   "warm_cached_median_s": 0.0045,
+   "warm_uncached_median_s": 0.0076,
+   "warm_uncached_max_s": 0.0078
+  },
+  "/reports?hours=168": {
+   "status": 200,
+   "bytes": 70983,
+   "cold_s": 0.0053,
+   "warm_cached_median_s": 0.0042,
+   "warm_uncached_median_s": 0.3899,
+   "warm_uncached_max_s": 0.4028
+  },
+  "/outcomes": {
+   "status": 200,
+   "bytes": 549,
+   "cold_s": 0.0298,
+   "warm_cached_median_s": 0.003,
+   "warm_uncached_median_s": 0.0117,
+   "warm_uncached_max_s": 0.0131
+  },
+  "/outcomes?days=1": {
+   "status": 200,
+   "bytes": 476,
+   "cold_s": 0.0075,
+   "warm_cached_median_s": 0.0032,
+   "warm_uncached_median_s": 0.0027,
+   "warm_uncached_max_s": 0.0028
+  },
+  "/track-record?days=7&horizon=24": {
+   "status": 200,
+   "bytes": 23124,
+   "cold_s": 0.0297,
+   "warm_cached_median_s": 0.0032,
+   "warm_uncached_median_s": 0.0062,
+   "warm_uncached_max_s": 0.0071
+  },
+  "/track-record?days=30&horizon=24": {
+   "status": 200,
+   "bytes": 25441,
+   "cold_s": 0.0253,
+   "warm_cached_median_s": 0.0028,
+   "warm_uncached_median_s": 0.0068,
+   "warm_uncached_max_s": 0.0073
+  },
+  "/track-record/export?days=7&horizon=24": {
+   "status": 200,
+   "bytes": 84825,
+   "cold_s": 0.0236,
+   "warm_cached_median_s": 0.0062,
+   "warm_uncached_median_s": 0.0066,
+   "warm_uncached_max_s": 0.0079
+  },
+  "/track-record/calls?days=7": {
+   "status": 200,
+   "bytes": 104744,
+   "cold_s": 0.5597,
+   "warm_cached_median_s": 0.0034,
+   "warm_uncached_median_s": 0.0349,
+   "warm_uncached_max_s": 0.0365
+  },
+  "/track-record/calls?days=30": {
+   "status": 200,
+   "bytes": 105368,
+   "cold_s": 0.8125,
+   "warm_cached_median_s": 0.0031,
+   "warm_uncached_median_s": 0.0448,
+   "warm_uncached_max_s": 0.0688
+  },
+  "/track-record/calls?days=365": {
+   "status": 200,
+   "bytes": 105364,
+   "cold_s": 0.8225,
+   "warm_cached_median_s": 0.0035,
+   "warm_uncached_median_s": 0.0477,
+   "warm_uncached_max_s": 0.0512
+  },
+  "/track-record/calls?days=30&sort=worst": {
+   "status": 200,
+   "bytes": 103731,
+   "cold_s": 0.7609,
+   "warm_cached_median_s": 0.0035,
+   "warm_uncached_median_s": 0.0449,
+   "warm_uncached_max_s": 0.048
+  },
+  "/track-record/calls/export?days=30": {
+   "status": 200,
+   "bytes": 84096,
+   "cold_s": 0.7567,
+   "warm_cached_median_s": 0.0491,
+   "warm_uncached_median_s": 0.0488,
+   "warm_uncached_max_s": 0.0518
+  }
+ },
+ "startup_seconds": [
+  4.47,
+  4.35,
+  4.25,
+  4.45,
+  4.15,
+  4.15,
+  4.25,
+  4.26,
+  4.05,
+  4.75,
+  4.25,
+  4.35,
+  4.15,
+  4.05,
+  4.15,
+  4.56,
+  4.35,
+  4.66,
+  4.66,
+  4.35,
+  4.25,
+  4.15,
+  4.45,
+  4.25,
+  4.15,
+  4.25
+ ],
+ "all_status_200": true,
+ "max_cold_s": 1.1527,
+ "max_warm_uncached_s": 0.4028,
+ "max_warm_cached_s": 0.0491,
+ "all_under_deadline": true
+}
