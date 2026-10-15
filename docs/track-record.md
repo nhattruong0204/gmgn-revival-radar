@@ -88,6 +88,27 @@ CSV binds that cutoff. The existing bounded/coalesced cache and read deadline ar
 retained. Exact accounting is bounded to 10,000 candidate alerts; oversized queries
 fail closed and require narrower windows rather than silently truncating totals.
 
+## Call performance projection (schema 8, #90)
+
+`call_performance` (keyed by `alert_id`) is **derived data**, rebuildable at any time
+from `token_snapshots`; it never replaces the authoritative alert or snapshot rows. After
+each scan the scanner (one post-scan hook, `Scanner.maintain_call_performance`) folds the
+snapshots newer than each row's `updated_at` into the aggregates for every sent call
+younger than `CALL_PERFORMANCE_ACTIVE_DAYS` (default 30) using the same rules as the
+on-read computation (finite market cap > 0, strictly after the call, same/mixed/unknown
+basis). Older calls are set `frozen` and are no longer maintained. Missing rows are
+backfilled in bounded batches (500 per scan). Indexed incremental reads only; no provider
+calls; a failure is logged and never fails a scan.
+
+The website uses a row only when `updated_at <= as_of` and the stored call market cap
+still equals the alert's, and folds in any saved snapshots between `updated_at` and
+`as_of` itself, so results are identical to computing on read. A missing row (call made
+after the last scan, schema-7 database), an earlier `as_of`, or a basis transition falls
+back to the on-read computation. The website still serves schema-7 databases read-only.
+Invariant: snapshots are appended with timestamps later than the last scan; a snapshot
+inserted later with an older timestamp would be missed by the projection (verify with
+`scripts/verify_call_parity.py --db copy.db --projection`, an independent recomputation).
+
 ## Migration and rollback boundary
 
 This task does **not deploy or touch the VPS**. A later reviewed rollout must stop
@@ -95,7 +116,11 @@ services for a matched private code/database/runtime-control backup, verify it i
 staging, run the scanner-owned additive migration, and pair it with the schema-seven
 website reader. Six-to-seven migration creates empty new tables/triggers, leaves
 legacy evidence and #43 archives unchanged, and is transactional/idempotent.
-Older application readers reject schema seven. Rollback restores the matched
+Older application readers reject schema seven.
+Seven-to-eight creates only the empty derived `call_performance` table (`IF NOT EXISTS`,
+transactional, no existing row touched); older readers reject schema eight and rollback
+restores the matched pre-release backup (the table can instead simply be ignored/dropped
+by the matching older code's restore; it holds no unique evidence). Rollback restores the matched
 pre-release database/control backup with its matching code; never downgrade or
 remove historical receipts in place. Restore/stage must preserve private permissions
 and immutable records. No access-policy or provider-budget change is authorized here.

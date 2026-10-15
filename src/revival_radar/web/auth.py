@@ -12,7 +12,7 @@ from contextlib import contextmanager
 
 from fastapi import HTTPException, Request
 
-from revival_radar.storage.database import SCHEMA_VERSION
+from revival_radar.storage.database import PUBLIC_SCHEMA_VERSIONS
 from revival_radar.web.config import WebConfig
 
 COOKIE_NAME = "radar_session"
@@ -79,7 +79,7 @@ def admin_database(config: WebConfig, *, writable: bool = False):
         db.execute(f"PRAGMA busy_timeout={config.web_read_timeout_ms}")
         if not writable:
             db.execute("PRAGMA query_only=ON")
-        if db.execute("PRAGMA user_version").fetchone()[0] != SCHEMA_VERSION:
+        if db.execute("PRAGMA user_version").fetchone()[0] not in PUBLIC_SCHEMA_VERSIONS:
             raise HTTPException(503, "Admin storage requires a scanner-owned upgrade.")
         yield db
     except sqlite3.Error:

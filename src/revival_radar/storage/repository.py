@@ -54,6 +54,14 @@ class Repository:
                 self.record_origin("snapshot", cursor.lastrowid, origin)
                 self._record_basis_sample(token)
 
+    def refresh_call_performance(self, now: float, active_days: float) -> dict:
+        """Maintain the derived call_performance projection (schema 8+); no-op before it."""
+        from revival_radar.analysis.call_projection import refresh
+
+        if self.db.execute("PRAGMA user_version").fetchone()[0] < 8:
+            return {}
+        return refresh(self.db, now, active_days)
+
     def _record_basis_sample(self, token: TokenSnapshot) -> None:
         """Keep the newest raw rank/token-info pairs (capped) in state; no provider calls."""
         pair = build_pair(token.chain, token.contract_address, token._basis_sample)

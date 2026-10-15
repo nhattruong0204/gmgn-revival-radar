@@ -184,7 +184,7 @@ def test_export_matches_golden_files(copy, tmp_path):
         "cohorts.csv": manifest["row_counts"]["cohorts.csv"],
     }
     saved = json.loads((tmp_path / "out" / "manifest.json").read_text())
-    assert saved["quick_check"] == "ok" and saved["schema_version"] == 7
+    assert saved["quick_check"] == "ok" and saved["schema_version"] == 8
     assert saved["inputs"]["database_sha256"] == file_hash(copy)
     assert saved["cutoffs"]["until"] == UNTIL and saved["cutoffs"]["since"] == B0
     assert set(saved["definitions"]) >= {"unknown", "cohorts", "change_since_call_pct"}
