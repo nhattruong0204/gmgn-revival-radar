@@ -65,10 +65,20 @@ class Repository:
             return {}
         return refresh(self.db, now, active_days)
 
+    def refresh_report_projection(self, budget_seconds: float = 15.0) -> dict:
+        """Maintain the derived evaluation_configuration projection (schema 10+)."""
+        from revival_radar.analysis.report_projection import refresh
+
+        if self.db.execute("PRAGMA user_version").fetchone()[0] < 10:
+            return {}
+        return refresh(self.db, budget_seconds)
+
     def refresh_radar_projection(self, budget_seconds: float = 15.0) -> dict:
-        """Maintain the derived evaluation_radar projection; no-op where it does not exist."""
+        """Maintain the derived evaluation_radar projection (schema 11+)."""
         from revival_radar.analysis.radar_projection import refresh
 
+        if self.db.execute("PRAGMA user_version").fetchone()[0] < 11:
+            return {}
         return refresh(self.db, budget_seconds)
 
     def _record_basis_sample(self, token: TokenSnapshot) -> None:
@@ -771,24 +781,27 @@ class Repository:
             raise ValueError("Invalid market report window")
         ZoneInfo(timezone)
         # Invalid/missing legacy JSON contributes its saved score, with unknown sub-scores.
-        source = "FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id "
-        window = """WHERE e.chain='sol' AND e.timestamp>? AND e.timestamp<=?
-            AND s.finished IS NOT NULL AND s.finished<=?"""
+        # Completed scans are resolved once from the covering finished index instead of
+        # joining every evaluation to its scan row (random page reads on a cold cache).
+        window = """e.chain='sol' AND e.timestamp>:since AND e.timestamp<=:until
+            AND e.scan_id IN (SELECT id FROM valid_scans)"""
         # Ranking/coverage need scalar rows only. Joining retained presentation
         # payloads here reads large JSON for every observation, even though only
         # boundary-score candidates and configuration inspection need it.
-        base = source + window
-        params = (since, until, until)
-        valid = "CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END"
-        query = f"""WITH observations AS MATERIALIZED (
+        params = {"since": since, "until": until, "offset": limit - 1, "limit": limit}
+        projected = self._configuration_projection
+        query = f"""WITH valid_scans AS MATERIALIZED (
+            SELECT id,finished FROM scan_runs WHERE finished IS NOT NULL AND finished<=:until
+        ), observations AS MATERIALIZED (
             SELECT e.id,e.chain,e.contract_address,e.timestamp,e.score,e.status,e.eligible,
-                s.finished AS scan_finished {base}
+                s.finished AS scan_finished
+            FROM evaluations e JOIN valid_scans s ON s.id=e.scan_id WHERE {window}
         ), token_counts AS MATERIALIZED (
             SELECT contract_address,MAX(score) AS peak_score,COUNT(*) AS observations
             FROM observations GROUP BY contract_address
         ), competitive_score AS (
             SELECT COALESCE((SELECT peak_score FROM token_counts
-                ORDER BY peak_score DESC LIMIT 1 OFFSET ?),-1)
+                ORDER BY peak_score DESC LIMIT 1 OFFSET :offset),-1)
                 AS minimum
         ), candidates AS MATERIALIZED (
             SELECT o.*,t.observations,
@@ -803,36 +816,43 @@ class Repository:
             ) AS peak_position FROM candidates
         ), top_peaks AS MATERIALIZED (
             SELECT * FROM peaks WHERE peak_position=1
-            ORDER BY score DESC,evidence_rank DESC,timestamp DESC,contract_address ASC LIMIT ?
+            ORDER BY score DESC,evidence_rank DESC,timestamp DESC,contract_address ASC LIMIT :limit
         ), coverage AS (
             SELECT COUNT(*) AS evaluations,
                 (SELECT COUNT(*) FROM token_counts) AS unique_tokens,
                 MIN(timestamp) AS first_observation,MAX(scan_finished) AS last_finished
             FROM observations
-        ), configurations AS MATERIALIZED (
-            SELECT DISTINCT COALESCE((SELECT
-                COALESCE(CAST(json_extract({valid},'$.configuration') AS TEXT),'legacy') || ':' ||
-                COALESCE(CAST(json_extract({valid},'$.signal.score_version') AS TEXT),'legacy')
-                FROM state st INDEXED BY state_report_configuration
-                WHERE st.key='telegram:evaluation:' || e.id),'legacy:legacy')
-            FROM observations e LIMIT 2
         ) SELECT p.id AS peak_id,(
-                SELECT o.id FROM observations o
-                WHERE o.contract_address=p.contract_address
-                ORDER BY o.timestamp DESC,o.id DESC LIMIT 1
-            ) AS latest_id,p.observations,c.*,
-                (SELECT COUNT(*) FROM configurations) AS configurations
+                SELECT e.id FROM evaluations e
+                WHERE e.chain='sol' AND e.contract_address=p.contract_address
+                    AND e.timestamp>:since AND e.timestamp<=:until
+                    AND e.scan_id IN (SELECT id FROM valid_scans)
+                ORDER BY e.timestamp DESC,e.id DESC LIMIT 1
+            ) AS latest_id,p.observations,c.*,{
+            '''(SELECT COUNT(*) FROM observations o
+                    LEFT JOIN evaluation_configuration k ON k.evaluation_id=o.id
+                        AND k.timestamp=o.timestamp WHERE k.evaluation_id IS NULL)
+                AS unprojected,
+                (SELECT COUNT(*) FROM (SELECT DISTINCT k.digest FROM observations o
+                    JOIN evaluation_configuration k ON k.evaluation_id=o.id
+                        AND k.timestamp=o.timestamp LIMIT 2)) AS configurations'''
+            if projected
+            else "0 AS unprojected,0 AS configurations"
+        }
             FROM coverage c LEFT JOIN top_peaks p ON 1
             ORDER BY p.score DESC,p.evidence_rank DESC,
                 p.timestamp DESC,p.contract_address ASC"""
         # Only tokens whose peak score can reach the requested top list need
         # expensive validated evidence tie-breaks. Keep every boundary-score tie.
-        ranked = self.db.execute(query, (*params, limit - 1, limit)).fetchall()
+        ranked = self.db.execute(query, params).fetchall()
         # Reuse the same scalar projection for coverage/configurations instead
         # of traversing the entire provenance-filtered window three times.
-        # Scalar index lookups retain expression coverage on SQLite 3.40, where
-        # an outer join reparses JSON despite selecting the expression index.
         totals = ranked[0]
+        configurations = totals["configurations"]
+        if not projected or totals["unprojected"]:
+            # Projection absent (schema 7-9) or not yet covering this window: derive the
+            # same distinct (configuration, score version) count from saved presentations.
+            configurations = self._configurations_on_read(since, until)
         runs = self.db.execute(
             """SELECT SUM(CASE WHEN finished IS NOT NULL AND finished<=? THEN 1 ELSE 0 END)
                 AS completed_scans,SUM(CASE WHEN finished IS NULL OR finished>? THEN 1 ELSE 0 END)
@@ -873,9 +893,35 @@ class Repository:
             "incomplete_scans": runs["incomplete_scans"] or 0,
             "first_observation": totals["first_observation"],
             "last_finished": totals["last_finished"],
-            "multiple_configurations": totals["configurations"] > 1,
+            "multiple_configurations": configurations > 1,
             "entries": entries,
         }
+
+    @property
+    def _configuration_projection(self) -> bool:
+        """Schema-10 projection table present; older databases compute on read."""
+        from revival_radar.analysis.report_projection import available
+
+        return available(self.db)
+
+    def _configurations_on_read(self, since: float, until: float) -> int:
+        """Distinct saved (configuration, score version) pairs, at most two, from presentations.
+
+        Scalar index lookups retain expression coverage on SQLite 3.40, where an outer join
+        reparses JSON despite selecting the expression index.
+        """
+        valid = "CASE WHEN json_valid(st.value) THEN st.value ELSE '{}' END"
+        return self.db.execute(
+            f"""SELECT COUNT(*) FROM (SELECT DISTINCT COALESCE((SELECT
+                COALESCE(CAST(json_extract({valid},'$.configuration') AS TEXT),'legacy') || ':' ||
+                COALESCE(CAST(json_extract({valid},'$.signal.score_version') AS TEXT),'legacy')
+                FROM state st INDEXED BY state_report_configuration
+                WHERE st.key='telegram:evaluation:' || e.id),'legacy:legacy')
+            FROM evaluations e JOIN scan_runs s ON s.id=e.scan_id
+            WHERE e.chain='sol' AND e.timestamp>? AND e.timestamp<=?
+                AND s.finished IS NOT NULL AND s.finished<=? LIMIT 2)""",
+            (since, until, until),
+        ).fetchone()[0]
 
     def prune_diagnostics(self, before: float, retention: Settings | None = None) -> None:
         """Delete diagnostics older than ``before``; replay evidence is archived first.
@@ -910,16 +956,17 @@ class Repository:
                         ),
                         (before,),
                     )
-            if self.db.execute(
-                "SELECT 1 FROM main.sqlite_master WHERE name='evaluation_radar'"
-            ).fetchone():
-                # Evaluation ids can be reused after retention; drop their projected fields too.
-                self.db.execute(
-                    "DELETE FROM evaluation_radar WHERE evaluation_id IN "
-                    "(SELECT id FROM evaluations WHERE scan_id IN "
-                    "(SELECT id FROM scan_runs WHERE started<?))",
-                    (before,),
-                )
+            for table in ("evaluation_configuration", "evaluation_radar"):
+                if self.db.execute(
+                    "SELECT 1 FROM main.sqlite_master WHERE name=?", (table,)
+                ).fetchone():
+                    # Evaluation ids can be reused after retention; drop derived rows too.
+                    self.db.execute(
+                        f"DELETE FROM {table} WHERE evaluation_id IN "
+                        "(SELECT id FROM evaluations WHERE scan_id IN "
+                        "(SELECT id FROM scan_runs WHERE started<?))",
+                        (before,),
+                    )
             self.db.execute(
                 "DELETE FROM evaluations WHERE scan_id IN "
                 "(SELECT id FROM scan_runs WHERE started<?)",

@@ -113,7 +113,7 @@ async def test_radar_cache_detects_late_completion_with_same_finished_time(
     assert (await client.get("/api/v1/radar")).json()["total"] == 2
 
 
-@pytest.mark.parametrize("version", [SCHEMA_VERSION - 3, SCHEMA_VERSION + 1])
+@pytest.mark.parametrize("version", [SCHEMA_VERSION - 5, SCHEMA_VERSION + 1])
 async def test_unsupported_schema_is_rejected_without_migration(web, repo, token, config, version):
     client, _ = web
     observe(repo, token, config)

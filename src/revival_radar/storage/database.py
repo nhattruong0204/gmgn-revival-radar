@@ -16,9 +16,9 @@ TEXT_FIELDS = {
 # market_cap_source and circulating_supply live only in the payload JSON (no migration).
 PAYLOAD_ONLY_FIELDS = {"security", "data_warnings", "market_cap_source", "circulating_supply"}
 SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in PAYLOAD_ONLY_FIELDS]
-SCHEMA_VERSION = 9
-# The read-only website serves schema 7 (projection absent: computed on read), 8 and 9.
-PUBLIC_SCHEMA_VERSIONS = (7, 8, 9)
+SCHEMA_VERSION = 11
+# The read-only website serves schema 7 (projections absent: computed on read) through 11.
+PUBLIC_SCHEMA_VERSIONS = (7, 8, 9, 10, 11)
 
 
 def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
@@ -69,6 +69,10 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             _migrate_call_performance(db)
         if version < 9:
             _migrate_replay_archive(db)
+        if version < 10:
+            _migrate_report_configuration(db)
+        if version < 11:
+            _migrate_radar_projection(db)
         # An additive query index is compatible with existing schema-4/rollback readers.
         db.execute("""CREATE INDEX IF NOT EXISTS evaluations_chain_time
             ON evaluations(chain,timestamp DESC,id DESC)""")
@@ -90,7 +94,6 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             CAST(json_extract(CASE WHEN json_valid(value) THEN value ELSE '{}' END,
                 '$.signal.score_version') AS TEXT)
         )""")
-        _ensure_radar_projection(db)
         db.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
         db.commit()
     except Exception:
@@ -100,10 +103,10 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
     return db
 
 
-def _ensure_radar_projection(db: sqlite3.Connection) -> None:
+def _migrate_radar_projection(db: sqlite3.Connection) -> None:
     # Additive, derived and fully rebuildable from the saved presentations (see
-    # analysis/radar_projection.py). Created like the additive indexes above, without a
-    # schema-version bump: readers detect it by name and fall back to computing on read.
+    # analysis/radar_projection.py). The scanner fills it after each scan; readers detect it
+    # by name and compute any uncovered row on read. Idempotent.
     # Columns are untyped (no affinity) so values are stored exactly as computed.
     db.execute("""CREATE TABLE IF NOT EXISTS evaluation_radar (
         evaluation_id INTEGER PRIMARY KEY, timestamp REAL NOT NULL, score, status, eligible,
@@ -124,6 +127,15 @@ def _migrate_call_performance(db: sqlite3.Connection) -> None:
         observations INTEGER NOT NULL, max_gap_seconds REAL,
         valid_observations INTEGER NOT NULL, other_basis_observations INTEGER NOT NULL,
         updated_at REAL NOT NULL, frozen INTEGER NOT NULL DEFAULT 0 CHECK(frozen IN (0,1))
+    )""")
+
+
+def _migrate_report_configuration(db: sqlite3.Connection) -> None:
+    # Additive, derived and fully rebuildable from the saved presentations (see
+    # analysis/report_projection.py). Existing tables and rows are never touched; the
+    # scanner fills it after each scan (backfilling history in bounded batches). Idempotent.
+    db.execute("""CREATE TABLE IF NOT EXISTS evaluation_configuration (
+        evaluation_id INTEGER PRIMARY KEY, timestamp REAL NOT NULL, digest BLOB NOT NULL
     )""")
 
 

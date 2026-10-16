@@ -425,32 +425,30 @@ class PublicQueries:
             *arguments,
         )
         sorting = f"e.{sort}" if sort in ("score", "timestamp") else field(sort)
-        # The total comes from the same ranked pass as the page; only a page past
-        # the end (no rows to carry it) needs a separate count.
+        # One pass materialises the matches with their sort keys; the page and the total
+        # both come from it, so a page past the end still reports the total without
+        # ranking the window a second time.
         found = self.db.execute(
             cte
-            + "SELECT e.id,COUNT(*) OVER () AS total_matches "
-            + selection
-            + f" ORDER BY ({sorting}) IS NULL ASC,({sorting}) {order.upper()},"
-            "e.timestamp DESC,e.chain,e.contract_address LIMIT ? OFFSET ?",
+            + f""", matched AS MATERIALIZED (
+                SELECT e.id,({sorting}) AS sort_key,e.timestamp AS ts,e.chain AS ch,
+                    e.contract_address AS ca {selection}
+            ) SELECT m.id,t.total_matches FROM (SELECT COUNT(*) AS total_matches FROM matched) t
+            LEFT JOIN (SELECT id FROM matched
+                ORDER BY sort_key IS NULL ASC,sort_key {order.upper()},
+                ts DESC,ch,ca LIMIT ? OFFSET ?) m ON 1""",
             (*parameters, page_size, (page - 1) * page_size),
         ).fetchall()
-        if found:
-            total = found[0]["total_matches"]
-            identities = [row["id"] for row in found]
-            fetched = {
-                row["id"]: row
-                for row in self.db.execute(
-                    f"SELECT * FROM evaluations WHERE id IN ({','.join('?' * len(identities))})",
-                    identities,
-                )
-            }
-            rows = [fetched[identity] for identity in identities]
-        elif page == 1:
-            total, rows = 0, []
-        else:
-            total = self.db.execute(cte + "SELECT COUNT(*) " + selection, parameters).fetchone()[0]
-            rows = []
+        total = found[0]["total_matches"]
+        identities = [row["id"] for row in found if row["id"] is not None]
+        fetched = {
+            row["id"]: row
+            for row in self.db.execute(
+                f"SELECT * FROM evaluations WHERE id IN ({','.join('?' * len(identities))})",
+                identities,
+            )
+        }
+        rows = [fetched[identity] for identity in identities]
         return RadarPage(
             items=[self._evaluation(row) for row in rows],
             total=total,

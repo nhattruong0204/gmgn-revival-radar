@@ -489,7 +489,7 @@ class Scanner:
             report.finished_at = time.time()
             self.repository.finish_scan(report.scan_id, report, report.finished_at)
             self.maintain_call_performance()
-            self.maintain_radar_projection()
+            self.maintain_report_projection()
             report.finished_at = time.time()
             report.duration_seconds = time.monotonic() - started
             report.performance = self.metrics.snapshot(report.duration_seconds)
@@ -531,15 +531,25 @@ class Scanner:
         except Exception as exc:
             log.warning("call performance projection failed error=%s", type(exc).__name__)
 
-    def maintain_radar_projection(self) -> None:
-        """Post-scan derived radar-field projection (#100); bounded, resumable, never fatal."""
-        try:
-            stats = self.repository.refresh_radar_projection(
-                self.config.radar_projection_budget_seconds
-            )
-            log.debug("radar projection %s", stats)
-        except Exception as exc:
-            log.warning("radar projection failed error=%s", type(exc).__name__)
+    def maintain_report_projection(self) -> None:
+        """Post-scan derived projections (#101 report digests, #100 radar fields).
+
+        One total time budget (``report_projection_budget_seconds``) is shared: the report
+        digests get at most half, radar the remainder, and each always makes progress by
+        at least one batch. Bounded, resumable, never fatal.
+        """
+        budget = self.config.report_projection_budget_seconds
+        started = time.monotonic()
+        for name, refresh, share in (
+            ("report", self.repository.refresh_report_projection, budget / 2),
+            ("radar", self.repository.refresh_radar_projection, None),
+        ):
+            try:
+                remaining = max(0.0, budget - (time.monotonic() - started))
+                stats = refresh(remaining if share is None else min(share, remaining))
+                log.debug("%s projection %s", name, stats)
+            except Exception as exc:
+                log.warning("%s projection failed error=%s", name, type(exc).__name__)
 
     async def track_outcomes(self, report: ScanReport) -> None:
         remaining = self.config.max_market_enrich_per_scan - self.enrichment.used["market"]
