@@ -16,9 +16,9 @@ TEXT_FIELDS = {
 # market_cap_source and circulating_supply live only in the payload JSON (no migration).
 PAYLOAD_ONLY_FIELDS = {"security", "data_warnings", "market_cap_source", "circulating_supply"}
 SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in PAYLOAD_ONLY_FIELDS]
-SCHEMA_VERSION = 10
-# The read-only website serves schema 7 (projections absent: computed on read), 8, 9 and 10.
-PUBLIC_SCHEMA_VERSIONS = (7, 8, 9, 10)
+SCHEMA_VERSION = 11
+# The read-only website serves schema 7 (projections absent: computed on read) through 11.
+PUBLIC_SCHEMA_VERSIONS = (7, 8, 9, 10, 11)
 
 
 def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
@@ -71,6 +71,8 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             _migrate_replay_archive(db)
         if version < 10:
             _migrate_report_configuration(db)
+        if version < 11:
+            _migrate_radar_projection(db)
         # An additive query index is compatible with existing schema-4/rollback readers.
         db.execute("""CREATE INDEX IF NOT EXISTS evaluations_chain_time
             ON evaluations(chain,timestamp DESC,id DESC)""")
@@ -99,6 +101,17 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
         db.close()
         raise
     return db
+
+
+def _migrate_radar_projection(db: sqlite3.Connection) -> None:
+    # Additive, derived and fully rebuildable from the saved presentations (see
+    # analysis/radar_projection.py). The scanner fills it after each scan; readers detect it
+    # by name and compute any uncovered row on read. Idempotent.
+    # Columns are untyped (no affinity) so values are stored exactly as computed.
+    db.execute("""CREATE TABLE IF NOT EXISTS evaluation_radar (
+        evaluation_id INTEGER PRIMARY KEY, timestamp REAL NOT NULL, score, status, eligible,
+        symbol, name, market_cap, liquidity, volume_5m
+    )""")
 
 
 def _migrate_call_performance(db: sqlite3.Connection) -> None:

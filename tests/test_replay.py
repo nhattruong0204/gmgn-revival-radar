@@ -165,7 +165,7 @@ def test_migration_is_additive_idempotent_and_keeps_rows(tmp_path):
     repo.db.close()
     for _ in range(2):
         db = connect(path)
-        assert db.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION == 10
+        assert db.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION == 11
         tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         assert {"replay_evaluations", "replay_candles"} <= tables
         for t, rows in before.items():

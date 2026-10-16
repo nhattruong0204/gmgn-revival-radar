@@ -101,3 +101,23 @@ saved as `market_context` in the existing `scan:metrics:<scan id>` state JSON an
 `telegram:alert:<id>` presentations (with `eligible_count` null, as the scan is still
 running). No schema change; old rows are untouched. The Reports page shows the latest
 completed scan as context only: it is never a score input or alert gate.
+
+## Radar read latency and the radar projection (#100)
+
+Radar sorts by market cap, liquidity or 5-minute volume and searches token names using
+fields that live only inside each evaluation's saved presentation, so a 7-day "min score
+0 + include ignored" view used to parse and validate about 2,800 presentations (1.8 to
+2.3 s with a cold page cache). Schema 11 adds the scanner-owned, additive table
+`evaluation_radar` (symbol, name, market cap, liquidity, 5m volume per evaluation, computed with the
+same validation policy as the on-read path, `NULL` where the evidence does not validate).
+The website trusts a row only while the evaluation's id, timestamp, score, status and
+eligibility still match it; any other row is computed on read with the original function,
+so responses are identical whatever the backfill state and on schemas 7 to 10. The scanner
+maintains both derived tables after each scan inside one shared time budget
+(`REPORT_PROJECTION_BUDGET_SECONDS`, default 15 s total: report digests at most half, radar the
+rest, each at least one batch). `python -m revival_radar.projection_backfill DATABASE`
+runs every projection to completion offline and verifies seven-day coverage; the V2
+deploy runbook runs it before the website starts. The page query also resolves completed scans from
+the covering index, ranks on covering-index columns only, and fetches full evaluation rows
+for the returned page alone; the total comes from the same materialised match set, so an
+out-of-range page no longer ranks the window twice.

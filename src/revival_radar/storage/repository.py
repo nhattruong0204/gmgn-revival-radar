@@ -73,6 +73,14 @@ class Repository:
             return {}
         return refresh(self.db, budget_seconds)
 
+    def refresh_radar_projection(self, budget_seconds: float = 15.0) -> dict:
+        """Maintain the derived evaluation_radar projection (schema 11+)."""
+        from revival_radar.analysis.radar_projection import refresh
+
+        if self.db.execute("PRAGMA user_version").fetchone()[0] < 11:
+            return {}
+        return refresh(self.db, budget_seconds)
+
     def _record_basis_sample(self, token: TokenSnapshot) -> None:
         """Keep the newest raw rank/token-info pairs (capped) in state; no provider calls."""
         pair = build_pair(token.chain, token.contract_address, token._basis_sample)
@@ -948,16 +956,17 @@ class Repository:
                         ),
                         (before,),
                     )
-            if self.db.execute(
-                "SELECT 1 FROM main.sqlite_master WHERE name='evaluation_configuration'"
-            ).fetchone():
-                # Evaluation ids can be reused after retention; drop their digests too.
-                self.db.execute(
-                    "DELETE FROM evaluation_configuration WHERE evaluation_id IN "
-                    "(SELECT id FROM evaluations WHERE scan_id IN "
-                    "(SELECT id FROM scan_runs WHERE started<?))",
-                    (before,),
-                )
+            for table in ("evaluation_configuration", "evaluation_radar"):
+                if self.db.execute(
+                    "SELECT 1 FROM main.sqlite_master WHERE name=?", (table,)
+                ).fetchone():
+                    # Evaluation ids can be reused after retention; drop derived rows too.
+                    self.db.execute(
+                        f"DELETE FROM {table} WHERE evaluation_id IN "
+                        "(SELECT id FROM evaluations WHERE scan_id IN "
+                        "(SELECT id FROM scan_runs WHERE started<?))",
+                        (before,),
+                    )
             self.db.execute(
                 "DELETE FROM evaluations WHERE scan_id IN "
                 "(SELECT id FROM scan_runs WHERE started<?)",
