@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm AS builder
+FROM python:3.12-slim-trixie AS builder
 ARG PIP_NO_INDEX
 ENV PIP_NO_CACHE_DIR=1
 WORKDIR /build
@@ -11,7 +11,7 @@ COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
 RUN pip wheel --no-deps --no-build-isolation . -w /wheels
 
-FROM python:3.12-slim-bookworm AS runtime
+FROM python:3.12-slim-trixie AS runtime
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1
 WORKDIR /app
 COPY requirements.lock ./

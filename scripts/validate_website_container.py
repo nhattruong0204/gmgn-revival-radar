@@ -31,7 +31,34 @@ def docker(*args):
     return subprocess.check_output(["docker", *args], text=True, stderr=subprocess.DEVNULL).strip()
 
 
+MINIMUM_SQLITE = (3, 45, 0)
+SQLITE_CHECK = (
+    "import sqlite3;"
+    "print(sqlite3.sqlite_version);"
+    f"raise SystemExit(0 if sqlite3.sqlite_version_info >= {MINIMUM_SQLITE!r} else 1)"
+)
+
+
+def assert_modern_sqlite(image, label):
+    """The reports/radar query plans depend on SQLite >= 3.45 (issue #104)."""
+    result = subprocess.run(
+        ["docker", "run", "--rm", "--entrypoint", "python", image, "-c", SQLITE_CHECK],
+        capture_output=True,
+        text=True,
+    )
+    version = result.stdout.strip()
+    print(f"{label} image SQLite {version}")
+    assert result.returncode == 0, f"{label} image SQLite {version} is older than 3.45.0"
+
+
 def main():
+    web_image = os.environ.get("RADAR_STAGE_WEB_IMAGE", "revival-radar-web:staging")
+    # CI builds revival-radar:<tag> beside revival-radar-web:<tag>; derive it unless overridden.
+    scanner_image = os.environ.get("RADAR_STAGE_SCANNER_IMAGE") or web_image.replace(
+        "revival-radar-web:", "revival-radar:", 1
+    )
+    assert_modern_sqlite(web_image, "website")
+    assert_modern_sqlite(scanner_image, "scanner")
     with tempfile.TemporaryDirectory(prefix="radar26-https-") as directory:
         stage = Path(directory)
         database = stage / "staged.db"
