@@ -158,7 +158,12 @@ def status(request: Request, response: Response) -> dict:
                 (now - 86400, now),
             )
         ]
-    return {"worker": worker, "health": health, "scan_history": history}
+    return {
+        "worker": worker,
+        "health": health,
+        "scan_history": history,
+        "warmup": getattr(request.app.state, "warmup_status", None),
+    }
 
 
 @router.get("/settings")

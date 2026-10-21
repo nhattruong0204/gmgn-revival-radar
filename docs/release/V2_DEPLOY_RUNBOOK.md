@@ -243,6 +243,13 @@ scanner completes a scan between copy and request, or re-take the copy. Also:
   with the temporary smoke session the old `smoke.sh` creates and removes) plus
   `/api/v1/track-record/calls?days=30`, both CSV exports row counts equal to the API,
   Signals, Track Record and a Signal detail page load in a browser;
+- startup warm-up (#110): the web container binds only after it has read reports
+  24/72/168 h, radar 24/72/168 h (two views), meta and alerts with a startup-only
+  20 s per-read deadline and a 90 s total budget; visitors keep 1.5 s. The website is
+  healthy only after that. Check `docker logs` for `warmup item=` lines and
+  `warmup finished` (failed/skipped should be 0). Measured on the development host in
+  the image with a cold file: healthy after about 2.2 s (about 1.5 s without warm-up).
+  Compose `start_period` is 120 s; on the VPS allow up to about 1 minute before healthy;
 - cold-read check on the live file (fresh process, `posix_fadvise` DONTNEED): every
   `/api/v1/reports?hours=` window (1, 4, 12, 24, 72, 168) and the Radar 24, 72 and 168 h
   windows with "min score 0 + include ignored" sorted by market cap must be well under
@@ -261,7 +268,7 @@ slower than the development host), the rest from the development host.
 | Stop grace, matched backup and restore check | 1 to 3 min |
 | Migration 7 to 11 with integrity check | about 1 min |
 | Offline projection backfill (all three) | about 2 to 3 min |
-| Scanner start, web start | about 30 s |
+| Scanner start, web start (web healthy only after warm-up; up to 90 s budget) | about 30 s to 2 min |
 | **Public website unavailable (stop web to web healthy)** | **about 6 to 9 minutes** |
 | No scanner running (stop to first scan start) | about 5 to 8 minutes; one scan interval is skipped, nothing is backfilled for the gap |
 | First completed scan and projections verified | up to one scan interval (5 min) after the scanner starts |
