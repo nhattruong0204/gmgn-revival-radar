@@ -16,9 +16,9 @@ TEXT_FIELDS = {
 # market_cap_source and circulating_supply live only in the payload JSON (no migration).
 PAYLOAD_ONLY_FIELDS = {"security", "data_warnings", "market_cap_source", "circulating_supply"}
 SNAPSHOT_FIELDS = [f for f in TokenSnapshot.model_fields if f not in PAYLOAD_ONLY_FIELDS]
-SCHEMA_VERSION = 11
-# The read-only website serves schema 7 (projections absent: computed on read) through 11.
-PUBLIC_SCHEMA_VERSIONS = (7, 8, 9, 10, 11)
+SCHEMA_VERSION = 12
+# The read-only website serves schema 7 (projections absent: computed on read) through 12.
+PUBLIC_SCHEMA_VERSIONS = (7, 8, 9, 10, 11, 12)
 
 
 def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
@@ -73,6 +73,8 @@ def connect(path: Path, busy_timeout_ms: int = 5000) -> sqlite3.Connection:
             _migrate_report_configuration(db)
         if version < 11:
             _migrate_radar_projection(db)
+        if version < 12:
+            _migrate_origin_version(db)
         # An additive query index is compatible with existing schema-4/rollback readers.
         db.execute("""CREATE INDEX IF NOT EXISTS evaluations_chain_time
             ON evaluations(chain,timestamp DESC,id DESC)""")
@@ -112,6 +114,58 @@ def _migrate_radar_projection(db: sqlite3.Connection) -> None:
         evaluation_id INTEGER PRIMARY KEY, timestamp REAL NOT NULL, score, status, eligible,
         symbol, name, market_cap, liquidity, volume_5m
     )""")
+
+
+def _migrate_origin_version(db: sqlite3.Connection) -> None:
+    # Additive and scanner-owned. One row of write counters, bumped by triggers on every
+    # insert, update or delete of an origin or provenance-audit state key, by any writer
+    # (scanner or attestation tooling). The website reads it in O(1) as its cache version
+    # instead of scanning every origin row. Counters only ever increase, so any relevant
+    # change yields a new value (never coarser than the former COUNT/MAX scan).
+    # counter: every origin:* and provenance:audit:* key.
+    # alert_counter: origin:alert:* and provenance:audit:* (track-record routes).
+    # evaluation_counter: origin:scan:*, origin:evaluation:* and provenance:audit:*
+    # (meta, radar, reports), so snapshot/alert/brief origins do not churn those caches.
+    # Existing rows are never touched. Idempotent.
+    db.execute("""CREATE TABLE IF NOT EXISTS origin_version (
+        id INTEGER PRIMARY KEY CHECK(id=1), counter INTEGER NOT NULL,
+        alert_counter INTEGER NOT NULL, evaluation_counter INTEGER NOT NULL, updated_at REAL
+    )""")
+    db.execute(
+        "INSERT OR IGNORE INTO origin_version(id,counter,alert_counter,evaluation_counter,"
+        "updated_at) SELECT 1,COUNT(*),"
+        "COUNT(CASE WHEN key GLOB 'origin:alert:*' OR key GLOB 'provenance:audit:*' THEN 1 END),"
+        "COUNT(CASE WHEN key GLOB 'origin:scan:*' OR key GLOB 'origin:evaluation:*'"
+        " OR key GLOB 'provenance:audit:*' THEN 1 END),MAX(updated_at) FROM state "
+        "WHERE key GLOB 'origin:*' OR key GLOB 'provenance:audit:*'"
+    )
+
+    def bump(row: str) -> str:
+        return (
+            "UPDATE origin_version SET counter=counter+1,"
+            f"alert_counter=alert_counter+({row}.key GLOB 'origin:alert:*'"
+            f" OR {row}.key GLOB 'provenance:audit:*'),"
+            f"evaluation_counter=evaluation_counter+({row}.key GLOB 'origin:scan:*'"
+            f" OR {row}.key GLOB 'origin:evaluation:*' OR {row}.key GLOB 'provenance:audit:*'),"
+            f"updated_at={row}.updated_at WHERE id=1"
+        )
+
+    new = "NEW.key GLOB 'origin:*' OR NEW.key GLOB 'provenance:audit:*'"
+    old = "OLD.key GLOB 'origin:*' OR OLD.key GLOB 'provenance:audit:*'"
+    db.execute(
+        "CREATE TRIGGER IF NOT EXISTS origin_version_insert AFTER INSERT ON state "
+        f"WHEN {new} BEGIN {bump('NEW')}; END"
+    )
+    # A key renamed into or out of the prefixes changes the set. The bump must count the
+    # old and the new key, so it uses the union of both rows' categories.
+    db.execute(
+        "CREATE TRIGGER IF NOT EXISTS origin_version_update AFTER UPDATE ON state "
+        f"WHEN {new} OR {old} BEGIN {bump('NEW')}; {bump('OLD')}; END"
+    )
+    db.execute(
+        "CREATE TRIGGER IF NOT EXISTS origin_version_delete AFTER DELETE ON state "
+        f"WHEN {old} BEGIN {bump('OLD')}; END"
+    )
 
 
 def _migrate_call_performance(db: sqlite3.Connection) -> None:

@@ -79,16 +79,21 @@ def test_completed_view_version_ignores_unrelated_and_unfinished_origins(
     repo.record_origin("snapshot", 1, "live")
     repo.record_origin("alert", 1, "live")
     repo.set_state("origin:brief:scan:unrelated", "live")
+    repo.db.commit()
+    # Snapshot/alert/brief origins never churn these caches.
+    assert version() == original
     observe(repo, token, config, timestamp=NOW - 50, finished=False)
     scan = repo.db.execute("SELECT MAX(id) FROM scan_runs").fetchone()[0]
     evaluation = repo.db.execute("SELECT MAX(id) FROM evaluations").fetchone()[0]
     repo.record_origin("scan", scan, "live")
     repo.record_origin("evaluation", evaluation, "live")
     repo.db.commit()
-    assert version() == original
+    # The trigger counter is finer than the former join: scan/evaluation origin writes of an
+    # unfinished scan may invalidate (never the other way round), and never fall back.
+    unfinished = version()
     repo.finish_scan(scan, SimpleNamespace(processed=1), NOW - 49)
     completed = version()
-    assert completed != original
+    assert completed != unfinished
     # A late original-origin marker or operator audit of existing evidence must
     # still invalidate, without waiting for another completed scan.
     repo.record_origin("evaluation", 1, "test")
@@ -113,7 +118,7 @@ async def test_radar_cache_detects_late_completion_with_same_finished_time(
     assert (await client.get("/api/v1/radar")).json()["total"] == 2
 
 
-@pytest.mark.parametrize("version", [SCHEMA_VERSION - 5, SCHEMA_VERSION + 1])
+@pytest.mark.parametrize("version", [SCHEMA_VERSION - 6, SCHEMA_VERSION + 1])
 async def test_unsupported_schema_is_rejected_without_migration(web, repo, token, config, version):
     client, _ = web
     observe(repo, token, config)

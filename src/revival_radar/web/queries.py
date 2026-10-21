@@ -235,12 +235,28 @@ class PublicQueries:
         ).fetchone()
         return finite(row[0])
 
+    def _origin_counter(self, column: str):
+        # Schema 12+: trigger-maintained one-row counter of origin/provenance-audit writes.
+        # Schemas 7-11 have no such table, so callers fall back to the exact legacy scan.
+        if not self.db.execute(
+            "SELECT 1 FROM main.sqlite_master WHERE type='table' AND name='origin_version'"
+        ).fetchone():
+            return None
+        return self.db.execute(
+            f"SELECT {column} FROM main.origin_version WHERE id=1"  # fixed column names only
+        ).fetchone()
+
     def version(self, until: float, route: str = "") -> tuple:
         if route in {"track-record", "outcomes"}:
             # Outcome evidence changes independently of scanner snapshots/briefs.
             # Current operator attestations still invalidate quarantine immediately.
-            origin = self.db.execute("""SELECT COUNT(*),MAX(updated_at) FROM state
-                WHERE key GLOB 'origin:alert:*' OR key GLOB 'provenance:audit:*'""").fetchone()
+            origin = (
+                self._origin_counter("alert_counter")
+                or self.db.execute(
+                    "SELECT COUNT(*),MAX(updated_at) FROM state "
+                    "WHERE key GLOB 'origin:alert:*' OR key GLOB 'provenance:audit:*'"
+                ).fetchone()
+            )
             data = self.db.execute("""SELECT
                 (SELECT MAX(id) FROM alerts WHERE delivery_status='sent'),
                 (SELECT COUNT(*) FROM alerts WHERE delivery_status='sent'),
@@ -257,8 +273,10 @@ class PublicQueries:
             # Origins for unrelated snapshots/briefs or unfinished evaluations
             # cannot change this view. Operator audit changes still invalidate
             # immediately, including quarantine of previously completed rows.
-            origin_version = self.db.execute(
-                """SELECT COUNT(*),MAX(updated_at) FROM (
+            origin_version = (
+                self._origin_counter("evaluation_counter")
+                or self.db.execute(
+                    """SELECT COUNT(*),MAX(updated_at) FROM (
                 SELECT p.updated_at FROM state p JOIN main.scan_runs s
                 ON s.id=CAST(substr(p.key,13) AS INTEGER)
                 WHERE p.key GLOB 'origin:scan:*' AND s.finished<=?
@@ -270,18 +288,22 @@ class PublicQueries:
                 UNION ALL
                 SELECT updated_at FROM state WHERE key GLOB 'provenance:audit:*'
             )""",
-                (until, until),
-            ).fetchone()
+                    (until, until),
+                ).fetchone()
+            )
             return tuple(origin_version) + tuple(
                 self.db.execute(
                     "SELECT MAX(finished),MAX(id),COUNT(*) FROM scan_runs WHERE finished<=?",
                     (until,),
                 ).fetchone()
             )
-        origin_version = self.db.execute(
-            "SELECT COUNT(*),MAX(updated_at) FROM state "
-            "WHERE key GLOB 'origin:*' OR key GLOB 'provenance:audit:*'"
-        ).fetchone()
+        origin_version = (
+            self._origin_counter("counter")
+            or self.db.execute(
+                "SELECT COUNT(*),MAX(updated_at) FROM state "
+                "WHERE key GLOB 'origin:*' OR key GLOB 'provenance:audit:*'"
+            ).fetchone()
+        )
         # A lower-ID pending alert can finish after a newer alert was sent. Its
         # receipt must invalidate cached lists/outcomes even when MAX(id) is unchanged.
         # Outcome rows can also arrive without a new snapshot or completed scan.
