@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import time
 from collections import OrderedDict, deque
 from collections.abc import Callable
@@ -14,34 +15,118 @@ from starlette.responses import JSONResponse
 from starlette.staticfiles import StaticFiles
 
 from revival_radar.web.config import WebConfig
-from revival_radar.web.public import ResponseCache, read, router
+from revival_radar.web.public import ResponseCache, router
+
+logger = logging.getLogger("uvicorn.error.warmup")
+
+
+def _warmup_items(request):
+    """Warm-up reads through the public route functions: same read() path, same cache keys."""
+    from revival_radar.web import public
+
+    items = [(f"reports/{h}h", lambda h=h: public.reports(request, h, None)) for h in (24, 72, 168)]
+    for hours in (24, 72, 168):
+        for label, min_score, ignore in (("default", 0, False), ("all", 0, True)):
+            items.append(
+                (
+                    f"radar/{hours}h/{label}",
+                    lambda h=hours, m=min_score, i=ignore: public.radar(
+                        request,
+                        chain=None,
+                        status=None,
+                        search="",
+                        min_score=m,
+                        include_ignore=i,
+                        sort="score",
+                        order="desc",
+                        page=1,
+                        page_size=25,
+                        as_of=None,
+                        age_hours=h,
+                    ),
+                )
+            )
+    items.append(("meta", lambda: public.metadata(request, None)))
+    items.append(
+        (
+            "alerts/1",
+            lambda: public.alerts(
+                request,
+                chain=None,
+                address=None,
+                page=1,
+                page_size=None,
+                as_of=None,
+                group=None,
+            ),
+        )
+    )
+    return items
+
+
+def _run_warmup(app, items) -> dict:
+    """Blocking warm-up with the startup-only deadline and total budget (monotonic clock)."""
+    from revival_radar.web.queries import READ_TIMEOUT_OVERRIDE_MS
+
+    config = app.state.config
+    started = time.perf_counter()
+    budget = float(config.web_warmup_budget_seconds)
+    results = []
+    for name, call in items:
+        status, attempts, began = "skipped", 0, time.perf_counter()
+        for attempt in range(1, 4):
+            remaining_ms = int((budget - (time.perf_counter() - started)) * 1000)
+            if remaining_ms < 100:
+                break
+            attempts = attempt
+            token = READ_TIMEOUT_OVERRIDE_MS.set(min(config.web_warmup_timeout_ms, remaining_ms))
+            try:
+                call()
+                status = "ok"
+                break
+            except HTTPException as exc:
+                status = f"failed:{exc.status_code}"
+            except Exception as exc:  # noqa: BLE001 - startup must never crash on a warm-up read
+                status = f"failed:{type(exc).__name__}"
+            finally:
+                READ_TIMEOUT_OVERRIDE_MS.reset(token)
+        seconds = time.perf_counter() - began
+        logger.info(
+            "warmup item=%s status=%s attempts=%d seconds=%.3f", name, status, attempts, seconds
+        )
+        results.append({"item": name, "status": status, "seconds": round(seconds, 3)})
+    total = time.perf_counter() - started
+    summary = {
+        "complete": True,
+        "ok": sum(r["status"] == "ok" for r in results),
+        "failed": sum(r["status"].startswith("failed") for r in results),
+        "skipped": sum(r["status"] == "skipped" for r in results),
+        "budget_exhausted": any(r["status"] == "skipped" for r in results),
+        "seconds": round(total, 3),
+    }
+    logger.info("warmup finished %s", summary)
+    return {**summary, "items": results}
 
 
 @asynccontextmanager
 async def research_startup(app):
-    # Construction stays inert. At server startup, warm only saved public reports
-    # before accepting traffic. Each attempt retains its normal read deadline;
-    # failed/over-budget results never enter the response cache.
-    completed = []
+    # Construction stays inert. At server startup, before accepting traffic, warm the
+    # saved public views through the normal read() path with a startup-only deadline
+    # and total budget. Visitor requests keep web_read_timeout_ms; failed/over-budget
+    # results never enter the response cache.
+    app.state.warmup_complete = False
+    app.state.report_warmup_complete = False
+    app.state.warmup_status = None
     if app.state.config.database_path.is_file():
         request = SimpleNamespace(app=app)
-        for hours in (24, 168):
-            for _ in range(3):
-                try:
-                    await asyncio.to_thread(
-                        read,
-                        request,
-                        None,
-                        ("reports", hours),
-                        lambda queries, until, h=hours: queries.report(until, h),
-                    )
-                except HTTPException as exc:
-                    if exc.status_code != 503:
-                        raise
-                else:
-                    completed.append(hours)
-                    break
-    app.state.report_warmup_complete = completed == [24, 168]
+        status = await asyncio.to_thread(_run_warmup, app, _warmup_items(request))
+        app.state.warmup_status = {k: v for k, v in status.items() if k != "items"}
+        app.state.warmup_complete = True
+        app.state.report_warmup_complete = all(
+            r["status"] == "ok"
+            for r in status["items"]
+            if r["item"] in ("reports/24h", "reports/168h")
+        )
     yield
 
 

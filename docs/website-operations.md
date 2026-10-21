@@ -94,10 +94,32 @@ ignored `.npm-cache` with `npm --prefix web ci --cache "$PWD/.npm-cache"`. Build
 with `--build-arg PIP_NO_INDEX=1 --build-arg NPM_CONFIG_OFFLINE=true`. Hash and npm
 integrity verification stay enabled; do not change locks or disable TLS checks.
 
+## Startup warm-up (cold OS page cache)
+
+Right after a restart the OS page cache can be cold, and the first read of a 7-day
+view could exceed the unchanged 1.5 s visitor deadline. The lifespan therefore reads
+the saved views before the server accepts connections: reports 24/72/168 h, radar
+24/72/168 h (default view and `min_score=0` with ignored rows, page 1, default sort),
+meta and the first alerts page. These go through the normal `read()` path and cache
+keys; failures are never cached and nothing partial is served.
+
+- Only these warm-up reads use `WEB_WARMUP_TIMEOUT_MS` (default 20000, 100 to 60000);
+  each item retries up to 3 times. `WEB_WARMUP_BUDGET_SECONDS` (default 90, 1 to 300)
+  bounds the total; items left after the budget are skipped and the site starts anyway.
+  Visitor requests keep `WEB_READ_TIMEOUT_MS` (1500).
+- Each item logs `warmup item=... status=... seconds=...` plus a summary line.
+- `app.state.warmup_complete` is true once warm-up finished (or exhausted its budget);
+  it stays false when the database file is absent. `report_warmup_complete` is kept
+  for compatibility. The owner-only `/api/v1/admin/status` includes a `warmup`
+  summary (counts and seconds); nothing is added to public routes.
+
 ## Monitoring and routine backups
 
 - `docker compose ... ps` must show exactly the existing scanner plus the website;
   inspect any host scanner units too. The API healthcheck reads `/api/v1/meta`.
+  The server binds only after the startup warm-up (below) finishes, so the website
+  reports healthy only after the warm-up completed or its budget was exhausted;
+  the Compose `start_period` is 120 s to cover the worst case (90 s budget).
   Unhealthy does not automatically restart Docker; investigate database/schema,
   permissions and the bounded logs before an explicit restart.
 - Probe HTTPS pages and public `/api/v1/meta` externally; monitor certificate

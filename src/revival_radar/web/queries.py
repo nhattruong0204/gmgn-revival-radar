@@ -5,6 +5,7 @@ import sqlite3
 import time
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
+from contextvars import ContextVar
 from functools import lru_cache
 from threading import Timer
 
@@ -42,11 +43,17 @@ LOOKBACK_SECONDS = 7 * 86400
 FRESH_SECONDS = 30 * 60
 
 
+# Startup warm-up only: a per-context deadline override. Visitor requests never set
+# it, so they always use ``web_read_timeout_ms``. It is not shared global state.
+READ_TIMEOUT_OVERRIDE_MS: ContextVar[int | None] = ContextVar("read_timeout_override", default=None)
+
+
 @contextmanager
 def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
     # mode=ro refuses absent databases and never invokes scanner migrations.
     uri = config.database_path.resolve().as_uri() + "?mode=ro"
-    db = sqlite3.connect(uri, uri=True, timeout=config.web_read_timeout_ms / 1000)
+    timeout_ms = READ_TIMEOUT_OVERRIDE_MS.get() or config.web_read_timeout_ms
+    db = sqlite3.connect(uri, uri=True, timeout=timeout_ms / 1000)
     interruption = None
     try:
         db.row_factory = sqlite3.Row
@@ -82,8 +89,8 @@ def public_reader(config: WebConfig) -> Iterator["PublicQueries"]:
             SELECT o.rowid AS rowid,o.* FROM main.signal_outcomes o
             JOIN alerts a ON a.id=o.alert_id""")
         db.execute("PRAGMA query_only=ON")
-        db.execute(f"PRAGMA busy_timeout={config.web_read_timeout_ms}")
-        deadline = time.monotonic() + config.web_read_timeout_ms / 1000
+        db.execute(f"PRAGMA busy_timeout={timeout_ms}")
+        deadline = time.monotonic() + timeout_ms / 1000
         # Native interrupt is thread-safe and avoids Python callbacks throughout
         # SQL execution. Keep the same elapsed deadline and check it again on
         # exit for model work/cache waits without an active SQL statement.
