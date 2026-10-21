@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Track record</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#0F1318;color:#E7EBF0;font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:#8DB4FF}a:hover{color:#B5CEFF}
+button{font-family:inherit;color:inherit}
+button:focus-visible{outline:2px solid #8DB4FF;outline-offset:2px}
+.num{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+.rowbtn:hover{background:#1B212A}
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #0F1318; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); box-sizing: border-box">
+<div style="max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px">
+
+  <!-- Header -->
+  <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+    <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+      <div style="font-size: 12px; color: #8A96A4">Workspace › Track record</div>
+      <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.01em">Track record</h1>
+      <div style="font-size: 14px; color: #A3AEBB">Every delivered alert, measured against the price saved 24h later. Research evidence, not trading P&amp;L.</div>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+      <label for="win" style="font-size: 12px; color: #8A96A4">Window</label>
+      <select id="win" style="height: 36px; padding: 0 10px; background: #171C23; color: #E7EBF0; border: 1px solid #2A323D; border-radius: 6px; font-size: 13px">
+        <option>Last 7 days</option><option>Last 30 days</option>
+      </select>
+      <label for="hor" style="font-size: 12px; color: #8A96A4">Horizon</label>
+      <select id="hor" style="height: 36px; padding: 0 10px; background: #171C23; color: #E7EBF0; border: 1px solid #2A323D; border-radius: 6px; font-size: 13px">
+        <option>+24h</option><option>+1h</option><option>+6h</option>
+      </select>
+      <button type="button" aria-pressed="{{fric}}" onClick="{{toggleFric}}" style="{{fricStyle}}">{{fricLabel}}</button>
+      <button type="button" style="height: 36px; padding: 0 14px; background: transparent; border: 1px solid #2A323D; border-radius: 6px; font-size: 13px; cursor: pointer">Export CSV</button>
+    </div>
+  </div>
+
+  <!-- Verdict -->
+  <div style="background: #161B22; border: 1px solid #252C36; border-radius: 10px; padding: 24px; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+        <div style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #8A96A4">Verdict · 35 resolved calls · Oct 14 22:32 – Oct 21 22:32</div>
+        <div style="font-size: 22px; font-weight: 600; text-wrap: balance">{{headline}}</div>
+      </div>
+      <div class="num" style="font-size: 12px; color: #8A96A4">{{costNote}}</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px">
+      <sc-for list="{{tiles}}" as="t" hint-placeholder-count="5">
+        <div style="background: #0F1318; border: 1px solid #252C36; border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px">
+          <div style="font-size: 12px; color: #A3AEBB">{{t.label}}</div>
+          <div class="num" style="{{t.valStyle}}">{{t.value}}</div>
+          <div style="font-size: 12px; color: #8A96A4">{{t.sub}}</div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px">
+        <div title="Resolved 35" style="width: 66%; background: #8DB4FF"></div>
+        <div title="Pending 16" style="width: 30.2%; background: #E5B454"></div>
+        <div title="Missed 2" style="width: 3.8%; background: repeating-linear-gradient(45deg,#7C8694 0 3px,#3A424D 3px 6px)"></div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 18px; font-size: 12px; color: #A3AEBB">
+        <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #8DB4FF; margin-right: 6px"></span><span class="num">35</span> resolved</span>
+        <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #E5B454; margin-right: 6px"></span><span class="num">16</span> pending (alerted in the last 24h)</span>
+        <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #7C8694; margin-right: 6px"></span><span class="num">2</span> missed · no price saved. If both rugged, median falls to <span class="num">−13.6%</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insights -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px">
+    <div style="background: #161B22; border: 1px solid #252C36; border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #E5B454">Concentration</div>
+      <div style="font-size: 16px; font-weight: 600">53 alerts, only 16 tokens</div>
+      <div style="font-size: 13px; color: #A3AEBB; line-height: 1.5">SI and baton were called 8 times each. Six tokens account for 36 alerts (68%). Each re-call counts as a fresh sample, which inflates N.</div>
+    </div>
+    <div style="background: #161B22; border: 1px solid #252C36; border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #8DB4FF">First call vs re-call</div>
+      <div style="font-size: 16px; font-weight: 600">First calls did worse</div>
+      <div style="font-size: 13px; color: #A3AEBB; line-height: 1.5">First calls: median <span class="num" style="color: #F87171">−13.0%</span>, 3 of 14 up. Re-calls: <span class="num" style="color: #F87171">−8.7%</span>, 5 of 21 up. Re-calls land on tokens that already survived a day.</div>
+    </div>
+    <div style="background: #161B22; border: 1px solid #252C36; border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #F87171">One-off calls</div>
+      <div style="font-size: 16px; font-weight: 600">Every single-call token lost</div>
+      <div style="font-size: 13px; color: #A3AEBB; line-height: 1.5">BORDR, FTR, HOTBOT, Agency, fone, DARK: <span class="num">−14%</span> to <span class="num">−36%</span>. Counting each token once, the median is <span class="num" style="color: #F87171">−14.6%</span>.</div>
+    </div>
+    <div style="background: transparent; border: 1px dashed #3A4350; border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px">
+      <div style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #8A96A4">Not collected yet</div>
+      <div style="font-size: 16px; font-weight: 600">Peak, time to peak, drawdown</div>
+      <div style="font-size: 13px; color: #A3AEBB; line-height: 1.5">One price at +24h can’t show whether a call hit 2x first. Needs snapshots at +5m, 15m, 1h, 6h. Columns reserved below.</div>
+    </div>
+  </div>
+
+  <!-- Distribution -->
+  <div style="background: #161B22; border: 1px solid #252C36; border-radius: 10px; padding: 20px 24px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline">
+      <div style="font-size: 16px; font-weight: 600">Change at +24h, one dot per resolved call</div>
+      <div style="font-size: 12px; color: #8A96A4">Dashed line = median</div>
+    </div>
+    <div style="overflow-x: auto">
+      <div style="position: relative; min-width: 640px; height: 96px">
+        <div style="position: absolute; left: 0; right: 0; top: 74px; height: 1px; background: #2A323D"></div>
+        <div style="position: absolute; left: 56.25%; top: 0; height: 74px; width: 1px; background: #4A5462"></div>
+        <div style="{{medLineStyle}}"></div>
+        <sc-for list="{{dots}}" as="d" hint-placeholder-count="35">
+          <div title="{{d.title}}" style="{{d.style}}"></div>
+        </sc-for>
+        <sc-for list="{{ticks}}" as="k" hint-placeholder-count="5">
+          <div class="num" style="{{k.style}}">{{k.label}}</div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div style="background: #161B22; border: 1px solid #252C36; border-radius: 10px; display: flex; flex-direction: column">
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #252C36">
+      <div style="display: flex; flex-wrap: wrap; gap: 4px; background: #0F1318; border: 1px solid #252C36; border-radius: 8px; padding: 3px">
+        <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="4">
+          <button type="button" aria-pressed="{{tb.on}}" onClick="{{tb.pick}}" style="{{tb.style}}">{{tb.label}} <span class="num" style="opacity: 0.75">{{tb.count}}</span></button>
+        </sc-for>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+        <sc-if value="{{showSort}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; gap: 4px; align-items: center">
+            <span style="font-size: 12px; color: #8A96A4; margin-right: 4px">Sort</span>
+            <sc-for list="{{sorts}}" as="so" hint-placeholder-count="3">
+              <button type="button" aria-pressed="{{so.on}}" onClick="{{so.pick}}" style="{{so.style}}">{{so.label}}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+        <div style="display: flex; gap: 4px; background: #0F1318; border: 1px solid #252C36; border-radius: 8px; padding: 3px">
+          <sc-for list="{{views}}" as="vw" hint-placeholder-count="2">
+            <button type="button" aria-pressed="{{vw.on}}" onClick="{{vw.pick}}" style="{{vw.style}}">{{vw.label}}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flat view -->
+    <sc-if value="{{flat}}" hint-placeholder-val="{{ true }}">
+      <div style="overflow-x: auto">
+        <div style="min-width: 1000px">
+          <div style="display: grid; grid-template-columns: minmax(170px, 1.3fr) 120px 92px 96px 104px minmax(200px, 1.5fr) 96px 72px 150px 20px; gap: 12px; padding: 10px 20px; font-size: 12px; color: #8A96A4; border-bottom: 1px solid #252C36">
+            <div>Token</div><div>Called</div><div>Call</div><div style="text-align: right">Entry MC</div><div style="text-align: right">MC +24h</div><div>Change +24h</div><div style="text-align: right" title="Not collected yet">Peak</div><div style="text-align: right" title="Not collected yet">Max DD</div><div>Checkpoint</div><div></div>
+          </div>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+            <div style="border-bottom: 1px solid #1F252E">
+              <button type="button" class="rowbtn" aria-expanded="{{r.isOpen}}" onClick="{{r.toggle}}" style="width: 100%; display: grid; grid-template-columns: minmax(170px, 1.3fr) 120px 92px 96px 104px minmax(200px, 1.5fr) 96px 72px 150px 20px; gap: 12px; align-items: center; padding: 12px 20px; background: transparent; border: 0; text-align: left; cursor: pointer; font-size: 13px">
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="font-weight: 600; font-size: 14px">{{r.sym}}</span>
+                  <span class="num" style="font-size: 11px; color: #8A96A4">{{r.mintShort}} · #{{r.id}}</span>
+                </div>
+                <div class="num" style="font-size: 12px; color: #C3CBD5">{{r.called}}</div>
+                <div><span style="{{r.nthStyle}}">{{r.nthLabel}}</span></div>
+                <div class="num" style="text-align: right">{{r.entryMC}}</div>
+                <div class="num" style="text-align: right; color: #C3CBD5">{{r.endMC}}</div>
+                <div style="display: flex; align-items: center; gap: 12px">
+                  <span class="num" style="{{r.chgStyle}}">{{r.chgTxt}}</span>
+                  <sc-if value="{{r.hasBar}}" hint-placeholder-val="{{ true }}">
+                    <div style="position: relative; flex: 1; height: 6px; background: #1F252E; border-radius: 3px; min-width: 60px">
+                      <div style="position: absolute; left: 50%; top: -3px; width: 1px; height: 12px; background: #4A5462"></div>
+                      <div style="{{r.barStyle}}"></div>
+                    </div>
+                  </sc-if>
+                </div>
+                <div class="num" style="text-align: right; color: #5E6875">—</div>
+                <div class="num" style="text-align: right; color: #5E6875">—</div>
+                <div style="font-size: 12px; {{r.cpColor}}">{{r.cpTxt}}</div>
+                <div aria-hidden="true" style="color: #8A96A4; font-size: 12px">{{r.chev}}</div>
+              </button>
+              <sc-if value="{{r.isOpen}}" hint-placeholder-val="{{ false }}">
+                <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 24px; padding: 4px 20px 18px 20px; font-size: 12px">
+                  <div style="display: flex; flex-direction: column; gap: 3px; grid-column: span 2; min-width: 0"><span style="color: #8A96A4">Mint</span><span class="num" style="word-break: break-all; color: #C3CBD5">{{r.mint}}</span></div>
+                  <div style="display: flex; flex-direction: column; gap: 3px"><span style="color: #8A96A4">Entry price (USD)</span><span class="num">{{r.p0}}</span></div>
+                  <div style="display: flex; flex-direction: column; gap: 3px"><span style="color: #8A96A4">Checkpoint price (USD)</span><span class="num">{{r.p1}}</span></div>
+                  <div style="display: flex; flex-direction: column; gap: 3px; grid-column: span 2"><span style="color: #8A96A4">Rule</span><span>Custom · rev 10 · setup-trigger-confirmation-v1</span></div>
+                  <div style="display: flex; flex-direction: column; gap: 3px"><span style="color: #8A96A4">Observed</span><span class="num">{{r.observed}}</span></div>
+                  <div style="display: flex; flex-direction: column; gap: 3px"><span style="color: #8A96A4">Evidence</span><span class="num">{{r.evidence}}</span></div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Grouped view -->
+    <sc-if value="{{grouped}}" hint-placeholder-val="{{ false }}">
+      <div style="overflow-x: auto">
+        <div style="min-width: 960px">
+          <div style="display: grid; grid-template-columns: minmax(170px, 1.2fr) minmax(200px, 1.6fr) 90px 80px 100px 90px 90px 110px; gap: 12px; padding: 10px 20px; font-size: 12px; color: #8A96A4; border-bottom: 1px solid #252C36">
+            <div>Token</div><div>Calls, oldest → newest</div><div style="text-align: right">Resolved</div><div style="text-align: right">Up</div><div style="text-align: right">Median</div><div style="text-align: right">Best</div><div style="text-align: right">Worst</div><div style="text-align: right">First call</div>
+          </div>
+          <sc-for list="{{groups}}" as="g" hint-placeholder-count="16">
+            <div style="display: grid; grid-template-columns: minmax(170px, 1.2fr) minmax(200px, 1.6fr) 90px 80px 100px 90px 90px 110px; gap: 12px; align-items: center; padding: 12px 20px; border-bottom: 1px solid #1F252E; font-size: 13px">
+              <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                <span style="font-weight: 600; font-size: 14px">{{g.sym}}</span>
+                <span class="num" style="font-size: 11px; color: #8A96A4">{{g.mintShort}}</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px">
+                <sc-for list="{{g.strip}}" as="c" hint-placeholder-count="4">
+                  <span title="{{c.title}}" class="num" style="{{c.style}}">{{c.txt}}</span>
+                </sc-for>
+              </div>
+              <div class="num" style="text-align: right; color: #C3CBD5">{{g.resolvedTxt}}</div>
+              <div class="num" style="text-align: right">{{g.upTxt}}</div>
+              <div class="num" style="{{g.medStyle}}">{{g.medTxt}}</div>
+              <div class="num" style="text-align: right; color: #C3CBD5">{{g.bestTxt}}</div>
+              <div class="num" style="text-align: right; color: #C3CBD5">{{g.worstTxt}}</div>
+              <div class="num" style="{{g.firstStyle}}">{{g.firstTxt}}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="font-size: 12px; color: #8A96A4; line-height: 1.6; max-width: 900px">
+    Prices from saved GMGN observations, quoted in USD (inferred: price × 1B supply lands in the $1–15M range). MC is estimated as price × 1B supply. Change compares the saved entry price with the first price saved inside the one-hour window after +24h. No fees or slippage unless the cost toggle is on.
+  </div>
+
+</div>
+</div>
+</x-dc>
+
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'resolved', view: 'alert', sort: 'newest', fric: false, open: null };
+  }
+
+  base() {
+    if (this._base) return this._base;
+    const MINT = {
+      VEIL: 'HgTGdc29D5bDMrDvsCLnorxz899VyDj7ZN7FPa6vpump', SI: 'DEW9dSN6QpWyNthphCpMmAbZP1Q4cEKR9xQXAri98WDP',
+      DOPE: '33jENUQnjoitkMFpvNJcSHyLAHFWJuHwT6E3E8CNpump', baton: 'Hg5Ja55T5wESq4vyFoiVCMeHXtGyVA69X2UHq8hgpump',
+      CLAUDIA: '2j5SaS7xy776qCBpyPQbZjyQSAtKiFgrwjfErthnW2ZM', PAID: '98kfF7rmsg1QDUEoCqNE7g7M1FdrTt92TEp2CLzypump',
+      OTC: 'MukLDtJ8Cx9DxLbeyLRSWPSposTMWuwHANbuaudpump', BORDR: '6Mix12LiHrQFojaQEnfPUC65Qkwd6X4Y5Qg93oFbordr',
+      swordcat: '5tCju6YNxHq5zrA6tGndr6F7TK42mpUFmeE31cSFpump', JEANPHIL: 'GTBxUiw6wJdmmkCGZgRHLyYxqu1vG4KtRpeox6yDpump',
+      FTR: 'DFMt2FyLpB6ekPNAzVErLXgpSnJ9CRf1VnxBAkTLpump', DARK: '7KEPApdbBMByrmqihz3bht2uMhFQcatjfSFQCKq66kH3',
+      fone: 'CTPoyCwkjMvoJwU4xvZZqoD8tiYk6yDchySiN5gGpump', HOTBOT: '8nnaeWCw8mUypcGAgbmSuzAT85uWx4UN12adDrMhXrGF',
+      Agency: '7VertkgF9KLhxxJXHX6uaWuoYZTP9LdGj2bWmVXVpump', EMBER: '5dvXTZ5qwgafnHtwu3Ls3QrWx1U4LQsFeCuJgk4QEC6'
+    };
+    const D = [
+      [103,'VEIL','2026-10-21 21:12',0.002902669,null,0,'pending'],[102,'SI','2026-10-21 21:02',0.013428232,null,0,'pending'],
+      [101,'VEIL','2026-10-21 20:47',0.0025814244,null,0,'pending'],[100,'DOPE','2026-10-21 20:22',0.0017592569,null,0,'pending'],
+      [99,'baton','2026-10-21 20:02',0.0082652194,null,0,'pending'],[98,'CLAUDIA','2026-10-21 18:37',0.0040217348,null,0,'pending'],
+      [97,'VEIL','2026-10-21 18:32',0.0024015716,null,0,'pending'],[96,'DOPE','2026-10-21 18:32',0.0018257594,null,0,'pending'],
+      [95,'PAID','2026-10-21 16:42',0.0038221473,null,0,'pending'],[94,'OTC','2026-10-21 15:02',0.0080237053,null,0,'pending'],
+      [93,'SI','2026-10-21 15:02',0.013526985,null,0,'pending'],[92,'PAID','2026-10-21 14:22',0.0036776932,null,0,'pending'],
+      [91,'CLAUDIA','2026-10-21 03:02',0.0049620633,null,0,'pending'],[90,'PAID','2026-10-21 01:17',0.0032567015,null,0,'pending'],
+      [89,'DOPE','2026-10-21 00:57',0.0024067972,null,0,'pending'],[88,'SI','2026-10-20 23:32',0.013668319,null,0,'pending'],
+      [87,'VEIL','2026-10-20 21:47',0.0030852372,0.0036181282,0,'ok'],[86,'baton','2026-10-20 21:32',0.0094429916,0.0081554181,0,'ok'],
+      [85,'CLAUDIA','2026-10-20 20:22',0.005432886,0.004119521,0,'ok'],[84,'DOPE','2026-10-20 18:27',0.002276971,0.0018320219,0,'ok'],
+      [83,'DOPE','2026-10-20 18:12',0.0023137502,0.0018501041,0,'ok'],[82,'SI','2026-10-20 15:27',0.014817784,0.014103286,0,'ok'],
+      [81,'CLAUDIA','2026-10-20 14:22',0.005012175,0.0044177463,0,'ok'],[80,'PAID','2026-10-20 13:57',0.0039722658,0.0033550097,0,'ok'],
+      [79,'DOPE','2026-10-20 05:17',0.0029781683,0.0017713,0,'ok'],[78,'SI','2026-10-20 04:02',0.014353026,0.014203568,0,'ok'],
+      [77,'PAID','2026-10-19 23:47',0.0033797307,0.003333222,0,'ok'],[76,'PAID','2026-10-19 22:47',0.0033198414,0.0032710578,0,'ok'],
+      [75,'baton','2026-10-19 19:47',0.0086422616,0.0071324098,0,'ok'],[74,'BORDR','2026-10-19 08:32',0.0052894969,0.0033673279,0,'ok'],
+      [73,'swordcat','2026-10-19 08:17',0.0019505994,0.0015015997,6,'ok'],[72,'SI','2026-10-19 05:52',0.014459392,0.015412118,10,'ok'],
+      [71,'SI','2026-10-18 21:02',0.014440361,0.01414663,0,'ok'],[70,'JEANPHIL','2026-10-18 20:42',0.006906955,0.0054496413,0,'ok'],
+      [69,'baton','2026-10-18 20:22',0.006947955,0.0091480758,0,'ok'],[68,'FTR','2026-10-18 16:17',0.0023943254,0.0015270187,0,'ok'],
+      [67,'SI','2026-10-18 09:12',0.01399073,0.015818238,0,'ok'],[66,'baton','2026-10-17 20:12',0.0088911112,0.0071707749,0,'ok'],
+      [65,'DARK','2026-10-17 13:07',0.0024793084,0.0021302668,6,'ok'],[64,'fone','2026-10-17 06:47',0.0049677623,0.0042179038,1,'ok'],
+      [63,'swordcat','2026-10-17 00:52',0.0019950913,0.002239994,1,'ok'],[62,'HOTBOT','2026-10-17 00:22',0.0051501075,0.0037534088,0,'ok'],
+      [61,'Agency','2026-10-16 18:42',0.0018598901,0.0013947153,1,'ok'],[60,'OTC','2026-10-16 18:12',0.010408074,0.0079953201,1,'ok'],
+      [59,'JEANPHIL','2026-10-16 16:07',0.0071284462,0.0072994887,10,'ok'],[58,'EMBER','2026-10-15 21:51',0.0033757561,0.0030807243,2,'ok'],
+      [57,'baton','2026-10-15 21:01',0.0080563339,0.0097140523,1,'ok'],[56,'EMBER','2026-10-15 20:31',0.0030885304,0.0030222419,6,'ok'],
+      [55,'baton','2026-10-15 19:06',0.0081137008,0.009545103,1,'ok'],[54,'OTC','2026-10-15 07:16',0.0065786319,null,0,'missed'],
+      [53,'baton','2026-10-15 06:26',0.00934851,null,0,'missed'],[52,'JEANPHIL','2026-10-15 01:31',0.0073292166,0.0072678882,0,'ok'],
+      [51,'JEANPHIL','2026-10-15 00:56',0.0080675503,0.0072889653,0,'ok']
+    ];
+    const parse = (t) => { const p = t.split(' '); const d = p[0].split('-').map(Number); const h = p[1].split(':').map(Number); return new Date(d[0], d[1] - 1, d[2], h[0], h[1]); };
+    const pad = (n) => String(n).padStart(2, '0');
+    const fmt = (dt) => 'Oct ' + dt.getDate() + ' · ' + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+    const cutoff = new Date(2026, 9, 21, 22, 32);
+    const rows = D.map((x) => {
+      const nth = D.filter((y) => y[1] === x[1] && y[0] <= x[0]).length;
+      const at = parse(x[2]);
+      const due = new Date(at.getTime() + 864e5);
+      const obs = x[4] != null ? new Date(due.getTime() + x[5] * 6e4) : null;
+      const left = Math.max(0, Math.round((due - cutoff) / 6e4));
+      return {
+        id: x[0], sym: x[1], mint: MINT[x[1]], at: at, called: fmt(at), p0: x[3], p1: x[4], late: x[5], status: x[6], nth: nth,
+        raw: x[4] != null ? (x[4] / x[3] - 1) * 100 : null,
+        observed: obs ? fmt(obs) + (x[5] ? ' (+' + x[5] + 'm late)' : ' (on time)') : 'Not observed',
+        dueIn: 'due in ' + Math.floor(left / 60) + 'h ' + pad(left % 60) + 'm'
+      };
+    });
+    this._base = rows;
+    return rows;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const rows = this.base();
+    const set = (p) => () => this.setState(p);
+    const fric = s.fric;
+    const adj = (r) => (r == null ? null : fric ? ((1 + r / 100) * 0.96 - 1) * 100 : r);
+    const GAIN = '#4ADE80', LOSS = '#F87171', PEND = '#E5B454', MISS = '#9AA4B1';
+    const sign = (r) => (r > 0 ? '+' : r < 0 ? '−' : '');
+    const pct = (r) => sign(r) + Math.abs(r).toFixed(1) + '%';
+    const mc = (p) => { const v = p * 1e9; return v >= 1e6 ? '$' + (v / 1e6).toFixed(2) + 'M' : '$' + Math.round(v / 1e3) + 'K'; };
+    const short = (m) => m.slice(0, 4) + '…' + m.slice(-4);
+    const med = (a) => { const b = a.slice().sort((x, y) => x - y); const n = b.length; return n ? (n % 2 ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2) : 0; };
+    const btn = (on) => 'height: 32px; padding: 0 12px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 0; ' + (on ? 'background: #2A3340; color: #E7EBF0; font-weight: 600' : 'background: transparent; color: #A3AEBB');
+
+    const resolved = rows.filter((r) => r.raw != null);
+    const R = resolved.map((r) => adj(r.raw));
+    const wins = R.filter((x) => x > 0).length;
+    const m = med(R);
+    const mean = R.reduce((a, b) => a + b, 0) / R.length;
+    let best = resolved[0], worst = resolved[0];
+    resolved.forEach((r) => { if (r.raw > best.raw) best = r; if (r.raw < worst.raw) worst = r; });
+    const big = (c) => 'font-size: 28px; font-weight: 600; letter-spacing: -0.02em; color: ' + c;
+
+    const tiles = [
+      { label: 'Win rate', value: (wins / R.length * 100).toFixed(1) + '%', sub: wins + ' of ' + R.length + ' resolved calls up', valStyle: big('#E7EBF0') },
+      { label: 'Median change', value: pct(m), sub: 'Typical call at +24h', valStyle: big(m < 0 ? LOSS : GAIN) },
+      { label: 'Mean change', value: pct(mean), sub: 'Equal size per call', valStyle: big(mean < 0 ? LOSS : GAIN) },
+      { label: 'Best call', value: pct(adj(best.raw)), sub: best.sym + ' · #' + best.id + ' · ' + mc(best.p0) + ' → ' + mc(best.p1), valStyle: big(GAIN) },
+      { label: 'Worst call', value: pct(adj(worst.raw)), sub: worst.sym + ' · #' + worst.id + ' · ' + mc(worst.p0) + ' → ' + mc(worst.p1), valStyle: big(LOSS) }
+    ];
+
+    // distribution: domain -45..+35
+    const X = (r) => ((Math.max(-45, Math.min(35, r)) + 45) / 80) * 100;
+    const dots = resolved.map((r, i) => {
+      const v = adj(r.raw);
+      return {
+        title: r.sym + ' #' + r.id + ': ' + pct(v),
+        style: 'position: absolute; left: calc(' + X(v).toFixed(2) + '% - 6px); top: ' + (8 + (i % 5) * 12) + 'px; width: 12px; height: 12px; border-radius: 50%; background: ' + (v > 0 ? GAIN : LOSS) + '; opacity: 0.85; border: 1px solid #0F1318'
+      };
+    });
+    const ticks = [-40, -20, 0, 20].map((t) => ({ label: (t > 0 ? '+' : t < 0 ? '−' : '') + Math.abs(t) + '%', style: 'position: absolute; top: 80px; left: calc(' + X(t) + '% - 20px); width: 40px; text-align: center; font-size: 11px; color: #8A96A4' }));
+    const medLineStyle = 'position: absolute; left: ' + X(m).toFixed(2) + '%; top: 0; height: 74px; border-left: 1px dashed ' + LOSS;
+
+    // table
+    const counts = { resolved: resolved.length, pending: rows.filter((r) => r.status === 'pending').length, missed: rows.filter((r) => r.status === 'missed').length, all: rows.length };
+    const tabs = [['resolved', 'Resolved'], ['pending', 'Pending'], ['missed', 'Missed'], ['all', 'All']].map((t) => ({ label: t[1], count: counts[t[0]], on: s.tab === t[0], pick: set({ tab: t[0], open: null }), style: btn(s.tab === t[0]) }));
+    const views = [['alert', 'By alert'], ['token', 'By token']].map((v) => ({ label: v[1], on: s.view === v[0], pick: set({ view: v[0], open: null }), style: btn(s.view === v[0]) }));
+    const sorts = [['newest', 'Newest'], ['worst', 'Worst'], ['best', 'Best']].map((v) => ({ label: v[1], on: s.sort === v[0], pick: set({ sort: v[0] }), style: btn(s.sort === v[0]) }));
+
+    let list = rows.filter((r) => s.tab === 'all' || (s.tab === 'resolved' ? r.raw != null : r.status === s.tab));
+    list = list.slice().sort((a, b) => {
+      if (s.sort === 'newest' || a.raw == null || b.raw == null) return b.id - a.id;
+      return s.sort === 'worst' ? a.raw - b.raw : b.raw - a.raw;
+    });
+
+    const tableRows = list.map((r) => {
+      const v = adj(r.raw);
+      const isOpen = s.open === r.id;
+      let chgTxt, chgStyle, cpTxt, cpColor;
+      const pill = 'display: inline-block; min-width: 64px; text-align: right; padding: 3px 8px; border-radius: 4px; font-size: 13px; font-weight: 600; ';
+      if (r.status === 'pending') { chgTxt = 'Pending'; chgStyle = pill + 'color: ' + PEND + '; background: rgba(229,180,84,0.10); font-weight: 500'; cpTxt = r.dueIn; cpColor = 'color: ' + PEND; }
+      else if (r.status === 'missed') { chgTxt = 'Missed'; chgStyle = pill + 'color: ' + MISS + '; border: 1px dashed #4A5462; font-weight: 500'; cpTxt = 'No price saved in window'; cpColor = 'color: ' + MISS; }
+      else {
+        chgTxt = pct(v);
+        chgStyle = pill + (v > 0 ? 'color: ' + GAIN + '; background: rgba(74,222,128,0.12)' : 'color: ' + LOSS + '; background: rgba(248,113,113,0.12)');
+        cpTxt = r.late ? 'Saved +' + r.late + 'm late' : 'On time';
+        cpColor = r.late >= 5 ? 'color: ' + PEND : 'color: #8A96A4';
+      }
+      const w = v == null ? 0 : Math.min(50, (Math.abs(v) / 45) * 50);
+      const barStyle = 'position: absolute; top: 0; height: 6px; border-radius: 3px; width: ' + w.toFixed(1) + '%; ' + (v > 0 ? 'left: 50%; background: ' + GAIN : 'right: 50%; background: ' + LOSS);
+      const first = r.nth === 1;
+      return {
+        id: r.id, sym: r.sym, mint: r.mint, mintShort: short(r.mint), called: r.called,
+        nthLabel: first ? '1st call' : 'Re-call ' + r.nth,
+        nthStyle: 'display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; ' + (first ? 'background: rgba(141,180,255,0.14); color: #A9C6FF' : 'background: #1F252E; color: #A3AEBB'),
+        entryMC: mc(r.p0), endMC: r.p1 != null ? mc(r.p1) : '—',
+        chgTxt: chgTxt, chgStyle: chgStyle, hasBar: v != null, barStyle: barStyle,
+        cpTxt: cpTxt, cpColor: cpColor, isOpen: isOpen, chev: isOpen ? '▲' : '▼',
+        toggle: set({ open: isOpen ? null : r.id }),
+        p0: r.p0.toPrecision(8), p1: r.p1 != null ? r.p1.toPrecision(8) : 'Not observed',
+        observed: r.status === 'pending' ? r.dueIn : r.observed, evidence: 'alert:' + r.id + '/checkpoint:24'
+      };
+    });
+
+    // grouped
+    const bySym = {};
+    rows.slice().sort((a, b) => a.id - b.id).forEach((r) => { (bySym[r.sym] = bySym[r.sym] || []).push(r); });
+    const groups = Object.keys(bySym).map((k) => {
+      const g = bySym[k];
+      const res = g.filter((r) => r.raw != null).map((r) => adj(r.raw));
+      const mm = res.length ? med(res) : null;
+      const firstR = g[0].raw != null ? adj(g[0].raw) : null;
+      const strip = g.map((r) => {
+        const v = adj(r.raw);
+        let st = 'display: inline-block; min-width: 46px; text-align: center; padding: 3px 5px; border-radius: 4px; font-size: 11px; ';
+        let txt;
+        if (r.status === 'pending') { st += 'color: ' + PEND + '; background: rgba(229,180,84,0.10)'; txt = '…'; }
+        else if (r.status === 'missed') { st += 'color: ' + MISS + '; border: 1px dashed #4A5462'; txt = '?'; }
+        else { st += v > 0 ? 'color: ' + GAIN + '; background: rgba(74,222,128,0.12)' : 'color: ' + LOSS + '; background: rgba(248,113,113,0.12)'; txt = sign(v) + Math.abs(v).toFixed(0); }
+        return { style: st, txt: txt, title: '#' + r.id + ' · ' + r.called + ' · ' + (v != null ? pct(v) : r.status) };
+      });
+      const rs = 'text-align: right; font-weight: 600; color: ';
+      return {
+        sym: k, mintShort: short(g[0].mint), n: g.length, m: mm == null ? -999 : mm, strip: strip,
+        resolvedTxt: res.length + ' / ' + g.length,
+        upTxt: res.length ? res.filter((x) => x > 0).length + ' / ' + res.length : '—',
+        medTxt: mm == null ? '—' : pct(mm), medStyle: rs + (mm == null ? '#8A96A4' : mm > 0 ? GAIN : LOSS),
+        bestTxt: res.length ? pct(Math.max.apply(null, res)) : '—',
+        worstTxt: res.length ? pct(Math.min.apply(null, res)) : '—',
+        firstTxt: firstR == null ? g[0].status : pct(firstR), firstStyle: rs + (firstR == null ? '#8A96A4' : firstR > 0 ? GAIN : LOSS)
+      };
+    }).sort((a, b) => b.n - a.n || a.m - b.m);
+
+    return {
+      fric: fric,
+      toggleFric: set({ fric: !fric }),
+      fricLabel: fric ? '✓ 4% round-trip cost' : 'Apply 4% round-trip cost',
+      fricStyle: 'height: 36px; padding: 0 14px; border-radius: 6px; font-size: 13px; cursor: pointer; ' + (fric ? 'background: rgba(229,180,84,0.14); border: 1px solid #E5B454; color: #F1CF85' : 'background: #171C23; border: 1px solid #2A323D; color: #E7EBF0'),
+      headline: m < 0 ? 'Alerts lost value 24h after the call. ' + (R.length - wins) + ' of ' + R.length + ' resolved calls were down.' : 'Alerts gained value 24h after the call.',
+      costNote: fric ? 'Returns include 4% round-trip fees and slippage' : 'Gross returns · no fees or slippage',
+      tiles: tiles, dots: dots, ticks: ticks, medLineStyle: medLineStyle,
+      tabs: tabs, views: views, sorts: sorts,
+      showSort: s.view === 'alert' && s.tab !== 'pending' && s.tab !== 'missed',
+      flat: s.view === 'alert', grouped: s.view === 'token',
+      rows: tableRows, groups: groups
+    };
+  }
+}
+</script>
+</body>
+</html>
