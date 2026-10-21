@@ -287,12 +287,12 @@ def test_additive_migration_from_schema_nine_is_idempotent(tmp_path):
     db.close()
     for _ in range(2):
         db = connect(path)
-        assert db.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION == 11
+        assert db.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION == 12
         after = {t: [tuple(r) for r in db.execute(f"SELECT * FROM {t} ORDER BY 1")] for t in before}
         assert after == before
         assert db.execute("SELECT COUNT(*) FROM evaluation_configuration").fetchone()[0] == 0
         db.close()
-    assert {7, 8, 9, 10, 11} == set(PUBLIC_SCHEMA_VERSIONS)
+    assert {7, 8, 9, 10, 11, 12} == set(PUBLIC_SCHEMA_VERSIONS)
 
 
 @pytest.mark.parametrize("version", [7, 8, 9])

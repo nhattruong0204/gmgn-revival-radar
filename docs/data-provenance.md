@@ -102,6 +102,13 @@ operator audit entries and original-record fingerprints remain. Public responses
 include the manifest or audit text. Changing classification invalidates caches,
 including reversal. To reverse, submit another reviewed manifest for that ID with
 its prior origin (unknown if originally unclassified); retain both audit entries.
+
+From schema 12 the cache invalidation signal is the one-row `origin_version` table,
+maintained by SQLite triggers on `state` for every insert, update or delete of an
+`origin:*` or `provenance:audit:*` key (this covers the scanner, pruning and the
+attestation tooling). The website reads that row instead of scanning those keys, and on
+schemas 7-11 (no table) falls back to the former count/max query. The counters only
+increase, so any origin or audit change still invalidates cached responses.
 For legacy cache quarantine, capture/back up the exact entry and use a separately
 reviewed owner operation; do not infer cache origin from a token or delete history.
 
